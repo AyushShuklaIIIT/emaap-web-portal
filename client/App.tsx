@@ -8,6 +8,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import BusinessDashboard from "./pages/business/Dashboard";
+import NewApplication from "./pages/business/NewApplication";
+import Instruments from "./pages/business/Instruments";
+import Payments from "./pages/business/Payments";
+import Helpdesk from "./pages/business/Helpdesk";
+import BusinessSettings from "./pages/business/Settings";
+import AdminDashboard from "./pages/admin/Dashboard";
+import Pendency from "./pages/admin/Pendency";
+import Gatc from "./pages/admin/Gatc";
+import Revenue from "./pages/admin/Revenue";
+import MasterData from "./pages/admin/MasterData";
+import AdminSettings from "./pages/admin/Settings";
+import GatcDashboard from "./pages/gatc/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +32,23 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+
+          <Route path="/business/dashboard" element={<BusinessDashboard />} />
+          <Route path="/business/new-application" element={<NewApplication />} />
+          <Route path="/business/instruments" element={<Instruments />} />
+          <Route path="/business/payments" element={<Payments />} />
+          <Route path="/business/helpdesk" element={<Helpdesk />} />
+          <Route path="/business/settings" element={<BusinessSettings />} />
+
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/pendency" element={<Pendency />} />
+          <Route path="/admin/gatc" element={<Gatc />} />
+          <Route path="/admin/revenue" element={<Revenue />} />
+          <Route path="/admin/master-data" element={<MasterData />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+
+          <Route path="/gatc/dashboard" element={<GatcDashboard />} />
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

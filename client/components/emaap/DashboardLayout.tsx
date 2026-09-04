@@ -122,12 +122,12 @@ export function DashboardLayout({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem asChild>
-                <Link to="/settings" className="flex items-center gap-2">
+                <Link to={`/${role}/settings`} className="flex items-center gap-2">
                   <User className="h-4 w-4" /> Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/settings" className="flex items-center gap-2">
+                <Link to={`/${role}/settings`} className="flex items-center gap-2">
                   <Settings className="h-4 w-4" /> Settings
                 </Link>
               </DropdownMenuItem>
@@ -179,7 +179,7 @@ export function DashboardLayout({
           </nav>
           <div className="flex flex-col gap-1 border-t border-sidebar-border pt-3">
             <Link
-              to="/settings"
+              to={`/${role}/settings`}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-white"
             >
               <Settings className="h-4 w-4 text-sidebar-foreground/60" />

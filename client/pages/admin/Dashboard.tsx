@@ -44,7 +44,7 @@ const routingRows = [
 export default function AdminDashboard() {
   return (
     <DashboardLayout role="admin">
-      <section className="mx-auto max-w-[1280px]">
+      <section className="mx-auto max-w-[1280px] rounded-xl border border-[#E0E0E0] bg-white p-6 shadow-card sm:p-7">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
@@ -70,7 +70,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 border-t border-[#E8E9EC] pt-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {kpis.map((kpi) => (
             <div key={kpi.title} className="rounded-lg border border-[#E0E0E0] bg-white p-5 shadow-card">
               <p className="text-sm font-medium text-[#5C5C70]">{kpi.title}</p>
@@ -85,6 +86,7 @@ export default function AdminDashboard() {
               )}
             </div>
           ))}
+          </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[3fr_2fr]">

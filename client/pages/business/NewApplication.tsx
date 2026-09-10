@@ -114,7 +114,7 @@ export default function NewApplication() {
 
   return (
     <DashboardLayout role="business">
-      <section className="mx-auto max-w-[1120px] rounded-xl border border-[#E0E0E0] bg-white shadow-card">
+      <section className="mx-auto max-w-280 rounded-xl border border-[#E0E0E0] bg-white shadow-card">
         <div className="px-8 pb-7 pt-8 sm:px-10">
           <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
             New Verification Application
@@ -153,7 +153,7 @@ export default function NewApplication() {
                   </div>
                   {index < steps.length - 1 && (
                     <div
-                      className={`mx-4 mt-[18px] h-px flex-1 ${
+                      className={`mx-4 mt-4.5 h-px flex-1 ${
                         isActive && !isCurrent ? "bg-[#0B3D91]" : "bg-[#E0E0E0]"
                       }`}
                     />

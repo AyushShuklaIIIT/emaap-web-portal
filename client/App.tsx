@@ -21,6 +21,7 @@ import Revenue from "./pages/admin/Revenue";
 import MasterData from "./pages/admin/MasterData";
 import AdminSettings from "./pages/admin/Settings";
 import GatcDashboard from "./pages/gatc/Dashboard";
+import SocketTest from "./pages/Socketio-test";
 
 const queryClient = new QueryClient();
 
@@ -33,8 +34,13 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
 
+          <Route path="/socket-test" element={<SocketTest />} />
+
           <Route path="/business/dashboard" element={<BusinessDashboard />} />
-          <Route path="/business/new-application" element={<NewApplication />} />
+          <Route
+            path="/business/new-application"
+            element={<NewApplication />}
+          />
           <Route path="/business/instruments" element={<Instruments />} />
           <Route path="/business/payments" element={<Payments />} />
           <Route path="/business/helpdesk" element={<Helpdesk />} />

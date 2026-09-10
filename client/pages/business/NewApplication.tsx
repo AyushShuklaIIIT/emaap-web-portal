@@ -4,10 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 
-const steps = [
-  "Instrument Details",
-  "Location & Documents"
-];
+const steps = ["Instrument Details", "Location & Documents"];
 
 function FormField({
   label,
@@ -147,8 +144,8 @@ export default function NewApplication() {
                         isCurrent
                           ? "font-bold text-[#0B3D91]"
                           : isActive
-                          ? "font-bold text-[#1A1A2E]"
-                          : "font-medium text-[#7B7F89]"
+                            ? "font-bold text-[#1A1A2E]"
+                            : "font-medium text-[#7B7F89]"
                       }`}
                     >
                       {step}
@@ -208,7 +205,9 @@ const InstrumentForm = ({ onNext }: { onNext: () => void }) => {
             defaultValue="Energy Gas and Fuel"
             className={`${fieldClassName} w-full px-3 outline-none`}
           >
-            <option value="" disabled>Select a category</option>
+            <option value="" disabled>
+              Select a category
+            </option>
             {Object.entries(categories).map(([key]) => (
               <option key={key} value={key}>
                 {key}
@@ -220,13 +219,15 @@ const InstrumentForm = ({ onNext }: { onNext: () => void }) => {
               className={`${fieldClassName} w-full px-3 outline-none mt-2`}
               defaultValue="Petrol, Diesel, CNG, LNG & Hydrogen Fuel Dispensers"
             >
-              <option value="" disabled>Select a subcategory</option>
+              <option value="" disabled>
+                Select a subcategory
+              </option>
               {categories[selectedCategory as keyof typeof categories].map(
                 (subcategory) => (
                   <option key={subcategory} value={subcategory}>
                     {subcategory}
                   </option>
-                )
+                ),
               )}
             </select>
           )}
@@ -240,10 +241,7 @@ const InstrumentForm = ({ onNext }: { onNext: () => void }) => {
         </FormField>
 
         <FormField label="Model Number">
-          <Input
-            defaultValue="CNG-Advantage-2025"
-            className={fieldClassName}
-          />
+          <Input defaultValue="CNG-Advantage-2025" className={fieldClassName} />
         </FormField>
 
         <FormField label="Instrument Serial Number">
@@ -268,13 +266,13 @@ const InstrumentForm = ({ onNext }: { onNext: () => void }) => {
       </div>
 
       <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
-        <Button
+        {/* <Button
           type="button"
           variant="ghost"
           className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
         >
           Save as Draft
-        </Button>
+        </Button> */}
         <Button
           type="submit"
           className="h-11 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]"
@@ -287,6 +285,29 @@ const InstrumentForm = ({ onNext }: { onNext: () => void }) => {
 };
 
 const LocationDocumentsForm = ({ onBack }: { onBack: () => void }) => {
+  const [coordinates, setCoordinates] = useState("");
+
+  const getLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        console.log(position.coords.accuracy);
+
+        setCoordinates(`${latitude}, ${longitude}`);
+      },
+      (error) => {
+        console.error(error);
+        alert("Unable to get your location.");
+      },
+    );
+  };
+
   return (
     <form
       className="px-8 pb-8 pt-8 sm:px-10"
@@ -300,13 +321,17 @@ const LocationDocumentsForm = ({ onBack }: { onBack: () => void }) => {
           Location & Documents
         </h2>
         <p className="mt-1 text-sm text-[#5C5C70]">
-          Provide the physical installation address and upload all required compliance documents.
+          Provide the physical installation address and upload all required
+          compliance documents.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <FormField label="Installation Address (Line 1)">
-          <Input defaultValue="Jio-BP Station, BKC" className={fieldClassName} />
+          <Input
+            defaultValue="Jio-BP Station, BKC"
+            className={fieldClassName}
+          />
         </FormField>
 
         <FormField label="State / UT">
@@ -327,7 +352,22 @@ const LocationDocumentsForm = ({ onBack }: { onBack: () => void }) => {
         </FormField>
 
         <FormField label="Geo-Coordinates (Lat, Long)">
-          <Input defaultValue="19.0660, 72.8631" className={fieldClassName} />
+          <div className="flex gap-2">
+            <Input
+              value={coordinates}
+              onChange={(e) => setCoordinates(e.target.value)}
+              placeholder="Latitude, Longitude"
+              className={fieldClassName}
+            />
+
+            <Button
+              type="button"
+              onClick={getLocation}
+              className="h-11 whitespace-nowrap"
+            >
+              Use My Location
+            </Button>
+          </div>
         </FormField>
 
         <FormField label="Manufacturer Invoice / Import Doc">

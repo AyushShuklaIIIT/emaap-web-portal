@@ -52,7 +52,7 @@ export default function Index() {
       <TricolorBar />
       <div className="grid flex-1 grid-cols-1 lg:grid-cols-2">
         {/* Left — brand / value proposition panel */}
-        <div className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-primary via-primary to-[#062a66] px-14 py-12 text-white lg:flex">
+        <div className="relative hidden flex-col justify-between overflow-hidden bg-linear-to-br from-primary via-primary to-[#062a66] px-14 py-12 text-white lg:flex">
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.07]"
             style={{
@@ -140,9 +140,14 @@ export default function Index() {
 
               {(["business", "admin", "gatc"] as Role[]).map((r) => (
                 <TabsContent key={r} value={r} className="mt-6">
-                  <form onSubmit={handleSendOtp} className="flex flex-col gap-4">
+                  <form
+                    onSubmit={handleSendOtp}
+                    className="flex flex-col gap-4"
+                  >
                     <div className="flex flex-col gap-1.5">
-                      <Label htmlFor={`phone-${r}`}>Registered Mobile Number</Label>
+                      <Label htmlFor={`phone-${r}`}>
+                        Registered Mobile Number
+                      </Label>
                       <Input
                         id={`phone-${r}`}
                         type="tel"
@@ -157,11 +162,18 @@ export default function Index() {
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <Label htmlFor={`pass-${r}`}>Password</Label>
-                      <Input id={`pass-${r}`} type="password" placeholder="••••••••" />
+                      <Input
+                        id={`pass-${r}`}
+                        type="password"
+                        placeholder="••••••••"
+                      />
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <label className="flex items-center gap-2 text-muted-foreground">
-                        <input type="checkbox" className="h-3.5 w-3.5 rounded border-border" />
+                        <input
+                          type="checkbox"
+                          className="h-3.5 w-3.5 rounded border-border"
+                        />
                         Remember me
                       </label>
                       <button

@@ -19,15 +19,20 @@ export default function BusinessDashboard() {
   return (
     <DashboardLayout role="business">
       <div className="flex flex-col gap-7">
-        <div className="flex flex-col justify-between gap-4 rounded-xl bg-gradient-to-r from-primary to-[#0d4bad] p-6 text-white sm:flex-row sm:items-center">
+        <div className="flex flex-col justify-between gap-4 rounded-xl bg-linear-to-r from-primary to-[#0d4bad] p-6 text-white sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-2xl font-bold">Welcome, Reliance Retail Ltd.</h1>
+            <h1 className="text-2xl font-bold">
+              Welcome, Reliance Retail Ltd.
+            </h1>
             <p className="mt-1 text-sm text-white/75">
-              CIN: L99999MH1973PLC019786 · 214 registered instruments across
-              18 states
+              CIN: L99999MH1973PLC019786 · 214 registered instruments across 18
+              states
             </p>
           </div>
-          <Button asChild className="bg-saffron text-saffron-foreground hover:bg-saffron/90">
+          <Button
+            asChild
+            className="bg-saffron text-saffron-foreground hover:bg-saffron/90"
+          >
             <Link to="/business/new-application">
               <Plus className="mr-1.5 h-4 w-4" /> New Verification Application
             </Link>
@@ -70,7 +75,10 @@ export default function BusinessDashboard() {
             </div>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search application ID..." className="w-64 pl-8" />
+              <Input
+                placeholder="Search application ID..."
+                className="w-64 pl-8"
+              />
             </div>
           </div>
           <Table>

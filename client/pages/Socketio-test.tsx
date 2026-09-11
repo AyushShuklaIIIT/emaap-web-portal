@@ -29,6 +29,10 @@ export default function SocketTest() {
       console.error("Socket connection error:", error.message);
     };
 
+    socket.on("reply", (data) => {
+      console.log(JSON.stringify(data));
+    });
+
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", onConnectError);

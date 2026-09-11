@@ -31,6 +31,12 @@ export function createServer() {
       socket.emit("reply", "Whatup");
     });
 
+    socket.on("msg", (data, callback) => {
+      console.log("Flutter sent:", data);
+
+      socket.emit("reply", "Ground control 8008 to app");
+    });
+
     socket.on("disconnect", (reason) => {
       console.log(reason);
     });

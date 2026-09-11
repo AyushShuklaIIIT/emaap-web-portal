@@ -2,7 +2,28 @@ import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:8008", {
+  autoConnect: false,
+});
+
+type Accclass = "Class I" | "Class II" | "Class III" | "Class IIII";
+interface VerificationForm {
+  instrumentCategory: string;
+  instrumentSubCategory: string;
+  modelNo: string;
+  accuracyClass: Accclass;
+  manufacturerName: string;
+  instrumentSerialNumber: string;
+  metric: string;
+  address: string;
+  pincode: number;
+  state: string;
+  lat: number;
+  long: number;
+}
 
 const steps = ["Instrument Details", "Location & Documents"];
 
@@ -111,6 +132,343 @@ const statesAndUnionTerritories = [
 
 export default function NewApplication() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [instrumentSubCategory, setInstrumentSubCategory] = useState("");
+  const [modelNo, setModelNo] = useState("");
+  const [accuracyClass, setAccuracyClass] = useState<Accclass | null>(null);
+  const [manufacturerName, setManufacturerName] = useState("");
+  const [instrumentSerialNumber, setInstrumentSerialNumber] = useState("");
+  const [metric, setMetric] = useState("");
+  const [address, setAddress] = useState("");
+  const [pincode, setPincode] = useState<number | null>(null);
+  const [manufacturerInvoice, setManufacturerInvoice] = useState<File | null>(
+    null,
+  );
+  const [state, setState] = useState("");
+  const [coordinates, setCoordinates] = useState("");
+  const [prevCertificate, setPrevCertificate] = useState<File | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [socketId, setSocketId] = useState<string | undefined>();
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const onConnect = () => {
+      console.log("Socket connected:", socket.id);
+
+      setConnected(true);
+      setSocketId(socket.id);
+    };
+
+    const onDisconnect = () => {
+      console.log("Socket disconnected");
+
+      setConnected(false);
+      setSocketId(undefined);
+    };
+
+    const onConnectError = (error: Error) => {
+      console.error("Socket connection error:", error.message);
+    };
+
+    socket.on("reply", (data) => {
+      console.log(JSON.stringify(data));
+    });
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("connect_error", onConnectError);
+
+    socket.connect();
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("connect_error", onConnectError);
+
+      socket.disconnect();
+    };
+  }, []);
+
+  const InstrumentForm = ({ onNext }: { onNext: () => void }) => {
+    return (
+      <form
+        className="px-8 pb-8 pt-8 sm:px-10"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onNext();
+        }}
+      >
+        <div className="mb-6">
+          <h2 className="text-base font-bold text-[#1A1A2E]">
+            Instrument Details
+          </h2>
+          <p className="mt-1 text-sm text-[#5C5C70]">
+            Provide the details exactly as they appear on the manufacturer's
+            documentation.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <FormField label="Instrument Category">
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setInstrumentSubCategory("");
+              }}
+              className={`${fieldClassName} w-full px-3 outline-none`}
+            >
+              <option value="">Select a category</option>
+
+              {Object.entries(categories).map(([key]) => (
+                <option key={key} value={key}>
+                  {key}
+                </option>
+              ))}
+            </select>
+
+            {selectedCategory && (
+              <select
+                value={instrumentSubCategory}
+                onChange={(e) => setInstrumentSubCategory(e.target.value)}
+                className={`${fieldClassName} w-full px-3 outline-none mt-2`}
+              >
+                <option value="">Select a subcategory</option>
+
+                {categories[selectedCategory as keyof typeof categories].map(
+                  (subcategory) => (
+                    <option key={subcategory} value={subcategory}>
+                      {subcategory}
+                    </option>
+                  ),
+                )}
+              </select>
+            )}
+          </FormField>
+
+          <FormField label="Manufacturer Name">
+            <Input
+              defaultValue="Gilbarco Veeder-Root"
+              className={fieldClassName}
+              onChange={(e) => setManufacturerName(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label="Model Number">
+            <Input
+              defaultValue="CNG-Advantage-2025"
+              className={fieldClassName}
+              onChange={(e) => setModelNo(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label="Instrument Serial Number">
+            <Input
+              defaultValue="SN-8849201-MH"
+              className={fieldClassName}
+              onChange={(e) => setInstrumentSerialNumber(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label="Accuracy Class">
+            <select
+              defaultValue="class-ii"
+              className={`${fieldClassName} w-full px-3 outline-none`}
+              onChange={(e) => setAccuracyClass(e.target.value as Accclass)}
+            >
+              <option value="class-i">Class I</option>
+              <option value="class-ii">Class II</option>
+              <option value="class-iii">Class III</option>
+              <option value="class-iiii">Class IIII</option>
+            </select>
+          </FormField>
+
+          <FormField label="Maximum Capacity / Flow Rate">
+            <Input
+              defaultValue="50 kg/min"
+              className={fieldClassName}
+              onChange={(e) => setMetric(e.target.value)}
+            />
+          </FormField>
+        </div>
+
+        <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
+          {/* <Button
+          type="button"
+          variant="ghost"
+          className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
+        >
+          Save as Draft
+        </Button> */}
+          <Button
+            type="submit"
+            className="h-11 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]"
+          >
+            Next: Location &amp; Documents
+          </Button>
+        </div>
+      </form>
+    );
+  };
+
+  const LocationDocumentsForm = ({ onBack }: { onBack: () => void }) => {
+    const getLocation = () => {
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+
+          console.log(position.coords.accuracy);
+
+          setCoordinates(`${latitude}, ${longitude}`);
+        },
+        (error) => {
+          console.error(error);
+          alert("Unable to get your location.");
+        },
+      );
+    };
+
+    return (
+      <form className="px-8 pb-8 pt-8 sm:px-10" onSubmit={submitApplication}>
+        <div className="mb-6">
+          <h2 className="text-base font-bold text-[#1A1A2E]">
+            Location & Documents
+          </h2>
+          <p className="mt-1 text-sm text-[#5C5C70]">
+            Provide the physical installation address and upload all required
+            compliance documents.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <FormField label="Installation Address (Line 1)">
+            <Input
+              defaultValue="Jio-BP Station, BKC"
+              className={fieldClassName}
+              onChange={(e) => setAddress(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label="State / UT">
+            <select
+              defaultValue="MH"
+              className={`${fieldClassName} w-full px-3 outline-none`}
+              onChange={(e) => setState(e.target.value)}
+            >
+              {statesAndUnionTerritories.map((state) => (
+                <option key={state.value} value={state.value}>
+                  {state.label}
+                </option>
+              ))}
+            </select>
+          </FormField>
+
+          <FormField label="Pincode">
+            <Input
+              defaultValue="400051"
+              className={fieldClassName}
+              onChange={(e) => setPincode(Number(e.target.value))}
+            />
+          </FormField>
+
+          <FormField label="Geo-Coordinates (Lat, Long)">
+            <div className="flex gap-2">
+              <Input
+                value={coordinates}
+                onChange={(e) => setCoordinates(e.target.value)}
+                placeholder="Latitude, Longitude"
+                className={fieldClassName}
+              />
+
+              <Button
+                type="button"
+                onClick={getLocation}
+                className="h-11 whitespace-nowrap"
+              >
+                Use My Location
+              </Button>
+            </div>
+          </FormField>
+
+          <FormField label="Manufacturer Invoice / Import Doc">
+            <Input
+              type="file"
+              className={`${fieldClassName} py-2`}
+              onChange={(e) =>
+                setManufacturerInvoice(e.target.files?.[0] ?? null)
+              }
+            />
+          </FormField>
+
+          <FormField label="Previous Certificate (If Renewal)">
+            <Input
+              type="file"
+              className={`${fieldClassName} py-2`}
+              onChange={(e) => setPrevCertificate(e.target.files?.[0] ?? null)}
+            />
+          </FormField>
+        </div>
+
+        <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
+          <Button
+            type="button"
+            onClick={onBack}
+            variant="ghost"
+            className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
+          >
+            Back
+          </Button>
+          <Button
+            type="submit"
+            className="h-11 rounded-lg bg-[#0B3D91] px-5 font-bold text-white shadow-none hover:bg-[#082b66]"
+          >
+            Submit Application
+          </Button>
+        </div>
+      </form>
+    );
+  };
+
+  const submitApplication = () => {
+    const lat = Number(coordinates.split(",")[0]);
+    const long = Number(coordinates.split(",")[1]);
+
+    if (!accuracyClass) {
+      alert("Please select an accuracy class");
+      return;
+    }
+
+    if (pincode === null) {
+      alert("Please enter a pincode");
+      return;
+    }
+
+    const payload: VerificationForm = {
+      instrumentCategory: selectedCategory,
+      instrumentSubCategory,
+      modelNo,
+      accuracyClass,
+      manufacturerName,
+      instrumentSerialNumber,
+      metric,
+      address,
+      pincode,
+      state,
+      lat,
+      long,
+    };
+
+    console.log(`Sent Data`, payload);
+
+    socket.emit("message", {
+      data: payload,
+    });
+  };
 
   return (
     <DashboardLayout role="business">
@@ -176,225 +534,3 @@ export default function NewApplication() {
     </DashboardLayout>
   );
 }
-
-const InstrumentForm = ({ onNext }: { onNext: () => void }) => {
-  const [selectedCategory, setSelectedCategory] = useState("");
-
-  return (
-    <form
-      className="px-8 pb-8 pt-8 sm:px-10"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onNext();
-      }}
-    >
-      <div className="mb-6">
-        <h2 className="text-base font-bold text-[#1A1A2E]">
-          Instrument Details
-        </h2>
-        <p className="mt-1 text-sm text-[#5C5C70]">
-          Provide the details exactly as they appear on the manufacturer's
-          documentation.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <FormField label="Instrument Category">
-          <select
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            defaultValue="Energy Gas and Fuel"
-            className={`${fieldClassName} w-full px-3 outline-none`}
-          >
-            <option value="" disabled>
-              Select a category
-            </option>
-            {Object.entries(categories).map(([key]) => (
-              <option key={key} value={key}>
-                {key}
-              </option>
-            ))}
-          </select>
-          {selectedCategory && (
-            <select
-              className={`${fieldClassName} w-full px-3 outline-none mt-2`}
-              defaultValue="Petrol, Diesel, CNG, LNG & Hydrogen Fuel Dispensers"
-            >
-              <option value="" disabled>
-                Select a subcategory
-              </option>
-              {categories[selectedCategory as keyof typeof categories].map(
-                (subcategory) => (
-                  <option key={subcategory} value={subcategory}>
-                    {subcategory}
-                  </option>
-                ),
-              )}
-            </select>
-          )}
-        </FormField>
-
-        <FormField label="Manufacturer Name">
-          <Input
-            defaultValue="Gilbarco Veeder-Root"
-            className={fieldClassName}
-          />
-        </FormField>
-
-        <FormField label="Model Number">
-          <Input defaultValue="CNG-Advantage-2025" className={fieldClassName} />
-        </FormField>
-
-        <FormField label="Instrument Serial Number">
-          <Input defaultValue="SN-8849201-MH" className={fieldClassName} />
-        </FormField>
-
-        <FormField label="Accuracy Class">
-          <select
-            defaultValue="class-ii"
-            className={`${fieldClassName} w-full px-3 outline-none`}
-          >
-            <option value="class-i">Class I</option>
-            <option value="class-ii">Class II</option>
-            <option value="class-iii">Class III</option>
-            <option value="class-iiii">Class IIII</option>
-          </select>
-        </FormField>
-
-        <FormField label="Maximum Capacity / Flow Rate">
-          <Input defaultValue="50 kg/min" className={fieldClassName} />
-        </FormField>
-      </div>
-
-      <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
-        {/* <Button
-          type="button"
-          variant="ghost"
-          className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
-        >
-          Save as Draft
-        </Button> */}
-        <Button
-          type="submit"
-          className="h-11 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]"
-        >
-          Next: Location &amp; Documents
-        </Button>
-      </div>
-    </form>
-  );
-};
-
-const LocationDocumentsForm = ({ onBack }: { onBack: () => void }) => {
-  const [coordinates, setCoordinates] = useState("");
-
-  const getLocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-
-        console.log(position.coords.accuracy);
-
-        setCoordinates(`${latitude}, ${longitude}`);
-      },
-      (error) => {
-        console.error(error);
-        alert("Unable to get your location.");
-      },
-    );
-  };
-
-  return (
-    <form
-      className="px-8 pb-8 pt-8 sm:px-10"
-      onSubmit={(event) => {
-        event.preventDefault();
-        alert("Application Submitted Successfully for Prototype!");
-      }}
-    >
-      <div className="mb-6">
-        <h2 className="text-base font-bold text-[#1A1A2E]">
-          Location & Documents
-        </h2>
-        <p className="mt-1 text-sm text-[#5C5C70]">
-          Provide the physical installation address and upload all required
-          compliance documents.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <FormField label="Installation Address (Line 1)">
-          <Input
-            defaultValue="Jio-BP Station, BKC"
-            className={fieldClassName}
-          />
-        </FormField>
-
-        <FormField label="State / UT">
-          <select
-            defaultValue="MH"
-            className={`${fieldClassName} w-full px-3 outline-none`}
-          >
-            {statesAndUnionTerritories.map((state) => (
-              <option key={state.value} value={state.value}>
-                {state.label}
-              </option>
-            ))}
-          </select>
-        </FormField>
-
-        <FormField label="Pincode">
-          <Input defaultValue="400051" className={fieldClassName} />
-        </FormField>
-
-        <FormField label="Geo-Coordinates (Lat, Long)">
-          <div className="flex gap-2">
-            <Input
-              value={coordinates}
-              onChange={(e) => setCoordinates(e.target.value)}
-              placeholder="Latitude, Longitude"
-              className={fieldClassName}
-            />
-
-            <Button
-              type="button"
-              onClick={getLocation}
-              className="h-11 whitespace-nowrap"
-            >
-              Use My Location
-            </Button>
-          </div>
-        </FormField>
-
-        <FormField label="Manufacturer Invoice / Import Doc">
-          <Input type="file" className={`${fieldClassName} py-2`} />
-        </FormField>
-
-        <FormField label="Previous Certificate (If Renewal)">
-          <Input type="file" className={`${fieldClassName} py-2`} />
-        </FormField>
-      </div>
-
-      <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
-        <Button
-          type="button"
-          onClick={onBack}
-          variant="ghost"
-          className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
-        >
-          Back
-        </Button>
-        <Button
-          type="submit"
-          className="h-11 rounded-lg bg-[#0B3D91] px-5 font-bold text-white shadow-none hover:bg-[#082b66]"
-        >
-          Submit Application
-        </Button>
-      </div>
-    </form>
-  );
-};

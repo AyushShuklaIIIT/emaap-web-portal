@@ -415,8 +415,10 @@ export default function NewApplication() {
               type="file"
               className={`${fieldClassName} py-2`}
               onChange={(e) => {
-                setManufacturerInvoice(e.target.files?.[0] ?? null);
-                console.log(manufacturerInvoice);
+                const file = e.target.files?.[0] ?? null;
+                setManufacturerInvoice(file);
+                console.log("Previous Certificate:", prevCertificate);
+                console.log("Manufacturer Certificate", manufacturerInvoice);
               }}
             />
             {manufacturerInvoice && (
@@ -431,8 +433,10 @@ export default function NewApplication() {
               type="file"
               className={`${fieldClassName} py-2`}
               onChange={(e) => {
-                setPrevCertificate(e.target.files?.[0] ?? null);
-                console.log(prevCertificate);
+                const file = e.target.files?.[0] ?? null;
+                setPrevCertificate(file);
+                console.log("Previous Certificate:", prevCertificate);
+                console.log("Manufacturer Certificate", manufacturerInvoice);
               }}
             />
             {prevCertificate && (
@@ -513,21 +517,9 @@ export default function NewApplication() {
       const formData = new FormData();
       formData.append("manufacturerFile", manufacturerInvoice);
       formData.append("applicationId", applicationId);
-      try {
-        await fetch("http://localhost:8008/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        console.log("File uploaded successfully");
-      } catch (error) {
-        console.error("File upload failed", error);
+      if (prevCertificate) {
+        formData.append("prevCertificateFile", prevCertificate);
       }
-    }
-
-    if (prevCertificate) {
-      const formData = new FormData();
-      formData.append("prevCertificateFile", prevCertificate);
-      formData.append("applicationId", applicationId);
       try {
         await fetch("http://localhost:8008/api/upload", {
           method: "POST",

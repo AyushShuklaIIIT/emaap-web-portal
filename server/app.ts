@@ -7,6 +7,16 @@ import { createServer as createHttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 import { router as uploadRouter } from "./routes/app.routes";
 
+interface CertificateData {
+  instrumentSerialNumber: string;
+  instrumentCategory?: string;
+  lat: number;
+  long: number;
+  sealImageBase64: string;
+  hash: string;
+  certificateId: string;
+}
+
 export function createServer() {
   const app = express();
   const httpServer = createHttpServer(app);
@@ -27,7 +37,7 @@ export function createServer() {
   app.use("/uploads", express.static("uploads"));
   app.use("/api", uploadRouter);
 
-  let latestCertificate: any = null;
+  const certificates = new Map<string, CertificateData>();
 
   io.on("connection", (socket) => {
     console.log(`socket connected:${socket.id}`);
@@ -62,8 +72,7 @@ export function createServer() {
         issueDate: issueTimestamp,
         hash: realHash,
       };
-
-      latestCertificate = finalCertPayload;
+      certificates.set(finalCertPayload.certificateId, finalCertPayload);
 
       io.emit("certificate_generated", finalCertPayload);
     });
@@ -76,13 +85,24 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  app.get("/verify", (req, res) => {
+  app.get("/verify/:certificateId", (req, res) => {
+    const { certificateId } = req.params;
+
+    const latestCertificate: CertificateData | undefined =
+      certificates.get(certificateId);
+
     if (!latestCertificate) {
       return res
         .status(404)
         .send(
           "<h2 style='text-align:center; font-family:sans-serif; margin-top:50px;'>No certificate generated yet.</h2>",
         );
+    }
+
+    // Safely check and format the Base64 string
+    let imageSrc = latestCertificate.sealImageBase64 || "";
+    if (imageSrc && !imageSrc.startsWith("data:image/")) {
+      imageSrc = `data:image/jpeg;base64,${imageSrc}`;
     }
 
     const htmlPage = `
@@ -113,14 +133,20 @@ export function createServer() {
           </div>
   
           <h3 style="margin-top: 25px; color: #0B3D91;">Live Physical Seal Evidence:</h3>
-          <!-- This will display the Base64 image sent from Flutter -->
-          <img src="${latestCertificate.sealImageBase64}" alt="Tamper Seal Evidence" />
+          <!-- Updated to use the sanitized imageSrc -->
+          <img src="${imageSrc}" alt="Tamper Seal Evidence" />
         </div>
       </body>
       </html>
     `;
 
     res.send(htmlPage);
+  });
+
+  app.get("/api/certificates", (_req, res) => {
+    const certificatesList = Array.from(certificates.values());
+
+    res.json(certificatesList);
   });
 
   return { app, httpServer, io };

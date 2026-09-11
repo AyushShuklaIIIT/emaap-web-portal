@@ -539,7 +539,7 @@ export default function NewApplication() {
   };
 
   if (certificateData) {
-    const verificationUrl = `https://thinness-synthetic-unsworn.ngrok-free.dev/verify?certId=${certificateData.certificateId}`;
+    const verificationUrl = `https://batch-trickily-dealt.ngrok-free.dev/verify/${certificateData.certificateId}`;
 
     return (
       <DashboardLayout role="business">

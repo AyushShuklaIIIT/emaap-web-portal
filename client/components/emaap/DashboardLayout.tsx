@@ -5,6 +5,7 @@ import {
   FilePlus2,
   Boxes,
   Wallet,
+  QrCode,
   LifeBuoy,
   ListChecks,
   Building2,
@@ -45,9 +46,14 @@ const NAV: Record<
 > = {
   business: [
     { label: "Dashboard", href: "/business/dashboard", icon: LayoutDashboard },
-    { label: "New Application", href: "/business/new-application", icon: FilePlus2 },
+    {
+      label: "New Application",
+      href: "/business/new-application",
+      icon: FilePlus2,
+    },
     { label: "My Instruments", href: "/business/instruments", icon: Boxes },
     { label: "Payments", href: "/business/payments", icon: Wallet },
+    { label: "QR Codes", href: "/business/qr-codes", icon: QrCode },
     { label: "Helpdesk", href: "/business/helpdesk", icon: LifeBuoy },
   ],
   admin: [
@@ -111,7 +117,9 @@ export function DashboardLayout({
                 </Avatar>
                 <div className="hidden text-left leading-tight sm:block">
                   <div className="text-sm font-medium text-foreground">
-                    {role === "business" ? "Reliance Retail Ltd." : "Admin Controller"}
+                    {role === "business"
+                      ? "Reliance Retail Ltd."
+                      : "Admin Controller"}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {role === "business" ? "Business User" : "Administrator"}
@@ -122,12 +130,18 @@ export function DashboardLayout({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem asChild>
-                <Link to={`/${role}/settings`} className="flex items-center gap-2">
+                <Link
+                  to={`/${role}/settings`}
+                  className="flex items-center gap-2"
+                >
                   <User className="h-4 w-4" /> Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to={`/${role}/settings`} className="flex items-center gap-2">
+                <Link
+                  to={`/${role}/settings`}
+                  className="flex items-center gap-2"
+                >
                   <Settings className="h-4 w-4" /> Settings
                 </Link>
               </DropdownMenuItem>

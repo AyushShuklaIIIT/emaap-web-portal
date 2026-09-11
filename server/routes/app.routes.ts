@@ -7,7 +7,7 @@ const upload = multer({ dest: "uploads/" });
 interface Result {
   applicationId: string;
   manufacturerFileUrl: string;
-  prevCertificateFileUrl?: string;
+  prevCertificateFileUrl?: string | null;
 }
 
 router.post(
@@ -17,7 +17,6 @@ router.post(
     { name: "prevCertificateFile", maxCount: 1 },
   ]),
   (req, res) => {
-    console.log(req);
     if (!req.files) {
       console.log("no file uploaded");
       return res.status(400).json({
@@ -36,6 +35,7 @@ router.post(
       files["manufacturerFile"].length === 0
     ) {
       console.log("Manufacturer file is required");
+      console.log(files);
       return res.status(400).json({
         success: false,
         message: "Manufacturer file is required",

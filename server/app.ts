@@ -58,7 +58,7 @@ export function createServer() {
 
       io.emit("certificate_generated", {
         ...data,
-        certificateId: `CERT-${crypto.randomUUID}`,
+        certificateId: `CERT-${crypto.randomUUID()}`,
         issueDate: issueTimestamp,
         hash: realHash
       })

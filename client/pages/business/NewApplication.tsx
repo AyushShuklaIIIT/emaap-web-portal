@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormEvent, useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import { QRCodeCanvas } from "qrcode.react";
 
 const socket = io("http://localhost:8008", {
   autoConnect: false,
@@ -32,8 +33,8 @@ function FormField({
   label,
   children,
 }: {
-  label: string;
-  children: React.ReactNode;
+  readonly label: string;
+  readonly children: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -153,7 +154,8 @@ export default function NewApplication() {
   const [prevCertificate, setPrevCertificate] = useState<File | null>(null);
   const [connected, setConnected] = useState(false);
   const [socketId, setSocketId] = useState<string | undefined>();
-  const [message, setMessage] = useState("");
+
+  const [certificateData, setCertificateData] = useState<any>(null);
 
   useEffect(() => {
     const onConnect = () => {
@@ -179,10 +181,13 @@ export default function NewApplication() {
     };
 
     socket.on("reply", onReply);
-
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", onConnectError);
+    socket.on("certificate_generated", (data) => {
+      console.log("BOOM! Certificate received from LMO:", data);
+      setCertificateData(data);
+    });
 
     socket.connect();
 
@@ -191,6 +196,7 @@ export default function NewApplication() {
       socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onConnectError);
       socket.off("reply", onReply);
+      socket.off("certificate_generated");
 
       socket.disconnect();
     };
@@ -521,6 +527,101 @@ export default function NewApplication() {
     }
   };
 
+  if (certificateData) {
+    const verificationUrl = `https://YOUR_NGROK_URL.ngrok-free.app/verify?certId=${certificateData.certificateId}`;
+
+    return (
+      <DashboardLayout role="business">
+        <section className="mx-auto max-w-200 rounded-xl border border-[#1E8E3E] bg-white p-10 text-center shadow-lg">
+          <div className="mb-6 flex justify-center">
+            <div className="rounded-full bg-[#E8F5E9] p-4">
+              <svg
+                className="h-12 w-12 text-[#1E8E3E]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <h1 className="mb-2 text-3xl font-bold text-[#1A1A2E]">
+            Verification Complete
+          </h1>
+          <p className="mb-8 text-[#5C5C70]">
+            Digital Certificate generated securely via Legal Metrology
+            Authority.
+          </p>
+
+          <div className="mb-8 grid grid-cols-2 gap-8 rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-6 text-left">
+            <div>
+              <p className="mb-1 text-xs font-bold uppercase text-[#5C5C70]">
+                Certificate ID
+              </p>
+              <p className="font-semibold text-[#1A1A2E]">
+                {certificateData.certificateId}
+              </p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-bold uppercase text-[#5C5C70]">
+                Instrument
+              </p>
+              <p className="font-semibold text-[#1A1A2E]">
+                {certificateData.data?.instrumentCategory || "CNG Dispenser"}
+              </p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-bold uppercase text-[#5C5C70]">
+                Serial Number
+              </p>
+              <p className="font-semibold text-[#1A1A2E]">
+                {certificateData.data?.instrumentSerialNumber || "SN-8849201-MH"}
+              </p>
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-bold uppercase text-[#5C5C70]">
+                Cryptographic Hash (SHA-256)
+              </p>
+              <p className="truncate rounded bg-blue-50 p-1 font-mono text-xs text-[#0B3D91]">
+                {certificateData.hash}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#E0E0E0] bg-white p-6">
+            <h3 className="mb-4 font-bold text-[#0B3D91]">
+              Scan to Verify Physical Seal
+            </h3>
+            <QRCodeCanvas
+              value={verificationUrl}
+              size={200}
+              fgColor="#1A1A2E"
+              level="H"
+              marginSize={4}
+            />
+            <p className="mt-4 max-w-sm text-sm text-[#5C5C70]">
+              Judges: Please scan this QR code with your smartphone camera to
+              view the live geo-tagged seal evidence.
+            </p>
+          </div>
+
+          <Button
+            className="mt-8 bg-[#0B3D91] hover:bg-[#082b66]"
+            onClick={() => setCertificateData(null)}
+          >
+            Submit Another Application
+          </Button>
+        </section>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout role="business">
       <section className="mx-auto max-w-280 rounded-xl border border-[#E0E0E0] bg-white shadow-card">
@@ -533,6 +634,13 @@ export default function NewApplication() {
             {steps.map((step, index) => {
               const isActive = index <= currentStep;
               const isCurrent = index === currentStep;
+              let stepTextClass = "font-medium text-[#7B7F89]";
+              if (isActive) {
+                stepTextClass = "font-bold text-[#1A1A2E]";
+              }
+              if (isCurrent) {
+                stepTextClass = "font-bold text-[#0B3D91]";
+              }
               return (
                 <div
                   key={step}
@@ -549,13 +657,7 @@ export default function NewApplication() {
                       {index + 1}
                     </div>
                     <span
-                      className={`whitespace-nowrap text-sm ${
-                        isCurrent
-                          ? "font-bold text-[#0B3D91]"
-                          : isActive
-                            ? "font-bold text-[#1A1A2E]"
-                            : "font-medium text-[#7B7F89]"
-                      }`}
+                      className={`whitespace-nowrap text-sm ${stepTextClass}`}
                     >
                       {step}
                     </span>

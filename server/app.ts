@@ -5,6 +5,7 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { createServer as createHttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
+import { router as uploadRouter } from "./routes/app.routes";
 
 export function createServer() {
   const app = express();
@@ -18,24 +19,30 @@ export function createServer() {
     },
   });
 
+  app.set("io", io);
+
   // Middleware
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  app.use("/uploads", express.static("uploads"));
+
+  app.use("/api", uploadRouter);
+
   io.on("connection", (socket) => {
     console.log(`socket connected:${socket.id}`);
 
-    socket.on("message", (data) => {
+    socket.on("msg", (data) => {
       console.log(`Recieved data:${JSON.stringify(data)}`);
 
       socket.emit("reply", "Whatup");
     });
 
-    socket.on("msg", (data, callback) => {
-      console.log("Flutter sent:", data);
+    socket.on("data", (data) => {
+      console.log("Recieved data:", data);
 
-      socket.emit("reply", "Ground control 8008 to app");
+      socket.broadcast.emit("message", data);
     });
 
     socket.on("disconnect", (reason) => {

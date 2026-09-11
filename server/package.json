@@ -14,10 +14,12 @@
   "dependencies": {
     "cors": "^2.8.6",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.3.0",
     "nodemon": "^3.1.14",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
+    "@types/multer": "^2.2.0",
     "@types/socket.io": "^3.0.2",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"

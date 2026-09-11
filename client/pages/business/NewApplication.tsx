@@ -2,7 +2,7 @@ import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
 const socket = io("http://localhost:8008", {
@@ -11,6 +11,7 @@ const socket = io("http://localhost:8008", {
 
 type Accclass = "Class I" | "Class II" | "Class III" | "Class IIII";
 interface VerificationForm {
+  applicationId: string;
   instrumentCategory: string;
   instrumentSubCategory: string;
   modelNo: string;
@@ -134,17 +135,20 @@ export default function NewApplication() {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [instrumentSubCategory, setInstrumentSubCategory] = useState("");
-  const [modelNo, setModelNo] = useState("");
-  const [accuracyClass, setAccuracyClass] = useState<Accclass | null>(null);
-  const [manufacturerName, setManufacturerName] = useState("");
-  const [instrumentSerialNumber, setInstrumentSerialNumber] = useState("");
-  const [metric, setMetric] = useState("");
-  const [address, setAddress] = useState("");
-  const [pincode, setPincode] = useState<number | null>(null);
+  const [modelNo, setModelNo] = useState("CNG-Advantage-2025");
+  const [accuracyClass, setAccuracyClass] = useState<Accclass>("Class II");
+  const [manufacturerName, setManufacturerName] = useState(
+    "Gilbarco Veeder-Root",
+  );
+  const [instrumentSerialNumber, setInstrumentSerialNumber] =
+    useState("SN-8849201-MH");
+  const [metric, setMetric] = useState("50 kg/min");
+  const [address, setAddress] = useState("Jio-BP Station, BKC");
+  const [pincode, setPincode] = useState<number | null>(400051);
   const [manufacturerInvoice, setManufacturerInvoice] = useState<File | null>(
     null,
   );
-  const [state, setState] = useState("");
+  const [state, setState] = useState("MH");
   const [coordinates, setCoordinates] = useState("");
   const [prevCertificate, setPrevCertificate] = useState<File | null>(null);
   const [connected, setConnected] = useState(false);
@@ -170,9 +174,11 @@ export default function NewApplication() {
       console.error("Socket connection error:", error.message);
     };
 
-    socket.on("reply", (data) => {
+    const onReply = (data: unknown) => {
       console.log(JSON.stringify(data));
-    });
+    };
+
+    socket.on("reply", onReply);
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
@@ -184,6 +190,7 @@ export default function NewApplication() {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onConnectError);
+      socket.off("reply", onReply);
 
       socket.disconnect();
     };
@@ -248,7 +255,7 @@ export default function NewApplication() {
 
           <FormField label="Manufacturer Name">
             <Input
-              defaultValue="Gilbarco Veeder-Root"
+              value={manufacturerName}
               className={fieldClassName}
               onChange={(e) => setManufacturerName(e.target.value)}
             />
@@ -256,7 +263,7 @@ export default function NewApplication() {
 
           <FormField label="Model Number">
             <Input
-              defaultValue="CNG-Advantage-2025"
+              value={modelNo}
               className={fieldClassName}
               onChange={(e) => setModelNo(e.target.value)}
             />
@@ -264,7 +271,7 @@ export default function NewApplication() {
 
           <FormField label="Instrument Serial Number">
             <Input
-              defaultValue="SN-8849201-MH"
+              value={instrumentSerialNumber}
               className={fieldClassName}
               onChange={(e) => setInstrumentSerialNumber(e.target.value)}
             />
@@ -272,20 +279,20 @@ export default function NewApplication() {
 
           <FormField label="Accuracy Class">
             <select
-              defaultValue="class-ii"
+              value={accuracyClass}
               className={`${fieldClassName} w-full px-3 outline-none`}
               onChange={(e) => setAccuracyClass(e.target.value as Accclass)}
             >
-              <option value="class-i">Class I</option>
-              <option value="class-ii">Class II</option>
-              <option value="class-iii">Class III</option>
-              <option value="class-iiii">Class IIII</option>
+              <option value="Class I">Class I</option>
+              <option value="Class II">Class II</option>
+              <option value="Class III">Class III</option>
+              <option value="Class IIII">Class IIII</option>
             </select>
           </FormField>
 
           <FormField label="Maximum Capacity / Flow Rate">
             <Input
-              defaultValue="50 kg/min"
+              value={metric}
               className={fieldClassName}
               onChange={(e) => setMetric(e.target.value)}
             />
@@ -334,7 +341,10 @@ export default function NewApplication() {
     };
 
     return (
-      <form className="px-8 pb-8 pt-8 sm:px-10" onSubmit={submitApplication}>
+      <form
+        className="px-8 pb-8 pt-8 sm:px-10"
+        onSubmit={(e) => submitApplication(e)}
+      >
         <div className="mb-6">
           <h2 className="text-base font-bold text-[#1A1A2E]">
             Location & Documents
@@ -348,7 +358,7 @@ export default function NewApplication() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormField label="Installation Address (Line 1)">
             <Input
-              defaultValue="Jio-BP Station, BKC"
+              value={address}
               className={fieldClassName}
               onChange={(e) => setAddress(e.target.value)}
             />
@@ -356,7 +366,7 @@ export default function NewApplication() {
 
           <FormField label="State / UT">
             <select
-              defaultValue="MH"
+              value={state}
               className={`${fieldClassName} w-full px-3 outline-none`}
               onChange={(e) => setState(e.target.value)}
             >
@@ -370,7 +380,7 @@ export default function NewApplication() {
 
           <FormField label="Pincode">
             <Input
-              defaultValue="400051"
+              value={pincode}
               className={fieldClassName}
               onChange={(e) => setPincode(Number(e.target.value))}
             />
@@ -434,9 +444,14 @@ export default function NewApplication() {
     );
   };
 
-  const submitApplication = () => {
-    const lat = Number(coordinates.split(",")[0]);
-    const long = Number(coordinates.split(",")[1]);
+  const submitApplication = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const applicationId = crypto.randomUUID();
+
+    const [latitude, longitude] = coordinates
+      .split(",")
+      .map((value) => Number(value.trim()));
 
     if (!accuracyClass) {
       alert("Please select an accuracy class");
@@ -448,7 +463,13 @@ export default function NewApplication() {
       return;
     }
 
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      alert("Please enter valid latitude and longitude coordinates");
+      return;
+    }
+
     const payload: VerificationForm = {
+      applicationId,
       instrumentCategory: selectedCategory,
       instrumentSubCategory,
       modelNo,
@@ -459,15 +480,45 @@ export default function NewApplication() {
       address,
       pincode,
       state,
-      lat,
-      long,
+      lat: latitude,
+      long: longitude,
     };
 
     console.log(`Sent Data`, payload);
 
-    socket.emit("message", {
+    socket.emit("data", {
       data: payload,
     });
+
+    if (manufacturerInvoice) {
+      const formData = new FormData();
+      formData.append("manufacturerFile", manufacturerInvoice);
+      formData.append("applicationId", applicationId);
+      try {
+        await fetch("http://localhost:8008/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        console.log("File uploaded successfully");
+      } catch (error) {
+        console.error("File upload failed", error);
+      }
+    }
+
+    if (prevCertificate) {
+      const formData = new FormData();
+      formData.append("prevCertificateFile", prevCertificate);
+      formData.append("applicationId", applicationId);
+      try {
+        await fetch("http://localhost:8008/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        console.log("File uploaded successfully");
+      } catch (error) {
+        console.error("File upload failed", error);
+      }
+    }
   };
 
   return (

@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 
+const backendUrl = (import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8008").replace(
+  /\/$/,
+  "",
+);
+
 interface Certificate {
   certificateId: string;
   instrumentCategory?: string;
@@ -17,7 +22,7 @@ export default function QRCodes() {
   useEffect(() => {
     const fetchCertificates = async () => {
       try {
-        const response = await fetch("http://localhost:8008/api/certificates");
+        const response = await fetch(`${backendUrl}/api/certificates`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch certificates");
@@ -59,7 +64,7 @@ export default function QRCodes() {
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {certificates.map((certificate) => {
-              const verificationUrl = `https://batch-trickily-dealt.ngrok-free.dev/verify/${certificate.certificateId}`;
+              const verificationUrl = `${backendUrl}/verify/${certificate.certificateId}`;
 
               return (
                 <div

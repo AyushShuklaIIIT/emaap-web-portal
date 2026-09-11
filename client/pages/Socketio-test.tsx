@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:8008", {
+const socket = io(import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8008", {
   autoConnect: false,
 });
 

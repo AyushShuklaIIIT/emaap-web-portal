@@ -7,7 +7,12 @@ import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
 import { SuccessPopup } from "../../components/ui/SuccessPopUp";
 
-const socket = io("http://localhost:8008", {
+const backendUrl = (import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8008").replace(
+  /\/$/,
+  "",
+);
+
+const socket = io(backendUrl, {
   autoConnect: false,
 });
 
@@ -527,7 +532,7 @@ export default function NewApplication() {
       formData.append("prevCertificateFile", prevCertificate);
     }
     try {
-      await fetch("http://localhost:8008/api/upload", {
+      await fetch(`${backendUrl}/api/upload`, {
         method: "POST",
         body: formData,
       });
@@ -539,7 +544,7 @@ export default function NewApplication() {
   };
 
   if (certificateData) {
-    const verificationUrl = `https://batch-trickily-dealt.ngrok-free.dev/verify/${certificateData.certificateId}`;
+    const verificationUrl = `${backendUrl}/verify/${certificateData.certificateId}`;
 
     return (
       <DashboardLayout role="business">

@@ -5,7 +5,7 @@ import path from "node:path";
 export default defineConfig({
   build: {
     lib: {
-      entry: path.resolve(__dirname, "server/node-build.ts"),
+      entry: path.resolve(__dirname, "server/server.ts"),
       name: "server",
       fileName: "production",
       formats: ["es"],
@@ -32,6 +32,8 @@ export default defineConfig({
         // External dependencies that should not be bundled
         "express",
         "cors",
+        "multer",
+        "socket.io",
       ],
       output: {
         format: "es",

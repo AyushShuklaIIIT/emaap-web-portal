@@ -45,7 +45,7 @@ router.post(
     }
 
     const manufacturerFilename = files["manufacturerFile"][0].filename;
-    const manufacturerFileUrl = `http://localhost:8008/uploads/${manufacturerFilename}`;
+    const manufacturerFileUrl = `http://localhost:${process.env.PORT}/uploads/${manufacturerFilename}`;
 
     let prevCertificateFileUrl = null;
     if (
@@ -53,7 +53,7 @@ router.post(
       files["prevCertificateFile"].length > 0
     ) {
       const prevCertFilename = files["prevCertificateFile"][0].filename;
-      prevCertificateFileUrl = `http://localhost:8008/uploads/${prevCertFilename}`;
+      prevCertificateFileUrl = `http://localhost:${process.env.PORT}/uploads/${prevCertFilename}`;
     }
 
     const io = req.app.get("io");

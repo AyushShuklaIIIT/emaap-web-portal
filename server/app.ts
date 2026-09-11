@@ -20,10 +20,14 @@ interface CertificateData {
 export function createServer() {
   const app = express();
   const httpServer = createHttpServer(app);
+  const allowedOrigins = process.env.FRONTEND_URL?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const corsOrigin = allowedOrigins?.length ? allowedOrigins : "*";
 
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: "*",
+      origin: corsOrigin,
       methods: ["GET", "POST"],
     },
   });
@@ -31,7 +35,7 @@ export function createServer() {
   app.set("io", io);
 
   // Middleware
-  app.use(cors());
+  app.use(cors({ origin: corsOrigin }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use("/uploads", express.static("uploads"));

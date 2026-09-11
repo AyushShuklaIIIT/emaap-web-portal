@@ -1,0 +1,12 @@
+services:
+  - type: web
+    runtime: node
+    name: emaap-backend
+    buildCommand: npm install && npm run build:server
+    startCommand: npm start
+    healthCheckPath: /api/ping
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: FRONTEND_URL
+        sync: false

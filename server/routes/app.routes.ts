@@ -1,6 +1,5 @@
-import express from "express";
 import multer from "multer";
-import { Request, Response } from "express";
+import express from "express";
 
 export const router = express.Router();
 const upload = multer({ dest: "uploads/" });
@@ -32,8 +31,7 @@ router.post(
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
     if (
-      !files ||
-      !files["manufacturerFile"] ||
+      !files?.["manufacturerFile"] ||
       files["manufacturerFile"].length === 0
     ) {
       console.log("Manufacturer file is required");

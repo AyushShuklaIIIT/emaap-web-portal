@@ -44,11 +44,11 @@ function ContactCard({
   subtext,
   children,
 }: {
-  icon: typeof Phone;
-  title: string;
-  value: string;
-  subtext: string;
-  children?: React.ReactNode;
+  readonly icon: typeof Phone;
+  readonly title: string;
+  readonly value: string;
+  readonly subtext: string;
+  readonly children?: React.ReactNode;
 }) {
   return (
     <div className="rounded-lg border border-[#E0E0E0] bg-white p-5 shadow-card">

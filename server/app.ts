@@ -1,8 +1,9 @@
 import "dotenv/config";
 import express from "express";
+import crypto from 'node:crypto'
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
-import { createServer as createHttpServer } from "http";
+import { createServer as createHttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 
 export function createServer() {
@@ -40,6 +41,21 @@ export function createServer() {
     socket.on("disconnect", (reason) => {
       console.log(reason);
     });
+
+    socket.on("inspection_approved", (data) => {
+      console.log("Tanishq ne approve kar diya hai! Aage jaane do...")
+      const issueTimestamp = new Date().toISOString()
+      const rawDataToHash = `${data.instrumentSerialNumber}|${data.lat},${data.long}|${issueTimestamp}|LMO-MP-1048|${data.sealImageBase64}`;
+      const realHash = crypto.createHash("sha256").update(rawDataToHash).digest("hex");
+      console.log("Generated Cryptographic Hash:", realHash);
+
+      io.emit("certificate_generated", {
+        ...data,
+        certificateId: `CERT-${crypto.randomUUID}`,
+        issueDate: issueTimestamp,
+        hash: realHash
+      })
+    })
   });
 
   // Example API routes

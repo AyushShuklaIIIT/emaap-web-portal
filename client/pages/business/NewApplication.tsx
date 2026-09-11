@@ -155,8 +155,6 @@ export default function NewApplication() {
   const [connected, setConnected] = useState(false);
   const [socketId, setSocketId] = useState<string | undefined>();
 
-  const [certificateData, setCertificateData] = useState<any>(null);
-
   useEffect(() => {
     const onConnect = () => {
       console.log("Socket connected:", socket.id);
@@ -415,18 +413,32 @@ export default function NewApplication() {
             <Input
               type="file"
               className={`${fieldClassName} py-2`}
-              onChange={(e) =>
-                setManufacturerInvoice(e.target.files?.[0] ?? null)
-              }
+              onChange={(e) => {
+                setManufacturerInvoice(e.target.files?.[0] ?? null);
+                console.log(manufacturerInvoice);
+              }}
             />
+            {manufacturerInvoice && (
+              <p className="mt-2 text-sm text-gray-600">
+                Selected file: {manufacturerInvoice.name}
+              </p>
+            )}
           </FormField>
 
           <FormField label="Previous Certificate (If Renewal)">
             <Input
               type="file"
               className={`${fieldClassName} py-2`}
-              onChange={(e) => setPrevCertificate(e.target.files?.[0] ?? null)}
+              onChange={(e) => {
+                setPrevCertificate(e.target.files?.[0] ?? null);
+                console.log(prevCertificate);
+              }}
             />
+            {prevCertificate && (
+              <p className="mt-2 text-sm text-gray-600">
+                Selected file: {prevCertificate.name}
+              </p>
+            )}
           </FormField>
         </div>
 
@@ -581,7 +593,8 @@ export default function NewApplication() {
                 Serial Number
               </p>
               <p className="font-semibold text-[#1A1A2E]">
-                {certificateData.data?.instrumentSerialNumber || "SN-8849201-MH"}
+                {certificateData.data?.instrumentSerialNumber ||
+                  "SN-8849201-MH"}
               </p>
             </div>
             <div>

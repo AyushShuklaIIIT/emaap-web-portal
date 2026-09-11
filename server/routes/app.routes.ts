@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import { Request, Response } from "express";
 
 export const router = express.Router();
 const upload = multer({ dest: "uploads/" });
@@ -10,6 +11,7 @@ interface Result {
   prevCertificateFileUrl?: string | null;
 }
 
+// /api
 router.post(
   "/upload",
   upload.fields([

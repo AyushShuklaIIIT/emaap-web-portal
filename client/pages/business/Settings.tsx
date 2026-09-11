@@ -37,7 +37,7 @@ export default function BusinessSettings() {
 
   return (
     <DashboardLayout role="business">
-      <section className="mx-auto max-w-[1120px] rounded-xl border border-[#E0E0E0] bg-white shadow-card">
+      <section className="mx-auto max-w-280 rounded-xl border border-[#E0E0E0] bg-white shadow-card">
         <div className="px-7 pb-6 pt-7 sm:px-9">
           <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
             Settings &amp; Corporate Profile
@@ -51,12 +51,15 @@ export default function BusinessSettings() {
               RR
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-bold text-[#1A1A2E]">Reliance Retail Ltd.</h2>
+              <h2 className="text-lg font-bold text-[#1A1A2E]">
+                Reliance Retail Ltd.
+              </h2>
               <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm text-[#5C5C70]">
                 <span>Corporate ID (CIN): L01100GJ1999PLC036018</span>
                 <span className="hidden text-[#B1B4BC] sm:inline">•</span>
                 <span className="inline-flex items-center gap-1 font-medium text-[#1E8E3E]">
-                  Status: KYC Verified <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                  Status: KYC Verified{" "}
+                  <Check className="h-3.5 w-3.5" strokeWidth={3} />
                 </span>
               </p>
             </div>
@@ -73,24 +76,37 @@ export default function BusinessSettings() {
               Nominated Director under Legal Metrology Act
             </h3>
             <p className="mt-1 text-sm text-[#5C5C70]">
-              As per Sec 49 of the LM Act, this individual is officially responsible for metrological compliance.
+              As per Sec 49 of the LM Act, this individual is officially
+              responsible for metrological compliance.
             </p>
             <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
               <ReadOnlyField label="Director Name" value="Vikram Sharma" />
-              <ReadOnlyField label="Director Identification Number (DIN)" value="08341209" />
-              <ReadOnlyField label="Registered Email" value="compliance@relianceretail.com" />
+              <ReadOnlyField
+                label="Director Identification Number (DIN)"
+                value="08341209"
+              />
+              <ReadOnlyField
+                label="Registered Email"
+                value="compliance@relianceretail.com"
+              />
               <ReadOnlyField label="Mobile Number" value="+91-9892012345" />
             </div>
           </section>
 
           <section>
-            <h3 className="text-base font-bold text-[#0B3D91]">API &amp; ERP Connectivity</h3>
+            <h3 className="text-base font-bold text-[#0B3D91]">
+              API &amp; ERP Connectivity
+            </h3>
             <p className="mt-1 text-sm text-[#5C5C70]">
-              Connect your SAP/Oracle ERP system to automatically fetch digital certificates and sync renewal dates.
+              Connect your SAP/Oracle ERP system to automatically fetch digital
+              certificates and sync renewal dates.
             </p>
             <div className="mt-5 flex flex-col gap-4 rounded-lg border border-[#E0E0E0] bg-white p-4 sm:flex-row sm:items-end">
               <div className="flex-1">
-                <Label htmlFor="api-key" className="text-sm font-bold text-[#5C5C70]">
+                <Label
+                  htmlFor="api-key"
+                  className="text-sm font-bold text-[#5C5C70]"
+                >
                   Live API Key
                 </Label>
                 <Input
@@ -112,7 +128,9 @@ export default function BusinessSettings() {
               </Button>
             </div>
             <div className="mt-4 flex items-center justify-between gap-4">
-              <span className="text-sm text-[#1A1A2E]">Enable Webhook Notifications for Status Changes</span>
+              <span className="text-sm text-[#1A1A2E]">
+                Enable Webhook Notifications for Status Changes
+              </span>
               <Toggle
                 checked={webhookEnabled}
                 onCheckedChange={setWebhookEnabled}
@@ -122,7 +140,9 @@ export default function BusinessSettings() {
           </section>
 
           <section>
-            <h3 className="text-base font-bold text-[#0B3D91]">Alerts &amp; Notifications</h3>
+            <h3 className="text-base font-bold text-[#0B3D91]">
+              Alerts &amp; Notifications
+            </h3>
             <div className="mt-2 rounded-lg border border-[#E0E0E0] px-4">
               <PreferenceToggle
                 label="Certificate Expiry Alerts (SMS & Email 60, 30, and 7 days prior)"
@@ -143,7 +163,10 @@ export default function BusinessSettings() {
           </section>
 
           <div className="flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
-            <Button variant="ghost" className="font-semibold text-[#5C5C70] hover:bg-muted hover:text-[#1A1A2E]">
+            <Button
+              variant="ghost"
+              className="font-semibold text-[#5C5C70] hover:bg-muted hover:text-[#1A1A2E]"
+            >
               Cancel
             </Button>
             <Button className="h-10 rounded-lg bg-[#0B3D91] px-5 font-bold text-white shadow-none hover:bg-[#082F70]">

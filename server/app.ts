@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express from "express";
-import crypto from 'node:crypto';
+import crypto from "node:crypto";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { createServer as createHttpServer } from "node:http";
@@ -50,14 +50,17 @@ export function createServer() {
       console.log("Tanishq ne approve kar diya hai! Aage jaane do...");
       const issueTimestamp = new Date().toISOString();
       const rawDataToHash = `${data.instrumentSerialNumber}|${data.lat},${data.long}|${issueTimestamp}|LMO-MP-1048|${data.sealImageBase64}`;
-      const realHash = crypto.createHash("sha256").update(rawDataToHash).digest("hex");
+      const realHash = crypto
+        .createHash("sha256")
+        .update(rawDataToHash)
+        .digest("hex");
       console.log("Generated Cryptographic Hash:", realHash);
 
       const finalCertPayload = {
         ...data,
         certificateId: `CERT-${crypto.randomUUID()}`,
         issueDate: issueTimestamp,
-        hash: realHash
+        hash: realHash,
       };
 
       latestCertificate = finalCertPayload;
@@ -75,7 +78,11 @@ export function createServer() {
 
   app.get("/verify", (req, res) => {
     if (!latestCertificate) {
-      return res.status(404).send("<h2 style='text-align:center; font-family:sans-serif; margin-top:50px;'>No certificate generated yet.</h2>");
+      return res
+        .status(404)
+        .send(
+          "<h2 style='text-align:center; font-family:sans-serif; margin-top:50px;'>No certificate generated yet.</h2>",
+        );
     }
 
     const htmlPage = `
@@ -96,8 +103,8 @@ export function createServer() {
       <body>
         <div class="card">
           <div class="success">✅ VERIFIED LEGAL METROLOGY</div>
-          <p><strong>Instrument:</strong> ${latestCertificate.instrumentCategory || 'CNG Dispenser'}</p>
-          <p><strong>Serial Number:</strong> ${latestCertificate.instrumentSerialNumber || 'SN-8849201'}</p>
+          <p><strong>Instrument:</strong> ${latestCertificate.instrumentCategory || "CNG Dispenser"}</p>
+          <p><strong>Serial Number:</strong> ${latestCertificate.instrumentSerialNumber || "SN-8849201"}</p>
           <p><strong>Certificate ID:</strong> ${latestCertificate.certificateId}</p>
           
           <div style="text-align: left; margin-top: 20px;">
@@ -112,7 +119,7 @@ export function createServer() {
       </body>
       </html>
     `;
-    
+
     res.send(htmlPage);
   });
 

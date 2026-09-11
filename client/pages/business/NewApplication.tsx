@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { FormEvent, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
+import { SuccessPopup } from "../../components/ui/SuccessPopUp";
 
 const socket = io("http://localhost:8008", {
   autoConnect: false,
@@ -155,6 +156,7 @@ export default function NewApplication() {
   const [connected, setConnected] = useState(false);
   const [socketId, setSocketId] = useState<string | undefined>();
   const [certificateData, setCertificateData] = useState<any>(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   useEffect(() => {
     const onConnect = () => {
@@ -513,23 +515,27 @@ export default function NewApplication() {
       data: payload,
     });
 
-    if (manufacturerInvoice) {
-      const formData = new FormData();
-      formData.append("manufacturerFile", manufacturerInvoice);
-      formData.append("applicationId", applicationId);
-      if (prevCertificate) {
-        formData.append("prevCertificateFile", prevCertificate);
-      }
-      try {
-        await fetch("http://localhost:8008/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        console.log("File uploaded successfully");
-      } catch (error) {
-        console.error("File upload failed", error);
-      }
+    if (!manufacturerInvoice) {
+      alert("No Manufacturer Invoice Uploaded");
+      return;
     }
+
+    const formData = new FormData();
+    formData.append("manufacturerFile", manufacturerInvoice);
+    formData.append("applicationId", applicationId);
+    if (prevCertificate) {
+      formData.append("prevCertificateFile", prevCertificate);
+    }
+    try {
+      await fetch("http://localhost:8008/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      console.log("File uploaded successfully");
+    } catch (error) {
+      console.error("File upload failed", error);
+    }
+    setShowSuccessPopup(true);
   };
 
   if (certificateData) {
@@ -690,6 +696,10 @@ export default function NewApplication() {
           <LocationDocumentsForm onBack={() => setCurrentStep(0)} />
         )}
       </section>
+      <SuccessPopup
+        show={showSuccessPopup}
+        onClose={() => setShowSuccessPopup(false)}
+      />
     </DashboardLayout>
   );
 }

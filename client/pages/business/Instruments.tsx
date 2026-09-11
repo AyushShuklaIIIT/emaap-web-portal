@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Download, Search } from "lucide-react";
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -46,6 +47,7 @@ const instruments = [
 ];
 
 export default function Instruments() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [state, setState] = useState("all");
   const [status, setStatus] = useState("all");
@@ -70,19 +72,20 @@ export default function Instruments() {
 
   return (
     <DashboardLayout role="business">
-      <section className="mx-auto max-w-[1240px] overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
+      <section className="mx-auto max-w-310 overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
         <div className="flex flex-col gap-5 px-7 pb-6 pt-7 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
               My Instruments &amp; Certificates
             </h1>
             <p className="mt-1 text-sm text-[#5C5C70]">
-              Manage your pan-India instrument verification records and certificates.
+              Manage your pan-India instrument verification records and
+              certificates.
             </p>
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <div className="relative min-w-0 sm:w-[270px]">
+            <div className="relative min-w-0 sm:w-67.5">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8A98]" />
               <Input
                 value={query}
@@ -118,7 +121,7 @@ export default function Instruments() {
         <div className="border-t border-[#E8E9EC]" />
 
         <div className="overflow-x-auto">
-          <Table className="min-w-[900px]">
+          <Table className="min-w-225">
             <TableHeader>
               <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                 <TableHead className="h-12 px-7 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">
@@ -140,21 +143,31 @@ export default function Instruments() {
             </TableHeader>
             <TableBody>
               {filteredInstruments.map((instrument) => (
-                <TableRow key={instrument.serial} className="border-b border-[#E8E9EC] hover:bg-[#FAFBFC]">
+                <TableRow
+                  key={instrument.serial}
+                  className="border-b border-[#E8E9EC] hover:bg-[#FAFBFC]"
+                >
                   <TableCell className="px-7 py-5 align-top">
-                    <div className="max-w-[230px] font-semibold leading-5 text-[#1A1A2E]">
+                    <div className="max-w-57.5 font-semibold leading-5 text-[#1A1A2E]">
                       {instrument.category}
                     </div>
                     <div className="mt-1 text-xs font-medium text-[#5C5C70]">
-                      Serial No. <span className="text-[#1A1A2E]">{instrument.serial}</span>
+                      Serial No.{" "}
+                      <span className="text-[#1A1A2E]">
+                        {instrument.serial}
+                      </span>
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-[210px] py-5 align-top text-sm leading-5 text-[#1A1A2E]">
+                  <TableCell className="max-w-52.5 py-5 align-top text-sm leading-5 text-[#1A1A2E]">
                     {instrument.location}
                   </TableCell>
                   <TableCell className="py-5 align-top">
-                    <div className="text-sm font-medium text-[#1A1A2E]">{instrument.verified}</div>
-                    <div className="mt-1 text-xs text-[#5C5C70]">{instrument.authority}</div>
+                    <div className="text-sm font-medium text-[#1A1A2E]">
+                      {instrument.verified}
+                    </div>
+                    <div className="mt-1 text-xs text-[#5C5C70]">
+                      {instrument.authority}
+                    </div>
                   </TableCell>
                   <TableCell className="py-5 align-top">
                     <div
@@ -168,7 +181,9 @@ export default function Instruments() {
                     </div>
                     <div
                       className={`mt-2 text-xs ${
-                        instrument.expiring ? "font-medium text-[#D32F2F]" : "text-[#5C5C70]"
+                        instrument.expiring
+                          ? "font-medium text-[#D32F2F]"
+                          : "text-[#5C5C70]"
                       }`}
                     >
                       {instrument.expiry}
@@ -176,7 +191,10 @@ export default function Instruments() {
                   </TableCell>
                   <TableCell className="pr-7 py-5 align-top">
                     {instrument.expiring ? (
-                      <Button className="h-9 rounded-lg bg-[#FF6F00] px-3 text-xs font-bold text-white shadow-none hover:bg-[#E66000]">
+                      <Button
+                        onClick={() => navigate("/business/new-application")}
+                        className="h-9 rounded-lg bg-[#FF6F00] px-3 text-xs font-bold text-white shadow-none hover:bg-[#E66000]"
+                      >
                         Renew Now
                       </Button>
                     ) : (
@@ -193,7 +211,10 @@ export default function Instruments() {
               ))}
               {filteredInstruments.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-12 text-center text-sm text-[#5C5C70]">
+                  <TableCell
+                    colSpan={5}
+                    className="py-12 text-center text-sm text-[#5C5C70]"
+                  >
                     No instruments match your search or filters.
                   </TableCell>
                 </TableRow>
@@ -207,10 +228,16 @@ export default function Instruments() {
             Showing 1 to 3 of 1,240 instruments
           </span>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" className="h-9 text-sm text-[#5C5C70] hover:text-[#0B3D91]">
+            <Button
+              variant="ghost"
+              className="h-9 text-sm text-[#5C5C70] hover:text-[#0B3D91]"
+            >
               &lt; Previous
             </Button>
-            <Button variant="ghost" className="h-9 font-semibold text-[#0B3D91] hover:bg-primary/5">
+            <Button
+              variant="ghost"
+              className="h-9 font-semibold text-[#0B3D91] hover:bg-primary/5"
+            >
               Next &gt;
             </Button>
           </div>

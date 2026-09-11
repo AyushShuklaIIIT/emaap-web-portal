@@ -24,7 +24,8 @@ const tickets = [
     id: "TKT-88745",
     date: "28 Aug 2026",
     category: "Field Inspection",
-    subject: "Assigned GATC-MH-04 did not visit the site on the scheduled date.",
+    subject:
+      "Assigned GATC-MH-04 did not visit the site on the scheduled date.",
     status: "In Progress",
   },
   {
@@ -55,7 +56,9 @@ function ContactCard({
         <Icon className="h-5 w-5" />
       </div>
       <h3 className="mt-4 text-sm font-bold text-[#1A1A2E]">{title}</h3>
-      {children ?? <p className="mt-2 text-base font-semibold text-[#0B3D91]">{value}</p>}
+      {children ?? (
+        <p className="mt-2 text-base font-semibold text-[#0B3D91]">{value}</p>
+      )}
       <p className="mt-1 text-xs leading-5 text-[#5C5C70]">{subtext}</p>
     </div>
   );
@@ -75,7 +78,7 @@ export default function Helpdesk() {
 
   return (
     <DashboardLayout role="business">
-      <section className="mx-auto max-w-[1240px] overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
+      <section className="mx-auto max-w-310 overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
         <div className="flex flex-col justify-between gap-4 px-7 pb-6 pt-7 sm:flex-row sm:items-center">
           <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
             Helpdesk &amp; Support
@@ -114,8 +117,10 @@ export default function Helpdesk() {
           </div>
 
           <div className="mt-9 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <h2 className="text-lg font-bold text-[#0B3D91]">My Support Tickets</h2>
-            <div className="relative sm:w-[290px]">
+            <h2 className="text-lg font-bold text-[#0B3D91]">
+              My Support Tickets
+            </h2>
+            <div className="relative sm:w-72.5">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8A98]" />
               <Input
                 value={query}
@@ -128,7 +133,7 @@ export default function Helpdesk() {
 
           <div className="mt-4 overflow-hidden rounded-lg border border-[#E0E0E0]">
             <div className="overflow-x-auto">
-              <Table className="min-w-[920px]">
+              <Table className="min-w-230">
                 <TableHeader>
                   <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                     <TableHead className="h-12 px-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">
@@ -155,13 +160,17 @@ export default function Helpdesk() {
                       className="border-b border-[#E8E9EC] hover:bg-[#FAFBFC]"
                     >
                       <TableCell className="px-5 py-5 align-top">
-                        <p className="font-semibold text-[#1A1A2E]">{ticket.id}</p>
-                        <p className="mt-1 text-xs text-[#5C5C70]">{ticket.date}</p>
+                        <p className="font-semibold text-[#1A1A2E]">
+                          {ticket.id}
+                        </p>
+                        <p className="mt-1 text-xs text-[#5C5C70]">
+                          {ticket.date}
+                        </p>
                       </TableCell>
                       <TableCell className="py-5 align-top text-sm font-medium text-[#1A1A2E]">
                         {ticket.category}
                       </TableCell>
-                      <TableCell className="max-w-[330px] py-5 align-top text-sm leading-5 text-[#1A1A2E]">
+                      <TableCell className="max-w-82.5 py-5 align-top text-sm leading-5 text-[#1A1A2E]">
                         {ticket.subject}
                       </TableCell>
                       <TableCell className="py-5 align-top">
@@ -189,7 +198,10 @@ export default function Helpdesk() {
                   ))}
                   {filteredTickets.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="py-12 text-center text-sm text-[#5C5C70]">
+                      <TableCell
+                        colSpan={5}
+                        className="py-12 text-center text-sm text-[#5C5C70]"
+                      >
                         No tickets match your search.
                       </TableCell>
                     </TableRow>
@@ -198,12 +210,20 @@ export default function Helpdesk() {
               </Table>
             </div>
             <div className="flex flex-col gap-3 border-t border-[#E8E9EC] px-5 py-3.5 text-sm sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-[#5C5C70]">Showing 1 to 3 of 12 tickets</span>
+              <span className="text-[#5C5C70]">
+                Showing 1 to 3 of 12 tickets
+              </span>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" className="h-9 text-sm text-[#5C5C70] hover:text-[#0B3D91]">
+                <Button
+                  variant="ghost"
+                  className="h-9 text-sm text-[#5C5C70] hover:text-[#0B3D91]"
+                >
                   &lt; Previous
                 </Button>
-                <Button variant="ghost" className="h-9 font-semibold text-[#0B3D91] hover:bg-primary/5">
+                <Button
+                  variant="ghost"
+                  className="h-9 font-semibold text-[#0B3D91] hover:bg-primary/5"
+                >
                   Next &gt;
                 </Button>
               </div>

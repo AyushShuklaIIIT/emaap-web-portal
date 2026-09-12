@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Gauge,
@@ -35,6 +35,26 @@ export default function Index() {
   const [role, setRole] = useState<Role>("business");
   const [phone, setPhone] = useState("");
   const [otpOpen, setOtpOpen] = useState(false);
+
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/health`,
+        );
+
+        if (!response.ok) {
+          throw new Error("Backend is unhealthy");
+        }
+
+        console.log("Backend is up");
+      } catch (error) {
+        console.error("Backend health check failed:", error);
+      }
+    };
+
+    checkHealth();
+  }, []);
 
   const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();

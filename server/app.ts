@@ -95,6 +95,8 @@ export function createServer() {
     const latestCertificate: CertificateData | undefined =
       certificates.get(certificateId);
 
+    console.log("Accepted certificate data: ", latestCertificate);
+
     if (!latestCertificate) {
       return res
         .status(404)

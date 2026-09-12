@@ -522,9 +522,7 @@ export default function NewApplication() {
 
     console.log(`Sent Data`, payload);
 
-    socket.emit("data", {
-      data: payload,
-    });
+    socket.emit("data", payload);
 
     if (!manufacturerInvoice) {
       alert("No Manufacturer Invoice Uploaded");

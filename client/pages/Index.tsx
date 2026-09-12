@@ -39,9 +39,11 @@ export default function Index() {
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/health`,
+        const backendUrl = (import.meta.env.VITE_BACKEND_URL ?? "").replace(
+          /\/$/,
+          "",
         );
+        const response = await fetch(`${backendUrl}/api/ping`);
 
         if (!response.ok) {
           throw new Error("Backend is unhealthy");

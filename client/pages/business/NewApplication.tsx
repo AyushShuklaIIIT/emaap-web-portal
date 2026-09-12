@@ -142,16 +142,13 @@ export default function NewApplication() {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [instrumentSubCategory, setInstrumentSubCategory] = useState("");
-  const [modelNo, setModelNo] = useState("CNG-Advantage-2025");
+  const [modelNo, setModelNo] = useState("");
   const [accuracyClass, setAccuracyClass] = useState<Accclass>("Class II");
-  const [manufacturerName, setManufacturerName] = useState(
-    "Gilbarco Veeder-Root",
-  );
-  const [instrumentSerialNumber, setInstrumentSerialNumber] =
-    useState("SN-8849201-MH");
-  const [metric, setMetric] = useState("50 kg/min");
-  const [address, setAddress] = useState("Jio-BP Station, BKC");
-  const [pincode, setPincode] = useState<number | null>(400051);
+  const [manufacturerName, setManufacturerName] = useState("");
+  const [instrumentSerialNumber, setInstrumentSerialNumber] = useState("");
+  const [metric, setMetric] = useState("");
+  const [address, setAddress] = useState("");
+  const [pincode, setPincode] = useState<number | null>(null);
   const [manufacturerInvoice, setManufacturerInvoice] = useState<File | null>(
     null,
   );
@@ -208,13 +205,13 @@ export default function NewApplication() {
     };
   }, []);
 
-  const InstrumentForm = ({ onNext }: { onNext: () => void }) => {
+  const renderInstrumentForm = () => {
     return (
       <form
         className="px-8 pb-8 pt-8 sm:px-10"
         onSubmit={(event) => {
           event.preventDefault();
-          onNext();
+          setCurrentStep(1);
         }}
       >
         <div className="mb-6">
@@ -268,6 +265,7 @@ export default function NewApplication() {
           <FormField label="Manufacturer Name">
             <Input
               value={manufacturerName}
+              placeholder="e.g. Gilbarco Veeder-Root"
               className={fieldClassName}
               onChange={(e) => setManufacturerName(e.target.value)}
             />
@@ -276,6 +274,7 @@ export default function NewApplication() {
           <FormField label="Model Number">
             <Input
               value={modelNo}
+              placeholder="e.g. CNG-Advantage-2025"
               className={fieldClassName}
               onChange={(e) => setModelNo(e.target.value)}
             />
@@ -284,6 +283,7 @@ export default function NewApplication() {
           <FormField label="Instrument Serial Number">
             <Input
               value={instrumentSerialNumber}
+              placeholder="e.g. SN-8849201-MH"
               className={fieldClassName}
               onChange={(e) => setInstrumentSerialNumber(e.target.value)}
             />
@@ -305,6 +305,7 @@ export default function NewApplication() {
           <FormField label="Maximum Capacity / Flow Rate">
             <Input
               value={metric}
+              placeholder="e.g. 50 kg/min"
               className={fieldClassName}
               onChange={(e) => setMetric(e.target.value)}
             />
@@ -330,7 +331,7 @@ export default function NewApplication() {
     );
   };
 
-  const LocationDocumentsForm = ({ onBack }: { onBack: () => void }) => {
+  const renderLocationDocumentsForm = () => {
     const getLocation = () => {
       if (!navigator.geolocation) {
         alert("Geolocation is not supported by your browser.");
@@ -371,6 +372,7 @@ export default function NewApplication() {
           <FormField label="Installation Address (Line 1)">
             <Input
               value={address}
+              placeholder="e.g. Jio-BP Station, BKC"
               className={fieldClassName}
               onChange={(e) => setAddress(e.target.value)}
             />
@@ -392,9 +394,13 @@ export default function NewApplication() {
 
           <FormField label="Pincode">
             <Input
+              type="number"
               value={pincode}
+              placeholder="e.g. 400051"
               className={fieldClassName}
-              onChange={(e) => setPincode(Number(e.target.value))}
+              onChange={(e) =>
+                setPincode(e.target.value === "" ? null : Number(e.target.value))
+              }
             />
           </FormField>
 
@@ -457,7 +463,7 @@ export default function NewApplication() {
         <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
           <Button
             type="button"
-            onClick={onBack}
+            onClick={() => setCurrentStep(0)}
             variant="ghost"
             className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
           >
@@ -694,12 +700,8 @@ export default function NewApplication() {
 
         <div className="border-t border-[#E8E9EC]" />
 
-        {currentStep === 0 && (
-          <InstrumentForm onNext={() => setCurrentStep(1)} />
-        )}
-        {currentStep === 1 && (
-          <LocationDocumentsForm onBack={() => setCurrentStep(0)} />
-        )}
+        {currentStep === 0 && renderInstrumentForm()}
+        {currentStep === 1 && renderLocationDocumentsForm()}
       </section>
       <SuccessPopup
         show={showSuccessPopup}

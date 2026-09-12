@@ -97,7 +97,7 @@ export default function Index() {
               One Portal.
             </h1>
             <p className="mt-4 text-sm leading-relaxed text-white/75">
-              eMaap unifies India's Legal Metrology workflows — instrument
+              DigiMaap unifies India's Legal Metrology workflows — instrument
               registration, verification fees, field inspections and digital
               certification — into a single algorithmically-routed platform
               replacing fragmented state portals.
@@ -143,7 +143,7 @@ export default function Index() {
 
           <div className="w-full max-w-sm">
             <h2 className="text-2xl font-bold text-foreground">
-              Login to eMaap
+              Login to DigiMaap
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Select your role to continue to the portal.

@@ -26,7 +26,7 @@ export function EmaapLogo({
             isLight ? "text-white" : "text-foreground",
           )}
         >
-          eMaap
+          DigiMaap
         </span>
         <span
           className={cn(

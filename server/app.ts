@@ -22,7 +22,7 @@ export function createServer() {
   const httpServer = createHttpServer(app);
   const allowedOrigins = process.env.FRONTEND_URL?.split(",")
     .map((origin) => origin.trim())
-    .filter(Boolean);
+    .filter(Boolean); 
   const corsOrigin = allowedOrigins?.length ? allowedOrigins : "*";
 
   const io = new SocketIOServer(httpServer, {

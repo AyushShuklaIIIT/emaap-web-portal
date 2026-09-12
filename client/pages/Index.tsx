@@ -7,10 +7,10 @@ import {
   Fuel,
   Weight,
   Building2,
+  Loader2,
 } from "lucide-react";
 import { TricolorBar } from "@/components/emaap/TricolorBar";
 import { EmaapLogo } from "@/components/emaap/EmaapLogo";
-import { OtpModal } from "@/components/emaap/OtpModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +34,9 @@ export default function Index() {
   const navigate = useNavigate();
   const [role, setRole] = useState<Role>("business");
   const [phone, setPhone] = useState("");
-  const [otpOpen, setOtpOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -58,15 +60,20 @@ export default function Index() {
     checkHealth();
   }, []);
 
-  const handleSendOtp = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.trim().length < 10) return;
-    setOtpOpen(true);
-  };
+    if (!phone.trim() || !password.trim()) {
+      setError("Please enter your registered mobile number and password.");
+      return;
+    }
 
-  const handleVerified = () => {
-    setOtpOpen(false);
-    navigate(ROLE_ROUTE[role]);
+    setError("");
+    setIsLoading(true);
+    setTimeout(() => {
+      localStorage.setItem("emaap_auth_token", "demo-token-123");
+      localStorage.setItem("emaap_role", role);
+      navigate(ROLE_ROUTE[role]);
+    }, 1500);
   };
 
   return (
@@ -163,7 +170,7 @@ export default function Index() {
               {(["business", "admin", "gatc"] as Role[]).map((r) => (
                 <TabsContent key={r} value={r} className="mt-6">
                   <form
-                    onSubmit={handleSendOtp}
+                    onSubmit={handleLogin}
                     className="flex flex-col gap-4"
                   >
                     <div className="flex flex-col gap-1.5">
@@ -177,9 +184,10 @@ export default function Index() {
                         maxLength={10}
                         placeholder={ROLE_PLACEHOLDER[r]}
                         value={phone}
-                        onChange={(e) =>
-                          setPhone(e.target.value.replace(/\D/g, ""))
-                        }
+                        onChange={(e) => {
+                          setPhone(e.target.value.replace(/\D/g, ""));
+                          setError("");
+                        }}
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -188,8 +196,18 @@ export default function Index() {
                         id={`pass-${r}`}
                         type="password"
                         placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setError("");
+                        }}
                       />
                     </div>
+                    {error && (
+                      <p className="text-sm text-destructive" role="alert">
+                        {error}
+                      </p>
+                    )}
                     <div className="flex items-center justify-between text-sm">
                       <label className="flex items-center gap-2 text-muted-foreground">
                         <input
@@ -207,9 +225,17 @@ export default function Index() {
                     </div>
                     <Button
                       type="submit"
+                      disabled={isLoading}
                       className="mt-1 w-full bg-saffron text-saffron-foreground hover:bg-saffron/90"
                     >
-                      Send OTP &amp; Continue
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Authenticating...
+                        </>
+                      ) : (
+                        "Login"
+                      )}
                     </Button>
                   </form>
                 </TabsContent>
@@ -230,12 +256,6 @@ export default function Index() {
         </div>
       </div>
 
-      <OtpModal
-        open={otpOpen}
-        onOpenChange={setOtpOpen}
-        phone={phone ? `+91 ${phone}` : "your registered number"}
-        onVerified={handleVerified}
-      />
     </div>
   );
 }

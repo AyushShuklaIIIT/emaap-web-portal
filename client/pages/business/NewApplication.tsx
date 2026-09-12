@@ -593,7 +593,7 @@ export default function NewApplication() {
                 Instrument
               </p>
               <p className="font-semibold text-[#1A1A2E]">
-                {certificateData.data?.instrumentCategory || "CNG Dispenser"}
+                {certificateData.instrumentCategory || "N/A"}
               </p>
             </div>
             <div>
@@ -601,8 +601,7 @@ export default function NewApplication() {
                 Serial Number
               </p>
               <p className="font-semibold text-[#1A1A2E]">
-                {certificateData.data?.instrumentSerialNumber ||
-                  "SN-8849201-MH"}
+                {certificateData.instrumentSerialNumber || "N/A"}
               </p>
             </div>
             <div>

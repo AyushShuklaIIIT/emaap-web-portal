@@ -9,7 +9,7 @@ import { SuccessPopup } from "../../components/ui/SuccessPopUp";
 
 const backendUrl = (import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8008").replace(
   /\/$/,
-  "",
+  ""
 );
 
 const socket = io(backendUrl, {
@@ -33,7 +33,7 @@ interface VerificationForm {
   long: number;
 }
 
-const steps = ["Instrument Details", "Location & Documents"];
+const steps = ["Instrument Details", "Location & Documents", "Review & Payment"];
 
 function FormField({
   label,
@@ -149,12 +149,12 @@ export default function NewApplication() {
   const [metric, setMetric] = useState("");
   const [address, setAddress] = useState("");
   const [pincode, setPincode] = useState<number | null>(null);
-  const [manufacturerInvoice, setManufacturerInvoice] = useState<File | null>(
-    null,
-  );
+  const [manufacturerInvoice, setManufacturerInvoice] = useState<File | null>(null);
   const [state, setState] = useState("MH");
   const [coordinates, setCoordinates] = useState("");
   const [prevCertificate, setPrevCertificate] = useState<File | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState("upi");
+  
   const [connected, setConnected] = useState(false);
   const [socketId, setSocketId] = useState<string | undefined>();
   const [certificateData, setCertificateData] = useState<any>(null);
@@ -163,14 +163,12 @@ export default function NewApplication() {
   useEffect(() => {
     const onConnect = () => {
       console.log("Socket connected:", socket.id);
-
       setConnected(true);
       setSocketId(socket.id);
     };
 
     const onDisconnect = () => {
       console.log("Socket disconnected");
-
       setConnected(false);
       setSocketId(undefined);
     };
@@ -200,7 +198,6 @@ export default function NewApplication() {
       socket.off("connect_error", onConnectError);
       socket.off("reply", onReply);
       socket.off("certificate_generated");
-
       socket.disconnect();
     };
   }, []);
@@ -219,8 +216,7 @@ export default function NewApplication() {
             Instrument Details
           </h2>
           <p className="mt-1 text-sm text-[#5C5C70]">
-            Provide the details exactly as they appear on the manufacturer's
-            documentation.
+            Provide the details exactly as they appear on the manufacturer's documentation.
           </p>
         </div>
 
@@ -235,7 +231,6 @@ export default function NewApplication() {
               className={`${fieldClassName} w-full px-3 outline-none`}
             >
               <option value="">Select a category</option>
-
               {Object.entries(categories).map(([key]) => (
                 <option key={key} value={key}>
                   {key}
@@ -250,13 +245,12 @@ export default function NewApplication() {
                 className={`${fieldClassName} w-full px-3 outline-none mt-2`}
               >
                 <option value="">Select a subcategory</option>
-
                 {categories[selectedCategory as keyof typeof categories].map(
                   (subcategory) => (
                     <option key={subcategory} value={subcategory}>
                       {subcategory}
                     </option>
-                  ),
+                  )
                 )}
               </select>
             )}
@@ -313,13 +307,6 @@ export default function NewApplication() {
         </div>
 
         <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
-          {/* <Button
-          type="button"
-          variant="ghost"
-          className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
-        >
-          Save as Draft
-        </Button> */}
           <Button
             type="submit"
             className="h-11 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]"
@@ -341,30 +328,29 @@ export default function NewApplication() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-
-          console.log(position.coords.accuracy);
-
           setCoordinates(`${latitude}, ${longitude}`);
         },
         (error) => {
           console.error(error);
           alert("Unable to get your location.");
-        },
+        }
       );
     };
 
     return (
       <form
         className="px-8 pb-8 pt-8 sm:px-10"
-        onSubmit={(e) => submitApplication(e)}
+        onSubmit={(e) => {
+          e.preventDefault();
+          setCurrentStep(2); // Move to Review & Payment Step
+        }}
       >
         <div className="mb-6">
           <h2 className="text-base font-bold text-[#1A1A2E]">
             Location & Documents
           </h2>
           <p className="mt-1 text-sm text-[#5C5C70]">
-            Provide the physical installation address and upload all required
-            compliance documents.
+            Provide the physical installation address and upload all required compliance documents.
           </p>
         </div>
 
@@ -395,7 +381,7 @@ export default function NewApplication() {
           <FormField label="Pincode">
             <Input
               type="number"
-              value={pincode}
+              value={pincode ?? ""}
               placeholder="e.g. 400051"
               className={fieldClassName}
               onChange={(e) =>
@@ -412,7 +398,6 @@ export default function NewApplication() {
                 placeholder="Latitude, Longitude"
                 className={fieldClassName}
               />
-
               <Button
                 type="button"
                 onClick={getLocation}
@@ -427,12 +412,7 @@ export default function NewApplication() {
             <Input
               type="file"
               className={`${fieldClassName} py-2`}
-              onChange={(e) => {
-                const file = e.target.files?.[0] ?? null;
-                setManufacturerInvoice(file);
-                console.log("Previous Certificate:", prevCertificate);
-                console.log("Manufacturer Certificate", manufacturerInvoice);
-              }}
+              onChange={(e) => setManufacturerInvoice(e.target.files?.[0] ?? null)}
             />
             {manufacturerInvoice && (
               <p className="mt-2 text-sm text-gray-600">
@@ -445,12 +425,7 @@ export default function NewApplication() {
             <Input
               type="file"
               className={`${fieldClassName} py-2`}
-              onChange={(e) => {
-                const file = e.target.files?.[0] ?? null;
-                setPrevCertificate(file);
-                console.log("Previous Certificate:", prevCertificate);
-                console.log("Manufacturer Certificate", manufacturerInvoice);
-              }}
+              onChange={(e) => setPrevCertificate(e.target.files?.[0] ?? null)}
             />
             {prevCertificate && (
               <p className="mt-2 text-sm text-gray-600">
@@ -471,9 +446,128 @@ export default function NewApplication() {
           </Button>
           <Button
             type="submit"
+            className="h-11 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]"
+          >
+            Next: Review &amp; Payment
+          </Button>
+        </div>
+      </form>
+    );
+  };
+
+  const renderReviewPaymentForm = () => {
+    return (
+      <form
+        className="px-8 pb-8 pt-8 sm:px-10"
+        onSubmit={submitApplication}
+      >
+        <div className="mb-6">
+          <h2 className="text-base font-bold text-[#1A1A2E]">
+            Review & Payment
+          </h2>
+          <p className="mt-1 text-sm text-[#5C5C70]">
+            Review your statutory verification fee and select a dummy payment method to complete the application.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          {/* Left Column: Fee Summary */}
+          <div className="rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-6">
+            <h3 className="mb-4 font-bold text-[#1A1A2E]">Fee Summary</h3>
+            <div className="mb-2 flex justify-between text-sm">
+              <span className="text-[#5C5C70]">Instrument Category</span>
+              <span className="font-medium text-[#1A1A2E] text-right max-w-[60%]">
+                {selectedCategory || "Not Selected"}
+              </span>
+            </div>
+            <div className="mb-2 flex justify-between text-sm">
+              <span className="text-[#5C5C70]">Statutory Verification Fee</span>
+              <span className="font-medium text-[#1A1A2E]">₹10,000.00</span>
+            </div>
+            <div className="mb-2 flex justify-between text-sm">
+              <span className="text-[#5C5C70]">Processing Fee</span>
+              <span className="font-medium text-[#1A1A2E]">₹0.00</span>
+            </div>
+            <div className="my-4 border-t border-[#E0E0E0]" />
+            <div className="flex justify-between text-lg font-bold">
+              <span className="text-[#1A1A2E]">Total Payable</span>
+              <span className="text-[#1E8E3E]">₹10,000.00</span>
+            </div>
+          </div>
+
+          {/* Right Column: Payment Options */}
+          <div>
+            <h3 className="mb-4 font-bold text-[#1A1A2E]">Select Payment Method</h3>
+            <div className="flex flex-col gap-3">
+              <Label
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
+                  paymentMethod === "upi"
+                    ? "border-[#0B3D91] bg-blue-50"
+                    : "border-[#E0E0E0] bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  value="upi"
+                  checked={paymentMethod === "upi"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="h-4 w-4 text-[#0B3D91]"
+                />
+                <span className="font-medium">UPI (GPay, PhonePe, Paytm)</span>
+              </Label>
+              <Label
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
+                  paymentMethod === "netbanking"
+                    ? "border-[#0B3D91] bg-blue-50"
+                    : "border-[#E0E0E0] bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  value="netbanking"
+                  checked={paymentMethod === "netbanking"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="h-4 w-4 text-[#0B3D91]"
+                />
+                <span className="font-medium">Corporate Net Banking / NEFT</span>
+              </Label>
+              <Label
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
+                  paymentMethod === "card"
+                    ? "border-[#0B3D91] bg-blue-50"
+                    : "border-[#E0E0E0] bg-white"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="payment"
+                  value="card"
+                  checked={paymentMethod === "card"}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="h-4 w-4 text-[#0B3D91]"
+                />
+                <span className="font-medium">Credit / Debit Card</span>
+              </Label>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
+          <Button
+            type="button"
+            onClick={() => setCurrentStep(1)}
+            variant="ghost"
+            className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
+          >
+            Back
+          </Button>
+          <Button
+            type="submit"
             className="h-11 rounded-lg bg-[#0B3D91] px-5 font-bold text-white shadow-none hover:bg-[#082b66]"
           >
-            Submit Application
+            Pay ₹10,000 &amp; Submit Application
           </Button>
         </div>
       </form>
@@ -525,12 +619,13 @@ export default function NewApplication() {
     socket.emit("data", payload);
 
     if (!manufacturerInvoice) {
-      alert("No Manufacturer Invoice Uploaded");
-      return;
+      alert("No Manufacturer Invoice Uploaded (Proceeding for Demo...)");
     }
 
     const formData = new FormData();
-    formData.append("manufacturerFile", manufacturerInvoice);
+    if (manufacturerInvoice) {
+      formData.append("manufacturerFile", manufacturerInvoice);
+    }
     formData.append("applicationId", applicationId);
     if (prevCertificate) {
       formData.append("prevCertificateFile", prevCertificate);
@@ -575,8 +670,7 @@ export default function NewApplication() {
             Verification Complete
           </h1>
           <p className="mb-8 text-[#5C5C70]">
-            Digital Certificate generated securely via Legal Metrology
-            Authority.
+            Digital Certificate generated securely via Legal Metrology Authority.
           </p>
 
           <div className="mb-8 grid grid-cols-2 gap-8 rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-6 text-left">
@@ -626,14 +720,16 @@ export default function NewApplication() {
               marginSize={4}
             />
             <p className="mt-4 max-w-sm text-sm text-[#5C5C70]">
-              Judges: Please scan this QR code with your smartphone camera to
-              view the live geo-tagged seal evidence.
+              Judges: Please scan this QR code with your smartphone camera to view the live geo-tagged seal evidence.
             </p>
           </div>
 
           <Button
             className="mt-8 bg-[#0B3D91] hover:bg-[#082b66]"
-            onClick={() => setCertificateData(null)}
+            onClick={() => {
+              setCertificateData(null);
+              setCurrentStep(0);
+            }}
           >
             Submit Another Application
           </Button>
@@ -699,6 +795,7 @@ export default function NewApplication() {
 
         {currentStep === 0 && renderInstrumentForm()}
         {currentStep === 1 && renderLocationDocumentsForm()}
+        {currentStep === 2 && renderReviewPaymentForm()}
       </section>
       <SuccessPopup
         show={showSuccessPopup}

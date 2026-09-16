@@ -49,18 +49,18 @@ export default function GatcDashboard() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <TricolorBar />
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-6">
+      <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border bg-card px-3 sm:px-6">
         <EmaapLogo />
         <Link to="/" className="text-sm font-medium text-primary hover:underline">Sign out</Link>
       </header>
-      <main className="flex-1 px-8 py-7">
+      <main className="min-w-0 flex-1 px-3 py-5 sm:px-6 sm:py-7 lg:px-8">
         <section className="mx-auto max-w-[1320px] overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-          <div className="px-7 pb-6 pt-7">
+          <div className="px-4 pb-6 pt-6 sm:px-7 sm:pt-7">
             <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">GATC Station Command Center</h1>
           </div>
           <div className="border-t border-[#E8E9EC]" />
 
-          <div className="space-y-8 px-7 pb-8 pt-7">
+          <div className="space-y-8 px-4 pb-8 pt-6 sm:px-7 sm:pt-7">
             <div className="flex flex-col gap-4 rounded-lg bg-[#E3F2FD] p-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0">
                 <p className="font-bold text-[#0B3D91]">Unit ID: GATC-MH-04 (Apex Metrology Labs)</p>
@@ -87,7 +87,7 @@ export default function GatcDashboard() {
               </div>
               <div className="mt-4 overflow-hidden rounded-lg border border-[#E0E0E0]">
                 <div className="overflow-x-auto">
-                  <Table className="min-w-[1100px]">
+                  <Table className="mobile-card-table min-w-[1100px]">
                     <TableHeader>
                       <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                         <TableHead className="h-12 px-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">App ID &amp; Client</TableHead>

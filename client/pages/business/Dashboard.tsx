@@ -19,9 +19,9 @@ export default function BusinessDashboard() {
   return (
     <DashboardLayout role="business">
       <div className="flex flex-col gap-7">
-        <div className="flex flex-col justify-between gap-4 rounded-xl bg-linear-to-r from-primary to-[#0d4bad] p-6 text-white sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-xl bg-linear-to-r from-primary to-[#0d4bad] p-4 text-white sm:flex-row sm:items-center sm:p-6">
           <div>
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-xl font-bold sm:text-2xl">
               Welcome, Reliance Retail Ltd.
             </h1>
             <p className="mt-1 text-sm text-white/75">
@@ -77,11 +77,11 @@ export default function BusinessDashboard() {
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search application ID..."
-                className="w-64 pl-8"
+                className="w-full pl-8 sm:w-64"
               />
             </div>
           </div>
-          <Table>
+          <Table className="mobile-card-table">
             <TableHeader>
               <TableRow>
                 <TableHead>Application ID</TableHead>

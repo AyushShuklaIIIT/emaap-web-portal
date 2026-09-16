@@ -64,9 +64,9 @@ export default function Revenue() {
 
   return (
     <DashboardLayout role="admin">
-      <section className="mx-auto max-w-[1320px] rounded-xl border border-[#E0E0E0] bg-white p-6 shadow-card sm:p-7">
+      <section className="mx-auto max-w-[1320px] rounded-xl border border-[#E0E0E0] bg-white p-4 shadow-card sm:p-7">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
+          <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
             Financial Reports &amp; Settlements
           </h1>
           <div className="flex flex-wrap items-center gap-2">
@@ -150,7 +150,7 @@ export default function Revenue() {
           </div>
           <div className="mt-4 overflow-hidden rounded-lg border border-[#E0E0E0]">
             <div className="overflow-x-auto">
-              <Table className="min-w-[1050px]">
+              <Table className="mobile-card-table min-w-[1050px]">
                 <TableHeader>
                   <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                     <TableHead className="h-12 px-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">Date &amp; TXN ID</TableHead>

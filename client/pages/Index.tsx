@@ -143,8 +143,8 @@ export default function Index() {
         </div>
 
         {/* Right — login gateway */}
-        <div className="flex flex-col items-center justify-center px-6 py-14 sm:px-10">
-          <div className="mb-8 flex flex-col items-center gap-2 lg:hidden">
+        <div className="flex flex-col items-center justify-center px-4 py-10 sm:px-10 sm:py-14">
+          <div className="mb-7 flex flex-col items-center gap-2 lg:hidden sm:mb-8">
             <EmaapLogo />
           </div>
 
@@ -161,10 +161,10 @@ export default function Index() {
               onValueChange={(v) => setRole(v as Role)}
               className="mt-6"
             >
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="business">Business</TabsTrigger>
-                <TabsTrigger value="admin">Admin</TabsTrigger>
-                <TabsTrigger value="gatc">LMO/GATC</TabsTrigger>
+              <TabsList className="grid h-auto w-full grid-cols-3">
+                <TabsTrigger className="min-w-0 px-2 py-2 text-xs sm:text-sm" value="business">Business</TabsTrigger>
+                <TabsTrigger className="min-w-0 px-2 py-2 text-xs sm:text-sm" value="admin">Admin</TabsTrigger>
+                <TabsTrigger className="min-w-0 px-2 py-2 text-xs sm:text-sm" value="gatc">LMO/GATC</TabsTrigger>
               </TabsList>
 
               {(["business", "admin", "gatc"] as Role[]).map((r) => (
@@ -208,7 +208,7 @@ export default function Index() {
                         {error}
                       </p>
                     )}
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                       <label className="flex items-center gap-2 text-muted-foreground">
                         <input
                           type="checkbox"

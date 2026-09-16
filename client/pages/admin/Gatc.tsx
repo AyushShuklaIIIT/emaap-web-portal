@@ -63,8 +63,8 @@ export default function Gatc() {
   return (
     <DashboardLayout role="admin">
       <section className="mx-auto max-w-[1320px] overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-        <div className="flex flex-col justify-between gap-4 px-7 pb-6 pt-7 sm:flex-row sm:items-center">
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
+        <div className="flex flex-col justify-between gap-4 px-4 pb-6 pt-6 sm:flex-row sm:items-center sm:px-7 sm:pt-7">
+          <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
             GATC Authorization &amp; Revenue Management
           </h1>
           <Button className="h-10 w-fit rounded-lg bg-[#FF6F00] px-4 font-bold text-white shadow-none hover:bg-[#E66000]">
@@ -74,7 +74,7 @@ export default function Gatc() {
 
         <div className="border-t border-[#E8E9EC]" />
 
-        <div className="px-7 pb-7 pt-6">
+        <div className="px-4 pb-7 pt-6 sm:px-7">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <KpiCard title="Total Active GATCs" value="412" detail="Across 28 States & 8 UTs" tone="blue" />
             <KpiCard title="GATC Revenue Generated (YTD)" value="₹21.5 Cr" detail="Automatically split 80:20 (Govt / Test Centre)" tone="green" />
@@ -96,7 +96,7 @@ export default function Gatc() {
 
           <div className="mt-4 overflow-hidden rounded-lg border border-[#E0E0E0]">
             <div className="overflow-x-auto">
-              <Table className="min-w-[1100px]">
+              <Table className="mobile-card-table min-w-[1100px]">
                 <TableHeader>
                   <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                     <TableHead className="h-12 px-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">GATC ID &amp; Lab Name</TableHead>

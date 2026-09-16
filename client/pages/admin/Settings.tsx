@@ -16,14 +16,14 @@ export default function AdminSettings() {
   return (
     <DashboardLayout role="admin">
       <section className="mx-auto max-w-[1120px] rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-        <div className="px-7 pb-6 pt-7 sm:px-9">
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
+        <div className="px-4 pb-6 pt-6 sm:px-9 sm:pt-7">
+          <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
             Administrator Settings &amp; System Preferences
           </h1>
         </div>
         <div className="border-t border-[#E8E9EC]" />
 
-        <div className="space-y-9 px-7 pb-8 pt-7 sm:px-9">
+        <div className="space-y-9 px-4 pb-8 pt-7 sm:px-9">
           <div className="flex flex-col gap-5 rounded-lg bg-[#F5F7FA] p-4 sm:flex-row sm:items-center">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#0B3D91] text-xl font-bold text-white">AC</div>
             <div className="min-w-0 flex-1">

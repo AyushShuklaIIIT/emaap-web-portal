@@ -38,9 +38,9 @@ export default function QRCodes() {
 
   return (
     <DashboardLayout role="business">
-      <section className="mx-auto max-w-7xl p-8">
+      <section className="mx-auto max-w-7xl p-4 sm:p-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#1A1A2E]">Saved QR Codes</h1>
+          <h1 className="text-xl font-bold text-[#1A1A2E] sm:text-2xl">Saved QR Codes</h1>
 
           <p className="mt-1 text-sm text-[#5C5C70]">
             All generated verification certificates.

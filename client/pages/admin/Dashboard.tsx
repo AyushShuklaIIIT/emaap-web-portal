@@ -44,10 +44,10 @@ const routingRows = [
 export default function AdminDashboard() {
   return (
     <DashboardLayout role="admin">
-      <section className="mx-auto max-w-[1280px] rounded-xl border border-[#E0E0E0] bg-white p-6 shadow-card sm:p-7">
+      <section className="mx-auto max-w-[1280px] rounded-xl border border-[#E0E0E0] bg-white p-4 shadow-card sm:p-7">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
+            <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
               Pan-India Executive Overview
             </h1>
             <p className="mt-1 text-sm text-[#5C5C70]">
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
                 <h2 className="text-base font-bold text-[#0B3D91]">Monthly Verification Volume (YTD)</h2>
                 <p className="mt-1 text-xs text-[#5C5C70]">Instrument verifications completed by channel</p>
               </div>
-              <div className="flex gap-3 text-[11px] text-[#5C5C70]">
+              <div className="flex flex-wrap gap-3 text-[11px] text-[#5C5C70]">
                 <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#0B3D91]" /> LMO</span>
                 <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-[#FF6F00]" /> GATC</span>
               </div>

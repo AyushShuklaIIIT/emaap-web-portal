@@ -77,8 +77,8 @@ export default function MasterData() {
   return (
     <DashboardLayout role="admin">
       <section className="mx-auto max-w-[1340px] overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-        <div className="px-7 pb-0 pt-7">
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
+        <div className="px-4 pb-0 pt-6 sm:px-7 sm:pt-7">
+          <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
             System Configuration &amp; Master Data
           </h1>
           <div className="mt-6 flex gap-6 overflow-x-auto border-b border-[#E8E9EC]">
@@ -98,7 +98,7 @@ export default function MasterData() {
           </div>
         </div>
 
-        <div className="px-7 pb-7 pt-7">
+        <div className="px-4 pb-7 pt-7 sm:px-7">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <h2 className="text-lg font-bold text-[#0B3D91]">
               Central Notified Verification Fees
@@ -121,7 +121,7 @@ export default function MasterData() {
 
           <div className="mt-4 overflow-hidden rounded-lg border border-[#E0E0E0]">
             <div className="overflow-x-auto">
-              <Table className="min-w-[1120px]">
+              <Table className="mobile-card-table min-w-[1120px]">
                 <TableHeader>
                   <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                     <TableHead className="h-12 px-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">Ref Code &amp; Instrument Category</TableHead>

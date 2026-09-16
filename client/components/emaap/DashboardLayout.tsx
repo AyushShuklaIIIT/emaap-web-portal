@@ -17,8 +17,10 @@ import {
   LogOut,
   Globe,
   User,
+  Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { TricolorBar } from "./TricolorBar";
 import { EmaapLogo } from "./EmaapLogo";
 import {
@@ -33,6 +35,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -81,18 +84,82 @@ export function DashboardLayout({
   const navigate = useNavigate();
   const [lang, setLang] = useState<"EN" | "HI">("EN");
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const isMobile = useIsMobile();
   const items = NAV[role];
   const roleNotifications = notifications[role];
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
       <TricolorBar />
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-6">
-        <EmaapLogo />
-        <div className="flex items-center gap-2">
+      <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border bg-card px-3 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2">
+          {isMobile && (
+            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-foreground hover:bg-muted"
+                  aria-label="Open navigation menu"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+              </SheetTrigger>
+              <SheetContent
+                side="left"
+                className="w-[min(18rem,85vw)] bg-sidebar p-0 text-sidebar-foreground"
+              >
+                <SheetHeader className="border-b border-sidebar-border px-5 py-4 text-left">
+                  <SheetTitle className="text-sidebar-foreground">
+                    {role === "business" ? "Business Portal" : "Administrator Portal"}
+                  </SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-1 px-3 py-5">
+                  {items.map((item) => {
+                    const active = location.pathname === item.href;
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        to={item.href}
+                        onClick={() => setMobileNavOpen(false)}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                          active
+                            ? "bg-sidebar-accent text-white"
+                            : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-white",
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "h-4 w-4",
+                            active ? "text-saffron" : "text-sidebar-foreground/60",
+                          )}
+                        />
+                        {item.label}
+                        {active && (
+                          <span className="ml-auto h-1.5 w-1.5 rounded-full bg-saffron" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                  <Link
+                    to={`/${role}/settings`}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="mt-3 flex items-center gap-3 rounded-lg border-t border-sidebar-border px-3 py-4 text-sm font-medium text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-white"
+                  >
+                    <Settings className="h-4 w-4 text-sidebar-foreground/60" />
+                    Settings &amp; Profile
+                  </Link>
+                </nav>
+              </SheetContent>
+            </Sheet>
+          )}
+          <EmaapLogo className="min-w-0" />
+        </div>
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <button
             onClick={() => setLang(lang === "EN" ? "HI" : "EN")}
-            className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted"
+            className="flex h-9 items-center gap-1.5 rounded-md border border-border px-2 text-sm font-medium text-foreground hover:bg-muted sm:px-3"
           >
             <Globe className="h-4 w-4" />
             {lang === "EN" ? "EN" : "हिं"}
@@ -158,7 +225,7 @@ export function DashboardLayout({
       </header>
 
       <div className="flex flex-1">
-        <aside className="flex w-64 shrink-0 flex-col justify-between bg-sidebar px-3 py-5">
+        <aside className="hidden w-64 shrink-0 flex-col justify-between bg-sidebar px-3 py-5 md:flex">
           <nav className="flex flex-col gap-1">
             <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
               {role === "business" ? "Business Portal" : "Administrator Portal"}
@@ -205,7 +272,9 @@ export function DashboardLayout({
           </div>
         </aside>
 
-        <main className="flex-1 overflow-x-hidden px-8 py-7">{children}</main>
+        <main className="min-w-0 flex-1 overflow-x-hidden px-3 py-5 sm:px-6 sm:py-7 lg:px-8">
+          {children}
+        </main>
       </div>
 
       <Sheet open={notifOpen} onOpenChange={setNotifOpen}>

@@ -44,8 +44,8 @@ export default function Payments() {
   return (
     <DashboardLayout role="business">
       <section className="mx-auto max-w-310 overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-        <div className="flex flex-col justify-between gap-4 px-7 pb-6 pt-7 sm:flex-row sm:items-center">
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
+        <div className="flex flex-col justify-between gap-4 px-4 pb-6 pt-6 sm:flex-row sm:items-center sm:px-7 sm:pt-7">
+          <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
             Payments &amp; Invoices
           </h1>
           <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-[#E8F5E9] px-3.5 py-2 text-sm font-semibold text-[#315B3A]">
@@ -56,7 +56,7 @@ export default function Payments() {
 
         <div className="border-t border-[#E8E9EC]" />
 
-        <div className="px-7 pb-8 pt-7">
+        <div className="px-4 pb-8 pt-7 sm:px-7">
           <h2 className="text-lg font-bold text-[#0B3D91]">Pending Payments</h2>
           <div className="mt-4 flex flex-col gap-5 rounded-lg border border-[#FFE082] bg-[#FFF8E1] p-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
@@ -89,7 +89,7 @@ export default function Payments() {
           </h2>
           <div className="mt-4 overflow-hidden rounded-lg border border-[#E0E0E0]">
             <div className="overflow-x-auto">
-              <Table className="min-w-232.5">
+              <Table className="mobile-card-table min-w-232.5">
                 <TableHeader>
                   <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                     <TableHead className="h-12 px-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">

@@ -73,9 +73,9 @@ export default function Instruments() {
   return (
     <DashboardLayout role="business">
       <section className="mx-auto max-w-310 overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-        <div className="flex flex-col gap-5 px-7 pb-6 pt-7 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-col gap-5 px-4 pb-6 pt-6 xl:flex-row xl:items-center xl:justify-between sm:px-7 sm:pt-7">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
+            <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
               My Instruments &amp; Certificates
             </h1>
             <p className="mt-1 text-sm text-[#5C5C70]">
@@ -121,7 +121,7 @@ export default function Instruments() {
         <div className="border-t border-[#E8E9EC]" />
 
         <div className="overflow-x-auto">
-          <Table className="min-w-225">
+          <Table className="mobile-card-table min-w-225">
             <TableHeader>
               <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                 <TableHead className="h-12 px-7 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">
@@ -223,7 +223,7 @@ export default function Instruments() {
           </Table>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-[#E8E9EC] px-7 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-[#E8E9EC] px-4 py-4 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-7">
           <span className="text-[#5C5C70]">
             Showing 1 to 3 of 1,240 instruments
           </span>

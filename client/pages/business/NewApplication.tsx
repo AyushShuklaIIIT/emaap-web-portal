@@ -201,7 +201,7 @@ export default function NewApplication() {
   const renderInstrumentForm = () => {
     return (
       <form
-        className="px-8 pb-8 pt-8 sm:px-10"
+        className="px-4 pb-8 pt-6 sm:px-10 sm:pt-8"
         onSubmit={(event) => {
           event.preventDefault();
           setCurrentStep(1);
@@ -335,7 +335,7 @@ export default function NewApplication() {
 
     return (
       <form
-        className="px-8 pb-8 pt-8 sm:px-10"
+        className="px-4 pb-8 pt-6 sm:px-10 sm:pt-8"
         onSubmit={(e) => {
           e.preventDefault();
           setCurrentStep(2); // Move to Review & Payment Step
@@ -454,7 +454,7 @@ export default function NewApplication() {
   const renderReviewPaymentForm = () => {
     return (
       <form
-        className="px-8 pb-8 pt-8 sm:px-10"
+        className="px-4 pb-8 pt-6 sm:px-10 sm:pt-8"
         onSubmit={submitApplication}
       >
         <div className="mb-6">
@@ -472,7 +472,7 @@ export default function NewApplication() {
             <h3 className="mb-4 font-bold text-[#1A1A2E]">Fee Summary</h3>
             <div className="mb-2 flex justify-between text-sm">
               <span className="text-[#5C5C70]">Instrument Category</span>
-              <span className="font-medium text-[#1A1A2E] text-right max-w-[60%]">
+              <span className="max-w-[60%] text-right font-medium text-[#1A1A2E]">
                 {selectedCategory || "Not Selected"}
               </span>
             </div>
@@ -643,7 +643,7 @@ export default function NewApplication() {
 
     return (
       <DashboardLayout role="business">
-        <section className="mx-auto max-w-200 rounded-xl border border-[#1E8E3E] bg-white p-10 text-center shadow-lg">
+        <section className="mx-auto max-w-200 rounded-xl border border-[#1E8E3E] bg-white p-5 text-center shadow-lg sm:p-10">
           <div className="mb-6 flex justify-center">
             <div className="rounded-full bg-[#E8F5E9] p-4">
               <svg
@@ -669,7 +669,7 @@ export default function NewApplication() {
             Digital Certificate generated securely via Legal Metrology Authority.
           </p>
 
-          <div className="mb-8 grid grid-cols-2 gap-8 rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-6 text-left">
+          <div className="mb-8 grid grid-cols-1 gap-5 rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-4 text-left sm:grid-cols-2 sm:gap-8 sm:p-6">
             <div>
               <p className="mb-1 text-xs font-bold uppercase text-[#5C5C70]">
                 Certificate ID
@@ -737,7 +737,7 @@ export default function NewApplication() {
   return (
     <DashboardLayout role="business">
       <section className="mx-auto max-w-280 rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-        <div className="px-8 pb-7 pt-8 sm:px-10">
+        <div className="px-4 pb-7 pt-6 sm:px-10 sm:pt-8">
           <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
             New Verification Application
           </h1>
@@ -769,7 +769,7 @@ export default function NewApplication() {
                       {index + 1}
                     </div>
                     <span
-                      className={`whitespace-nowrap text-sm ${stepTextClass}`}
+                      className={`hidden text-sm sm:block ${stepTextClass}`}
                     >
                       {step}
                     </span>

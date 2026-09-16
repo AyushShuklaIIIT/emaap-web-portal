@@ -85,3 +85,46 @@
     white-space: pre;
   }
 }
+
+@media (max-width: 767px) {
+  .mobile-card-table {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .mobile-card-table thead {
+    display: none;
+  }
+
+  .mobile-card-table tbody {
+    display: block;
+  }
+
+  .mobile-card-table tbody tr {
+    display: block;
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 0.75rem 1rem;
+  }
+
+  .mobile-card-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .mobile-card-table tbody td {
+    display: block;
+    max-width: none;
+    min-height: 0;
+    padding: 0.35rem 0 !important;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .mobile-card-table tbody td[colspan] {
+    text-align: center;
+  }
+
+  .mobile-card-table tbody td > button,
+  .mobile-card-table tbody td > a {
+    max-width: 100%;
+  }
+}

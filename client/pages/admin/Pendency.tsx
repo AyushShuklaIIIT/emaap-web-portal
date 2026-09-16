@@ -56,8 +56,8 @@ export default function Pendency() {
   return (
     <DashboardLayout role="admin">
       <section className="mx-auto max-w-[1320px] overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-        <div className="flex flex-col justify-between gap-4 px-7 pb-6 pt-7 sm:flex-row sm:items-center">
-          <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">
+        <div className="flex flex-col justify-between gap-4 px-4 pb-6 pt-6 sm:flex-row sm:items-center sm:px-7 sm:pt-7">
+          <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
             Pendency Queue &amp; Workflow Engine
           </h1>
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -74,19 +74,19 @@ export default function Pendency() {
           </div>
         </div>
 
-        <div className="mx-7 flex items-start gap-3 rounded-lg border border-[#FFCDD2] bg-[#FFEBEE] px-4 py-3.5 text-sm text-[#9B1C1C]">
+        <div className="mx-4 flex items-start gap-3 rounded-lg border border-[#FFCDD2] bg-[#FFEBEE] px-4 py-3.5 text-sm text-[#9B1C1C] sm:mx-7">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#D32F2F]" />
           <p className="font-bold">
             System Alert: 142 applications in the UP Zone have breached the 15-day SLA. Algorithmic re-routing to private GATCs is recommended.
           </p>
         </div>
 
-        <div className="mx-7 mt-6 border-t border-[#E8E9EC]" />
+        <div className="mx-4 mt-6 border-t border-[#E8E9EC] sm:mx-7" />
 
-        <div className="px-7 pb-7 pt-6">
+        <div className="px-4 pb-7 pt-6 sm:px-7">
           <div className="overflow-hidden rounded-lg border border-[#E0E0E0]">
             <div className="overflow-x-auto">
-              <Table className="min-w-[1220px]">
+              <Table className="mobile-card-table min-w-[1220px]">
                 <TableHeader>
                   <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                     <TableHead className="h-12 px-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">App ID &amp; Date</TableHead>

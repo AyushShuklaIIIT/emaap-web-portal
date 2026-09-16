@@ -43,7 +43,12 @@ router.post(
     }
 
     const manufacturerFilename = files["manufacturerFile"][0].filename;
-    const manufacturerFileUrl = `http://localhost:${process.env.PORT}/uploads/${manufacturerFilename}`;
+    const forwardedProtocol = req.get("x-forwarded-proto")?.split(",")[0].trim();
+    const publicBaseUrl = (
+      process.env.PUBLIC_BACKEND_URL ??
+      `${forwardedProtocol || req.protocol}://${req.get("host")}`
+    ).replace(/\/$/, "");
+    const manufacturerFileUrl = `${publicBaseUrl}/uploads/${manufacturerFilename}`;
 
     let prevCertificateFileUrl = null;
     if (
@@ -51,7 +56,7 @@ router.post(
       files["prevCertificateFile"].length > 0
     ) {
       const prevCertFilename = files["prevCertificateFile"][0].filename;
-      prevCertificateFileUrl = `http://localhost:${process.env.PORT}/uploads/${prevCertFilename}`;
+      prevCertificateFileUrl = `${publicBaseUrl}/uploads/${prevCertFilename}`;
     }
 
     const io = req.app.get("io");

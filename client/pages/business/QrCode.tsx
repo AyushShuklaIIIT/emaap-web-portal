@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
-
-const backendUrl = (import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8008").replace(
-  /\/$/,
-  "",
-);
+import { backendUrl } from "@/lib/backend-url";
 
 interface Certificate {
   certificateId: string;

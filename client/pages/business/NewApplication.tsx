@@ -6,11 +6,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
 import { SuccessPopup } from "../../components/ui/SuccessPopUp";
-
-const backendUrl = (import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8008").replace(
-  /\/$/,
-  ""
-);
+import { backendUrl } from "@/lib/backend-url.ts";
 
 const socket = io(backendUrl, {
   autoConnect: false,

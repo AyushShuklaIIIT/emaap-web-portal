@@ -126,19 +126,28 @@ function ApplicationWizard({
           [1, "Lab Details"],
           [2, "Technical Infrastructure"],
           [3, "Scope & Submission"],
-        ].map(([number, label]) => (
-          <div
-            key={number}
-            className={`relative flex items-center gap-2 border-b-2 px-1 py-4 text-xs font-bold sm:gap-3 sm:text-sm ${step >= Number(number) ? "border-[#0B3D91] text-[#0B3D91]" : "border-transparent text-[#8A8A98]"}`}
-          >
-            <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs ${step > Number(number) ? "bg-[#1E8E3E] text-white" : step === Number(number) ? "bg-[#0B3D91] text-white" : "bg-[#E0E0E0] text-[#5C5C70]"}`}
+        ].map(([number, label]) => {
+          let statusClassName = "bg-[#E0E0E0] text-[#5C5C70]";
+          if (step > Number(number)) {
+            statusClassName = "bg-[#1E8E3E] text-white";
+          } else if (step === Number(number)) {
+            statusClassName = "bg-[#0B3D91] text-white";
+          }
+
+          return (
+            <div
+              key={number}
+              className={`relative flex items-center gap-2 border-b-2 px-1 py-4 text-xs font-bold sm:gap-3 sm:text-sm ${step >= Number(number) ? "border-[#0B3D91] text-[#0B3D91]" : "border-transparent text-[#8A8A98]"}`}
             >
-              {step > Number(number) ? <Check className="h-4 w-4" /> : number}
-            </span>
-            <span className="hidden sm:inline">{label}</span>
-          </div>
-        ))}
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs ${statusClassName}`}
+              >
+                {step > Number(number) ? <Check className="h-4 w-4" /> : number}
+              </span>
+              <span className="hidden sm:inline">{label}</span>
+            </div>
+          );
+        })}
       </div>
       <form onSubmit={onSubmit} className="px-5 py-6 sm:px-8 sm:py-8">
         
@@ -335,6 +344,18 @@ function PendingStatus() {
           {timeline.map(([label, status], index) => {
             const done = index < 2;
             const active = index === 2;
+            let markerClassName = "bg-[#E0E0E0] text-[#5C5C70]";
+            if (done) {
+              markerClassName = "bg-[#1E8E3E] text-white";
+            } else if (active) {
+              markerClassName = "bg-[#F9A825] text-white";
+            }
+            let statusClassName = "text-[#8A8A98]";
+            if (done) {
+              statusClassName = "text-[#1E8E3E]";
+            } else if (active) {
+              statusClassName = "text-[#F9A825]";
+            }
             return (
               <div key={label} className="relative flex gap-4">
                 {index < timeline.length - 1 && (
@@ -343,14 +364,14 @@ function PendingStatus() {
                   />
                 )}
                 <span
-                  className={`z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${done ? "bg-[#1E8E3E] text-white" : active ? "bg-[#F9A825] text-white" : "bg-[#E0E0E0] text-[#5C5C70]"}`}
+                  className={`z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${markerClassName}`}
                 >
                   {done ? <Check className="h-4 w-4" /> : index + 1}
                 </span>
                 <div className="pb-1">
                   <p className="font-bold text-[#1A1A2E]">{label}</p>
                   <p
-                    className={`mt-1 text-xs font-semibold ${done ? "text-[#1E8E3E]" : active ? "text-[#F9A825]" : "text-[#8A8A98]"}`}
+                    className={`mt-1 text-xs font-semibold ${statusClassName}`}
                   >
                     {status}
                   </p>

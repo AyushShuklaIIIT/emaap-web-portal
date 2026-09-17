@@ -55,6 +55,15 @@ export default function GatcDashboard() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    if (submitter instanceof HTMLElement === false) {
+      return;
+    }
+
+    if (submitter.getAttribute("data-submit-application") !== "true") {
+      return;
+    }
+
     setIsLoading(true);
     window.setTimeout(() => {
       setIsLoading(false);
@@ -155,6 +164,7 @@ function ApplicationWizard({
           ) : (
             <Button
               type="submit"
+              data-submit-application="true"
               disabled={isLoading || selectedScope.length === 0}
               className="bg-[#FF6F00] font-bold text-white shadow-none hover:bg-[#E66000]"
             >

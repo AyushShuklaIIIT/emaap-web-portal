@@ -55,14 +55,17 @@ export default function GatcDashboard() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const submitter = (event.nativeEvent as SubmitEvent).submitter;
-    if (submitter instanceof HTMLElement === false) {
+    
+    // If we are NOT on the final step, the form submission should just 
+    // advance the user to the next step. (Because this ran, we know the 
+    // browser's native HTML validation passed for the current step).
+    if (step < 3) {
+      setStep((prev) => prev + 1);
       return;
     }
 
-    if (submitter.getAttribute("data-submit-application") !== "true") {
-      return;
-    }
+    // If we reach here, we are on Step 3 and ready for final submission
+    if (selectedScope.length === 0) return; 
 
     setIsLoading(true);
     window.setTimeout(() => {
@@ -138,25 +141,29 @@ function ApplicationWizard({
         ))}
       </div>
       <form onSubmit={onSubmit} className="px-5 py-6 sm:px-8 sm:py-8">
+        
+        {/* React unmounts hidden steps. The browser will naturally only 
+            validate the 'required' inputs that are currently visible on screen. */}
         {step === 1 && <OrganizationStep />}
         {step === 2 && <InfrastructureStep />}
         {step === 3 && (
           <ScopeStep selectedScope={selectedScope} toggleScope={toggleScope} />
         )}
+        
         <div className="mt-8 flex flex-col-reverse justify-between gap-3 border-t border-[#E8E9EC] pt-5 sm:flex-row">
           <Button
-            type="button"
+            type="button" 
             variant="ghost"
             disabled={step === 1 || isLoading}
-            onClick={() => setStep(step - 1)}
+            onClick={() => setStep(step - 1)} // Previous stays type="button" so it doesn't trigger validation
             className="gap-2 text-[#0B3D91] hover:bg-[#E3F2FD]"
           >
             <ChevronLeft className="h-4 w-4" /> Previous
           </Button>
+          
           {step < 3 ? (
             <Button
-              type="button"
-              onClick={() => setStep(step + 1)}
+              type="submit" // Changed to submit to trigger HTML validation
               className="gap-2 bg-[#0B3D91] font-bold text-white hover:bg-[#082f70]"
             >
               Continue <ChevronRight className="h-4 w-4" />
@@ -164,7 +171,6 @@ function ApplicationWizard({
           ) : (
             <Button
               type="submit"
-              data-submit-application="true"
               disabled={isLoading || selectedScope.length === 0}
               className="bg-[#FF6F00] font-bold text-white shadow-none hover:bg-[#E66000]"
             >
@@ -383,6 +389,7 @@ function StepSection({
     </section>
   );
 }
+
 function Field({
   label,
   name,
@@ -409,6 +416,7 @@ function Field({
     </label>
   );
 }
+
 function SelectField({
   label,
   name,
@@ -434,6 +442,7 @@ function SelectField({
     </label>
   );
 }
+
 function FileField({ label, name }: Readonly<{ label: string; name: string }>) {
   return (
     <label className="block rounded-lg border border-dashed border-[#8A8A98] bg-[#F5F7FA] p-4 text-sm font-semibold text-[#1A1A2E]">

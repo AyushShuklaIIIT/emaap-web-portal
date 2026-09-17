@@ -1,8 +1,17 @@
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -49,25 +58,59 @@ const centres = [
 ];
 
 export default function Gatc() {
+  const [centresData, setCentresData] = useState(centres);
   const [query, setQuery] = useState("");
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeGatcs, setActiveGatcs] = useState(412);
+  const { toast } = useToast();
   const filteredCentres = useMemo(() => {
     const normalizedQuery = query.toLowerCase().trim();
-    if (!normalizedQuery) return centres;
-    return centres.filter((centre) =>
+    if (!normalizedQuery) return centresData;
+    return centresData.filter((centre) =>
       `${centre.id} ${centre.name} ${centre.categories}`
         .toLowerCase()
         .includes(normalizedQuery),
     );
-  }, [query]);
+  }, [centresData, query]);
+
+  const handleApprove = () => {
+    const newCentre = {
+      id: "GATC-MH-99",
+      name: "TechMeasure Engineering Labs",
+      categories: "Energy Dispensing (CNG, LNG), Automatic Rail Weighbridges",
+      validity: "Valid",
+      validityNote: "Expires: 17 Sep 2027",
+      total: "Total: ₹0",
+      split: "(Govt: ₹0 | GATC: ₹0)",
+      tone: "valid",
+      action: "View Profile",
+    };
+
+    setIsLoading(true);
+    window.setTimeout(() => {
+      setCentresData((current) => [newCentre, ...current]);
+      setActiveGatcs((current) => current + 1);
+      setIsLoading(false);
+      setIsReviewOpen(false);
+      toast({
+        title: "GATC authorization approved",
+        description: `${newCentre.id} was issued to TechMeasure Engineering Labs.`,
+      });
+    }, 1500);
+  };
 
   return (
     <DashboardLayout role="admin">
-      <section className="mx-auto max-w-[1320px] overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
+      <section className="mx-auto max-w-330 overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
         <div className="flex flex-col justify-between gap-4 px-4 pb-6 pt-6 sm:flex-row sm:items-center sm:px-7 sm:pt-7">
           <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
             GATC Authorization &amp; Revenue Management
           </h1>
-          <Button className="h-10 w-fit rounded-lg bg-[#FF6F00] px-4 font-bold text-white shadow-none hover:bg-[#E66000]">
+          <Button
+            onClick={() => setIsReviewOpen(true)}
+            className="h-10 w-fit rounded-lg bg-[#FF6F00] px-4 font-bold text-white shadow-none hover:bg-[#E66000]"
+          >
             + Authorize New GATC
           </Button>
         </div>
@@ -76,14 +119,14 @@ export default function Gatc() {
 
         <div className="px-4 pb-7 pt-6 sm:px-7">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <KpiCard title="Total Active GATCs" value="412" detail="Across 28 States & 8 UTs" tone="blue" />
+            <KpiCard title="Total Active GATCs" value={String(activeGatcs)} detail="Across 28 States & 8 UTs" tone="blue" />
             <KpiCard title="GATC Revenue Generated (YTD)" value="₹21.5 Cr" detail="Automatically split 80:20 (Govt / Test Centre)" tone="green" />
             <KpiCard title="Pending Lab Renewals" value="14 Labs" detail="Licenses expiring in < 30 days" tone="amber" />
           </div>
 
           <div className="mt-9 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <h2 className="text-lg font-bold text-[#0B3D91]">Authorized Testing Centres Network</h2>
-            <div className="relative sm:w-[310px]">
+            <div className="relative sm:w-77.5">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8A8A98]" />
               <Input
                 value={query}
@@ -96,7 +139,7 @@ export default function Gatc() {
 
           <div className="mt-4 overflow-hidden rounded-lg border border-[#E0E0E0]">
             <div className="overflow-x-auto">
-              <Table className="mobile-card-table min-w-[1100px]">
+              <Table className="mobile-card-table min-w-275">
                 <TableHeader>
                   <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
                     <TableHead className="h-12 px-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">GATC ID &amp; Lab Name</TableHead>
@@ -108,22 +151,24 @@ export default function Gatc() {
                 </TableHeader>
                 <TableBody>
                   {filteredCentres.map((centre) => (
-                    <TableRow key={centre.id} className="border-b border-[#E8E9EC] hover:bg-[#FAFBFC]">
+                    (() => {
+                      let validityClassName = "bg-[#D32F2F] text-white";
+                      if (centre.tone === "valid") {
+                        validityClassName = "bg-[#1E8E3E] text-white";
+                      } else if (centre.tone === "expiring") {
+                        validityClassName = "bg-[#F9A825] text-[#1A1A2E]";
+                      }
+
+                      return <TableRow key={centre.id} className="border-b border-[#E8E9EC] hover:bg-[#FAFBFC]">
                       <TableCell className="px-5 py-5 align-top">
                         <p className="font-semibold text-[#1A1A2E]">{centre.id}</p>
                         <p className="mt-1 text-sm font-bold text-[#0B3D91]">{centre.name}</p>
                       </TableCell>
-                      <TableCell className="max-w-[310px] py-5 align-top text-sm leading-5 text-[#1A1A2E]">
+                      <TableCell className="max-w-77.5 py-5 align-top text-sm leading-5 text-[#1A1A2E]">
                         {centre.categories}
                       </TableCell>
                       <TableCell className="py-5 align-top">
-                        <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ${
-                          centre.tone === "valid"
-                            ? "bg-[#1E8E3E] text-white"
-                            : centre.tone === "expiring"
-                              ? "bg-[#F9A825] text-[#1A1A2E]"
-                              : "bg-[#D32F2F] text-white"
-                        }`}>
+                        <span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ${validityClassName}`}>
                           {centre.validity}
                         </span>
                         <p className={`mt-2 whitespace-nowrap text-xs ${centre.tone === "expiring" ? "font-medium text-[#D32F2F]" : "text-[#5C5C70]"}`}>
@@ -148,7 +193,8 @@ export default function Gatc() {
                           </Button>
                         )}
                       </TableCell>
-                    </TableRow>
+                      </TableRow>;
+                    })()
                   ))}
                   {filteredCentres.length === 0 && (
                     <TableRow>
@@ -170,7 +216,69 @@ export default function Gatc() {
           </div>
         </div>
       </section>
+
+      <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto bg-white sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-[#1A1A2E]">
+              Review Pending GATC Recognition Application
+            </DialogTitle>
+            <DialogDescription>
+              Review the private laboratory application before issuing authorization.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 border-y border-[#E8E9EC] py-5 sm:grid-cols-2">
+            <ReviewField label="Applicant Entity" value="TechMeasure Engineering & Calibration Labs" />
+            <ReviewField label="Location" value="Pune, Maharashtra" />
+            <ReviewField label="Principal Officer" value="Dr. A. K. Sharma" />
+            <ReviewField label="Officer Qualification & Experience" value="M.Sc Physics | 7 Years Metrology Experience" highlight />
+            <ReviewField label="Requested Scope (2026 Rules)" value="Energy Dispensing (CNG, LNG), Automatic Rail Weighbridges" />
+            <ReviewField label="Equipment Traceability" value="NABL Accredited - Valid till 2028" check />
+            <div className="rounded-lg bg-[#E3F2FD] p-4 sm:col-span-2">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#0B3D91]">Joint Inspection Report</p>
+              <p className="mt-2 text-sm font-medium leading-5 text-[#1A1A2E]">Physically Audited & Recommended by LMO-MH-12 on 10 Sep 2026</p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-3">
+            <Button
+              variant="ghost"
+              disabled={isLoading}
+              onClick={() => setIsReviewOpen(false)}
+              className="text-[#D32F2F] hover:bg-[#FFEBEE] hover:text-[#D32F2F]"
+            >
+              Reject Application
+            </Button>
+            <Button
+              disabled={isLoading}
+              onClick={handleApprove}
+              className="bg-[#FF6F00] font-bold text-white shadow-none hover:bg-[#E66000]"
+            >
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading ? "Generating ID..." : "Approve & Issue GATC ID"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
+  );
+}
+
+function ReviewField({
+  label,
+  value,
+  highlight = false,
+  check = false,
+}: Readonly<{ label: string; value: string; highlight?: boolean; check?: boolean }>) {
+  return (
+    <div className={highlight ? "rounded-lg bg-[#E8F5E9] p-3" : "p-1"}>
+      <p className="text-xs font-bold uppercase tracking-wide text-[#5C5C70]">{label}</p>
+      <p className="mt-1 text-sm font-semibold leading-5 text-[#1A1A2E]">
+        {check && <span className="mr-1 text-[#1E8E3E]" aria-label="Verified">✓</span>}
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -179,13 +287,18 @@ function KpiCard({
   value,
   detail,
   tone,
-}: {
+}: Readonly<{
   title: string;
   value: string;
   detail: string;
   tone: "blue" | "green" | "amber";
-}) {
-  const toneClass = tone === "blue" ? "text-[#0B3D91]" : tone === "green" ? "text-[#1E8E3E]" : "text-[#F9A825]";
+}>) {
+  let toneClass = "text-[#F9A825]";
+  if (tone === "blue") {
+    toneClass = "text-[#0B3D91]";
+  } else if (tone === "green") {
+    toneClass = "text-[#1E8E3E]";
+  }
   return (
     <div className="rounded-lg border border-[#E0E0E0] bg-white p-4 shadow-card">
       <p className="text-sm font-medium text-[#5C5C70]">{title}</p>

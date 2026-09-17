@@ -1,137 +1,439 @@
-import { Link } from "react-router-dom";
-import { Download } from "lucide-react";
-import { TricolorBar } from "@/components/emaap/TricolorBar";
-import { EmaapLogo } from "@/components/emaap/EmaapLogo";
+import { FormEvent, useState } from "react";
+import { Check, ChevronLeft, ChevronRight, UploadCloud } from "lucide-react";
+import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 
-const tasks = [
-  {
-    app: "APP-8891",
-    client: "Indian Oil BKC",
-    instrument: "CNG Dispenser",
-    mode: "Field (Mobile)",
-    technician: "Tech: Rahul Sharma",
-    status: "Data & Seal Photos Synced",
-    tone: "synced",
-    action: "Review & Issue QR Cert",
-  },
-  {
-    app: "APP-8892",
-    client: "Adani Gas",
-    instrument: "LNG Dispenser",
-    mode: "Field (Mobile)",
-    technician: "Tech: Amit Patel",
-    status: "Awaiting Sync (Offline)",
-    tone: "offline",
-    action: "Cannot Issue Yet",
-  },
-  {
-    app: "APP-8893",
-    client: "Local Mandi",
-    instrument: "Standard Weights (Class M1)",
-    mode: "In-Lab (Desktop)",
-    technician: "Self (Manager)",
-    status: "Draft",
-    tone: "draft",
-    action: "Enter Calibration Data",
-  },
+const scopeCategories = [
+  "Energy Dispensers (CNG, LNG, Petrol)",
+  "Automatic Rail Weighbridges",
+  "Clinical Thermometers",
+  "Standard Weights",
+  "Non-Automatic Weighing Instruments",
+  "Automatic Weighing Instruments",
+  "Vehicle Weighbridges",
+  "Platform Scales",
+  "Retail Weighing Scales",
+  "Industrial Weighing Systems",
+  "Flow Meters",
+  "Water Meters",
+  "Fuel Dispensers",
+  "Gas Cylinders",
+  "Pressure Gauges",
+  "Temperature Sensors",
+  "Length Measuring Instruments",
+  "Area Measuring Instruments",
+  "Volume Measures",
+  "Tanker Trucks",
+  "Taxi Meters",
+  "Clinical Sphygmomanometers",
+  "Weights and Measures Software",
+];
+
+const initialScope = [
+  "Energy Dispensers (CNG, LNG, Petrol)",
+  "Automatic Rail Weighbridges",
+  "Clinical Thermometers",
+  "Standard Weights",
 ];
 
 export default function GatcDashboard() {
+  const [appStatus, setAppStatus] = useState<"unauthorized" | "pending">(
+    "unauthorized",
+  );
+  const [step, setStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedScope, setSelectedScope] = useState(initialScope);
+
+  const toggleScope = (category: string) => {
+    setSelectedScope((current) =>
+      current.includes(category)
+        ? current.filter((item) => item !== category)
+        : [...current, category],
+    );
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoading(true);
+    window.setTimeout(() => {
+      setIsLoading(false);
+      setAppStatus("pending");
+    }, 1500);
+  };
+
   return (
-    <div className="flex min-h-screen w-full flex-col bg-background">
-      <TricolorBar />
-      <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-border bg-card px-3 sm:px-6">
-        <EmaapLogo />
-        <Link to="/" className="text-sm font-medium text-primary hover:underline">Sign out</Link>
-      </header>
-      <main className="min-w-0 flex-1 px-3 py-5 sm:px-6 sm:py-7 lg:px-8">
-        <section className="mx-auto max-w-[1320px] overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-          <div className="px-4 pb-6 pt-6 sm:px-7 sm:pt-7">
-            <h1 className="text-2xl font-bold tracking-tight text-[#1A1A2E]">GATC Station Command Center</h1>
-          </div>
-          <div className="border-t border-[#E8E9EC]" />
-
-          <div className="space-y-8 px-4 pb-8 pt-6 sm:px-7 sm:pt-7">
-            <div className="flex flex-col gap-4 rounded-lg bg-[#E3F2FD] p-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="min-w-0">
-                <p className="font-bold text-[#0B3D91]">Unit ID: GATC-MH-04 (Apex Metrology Labs)</p>
-                <p className="mt-1 text-sm leading-5 text-[#0B3D91]/80">Authorized Scope: Energy Dispensers (2026 Rules), High-Capacity Weighbridges, Class-F1 Weights</p>
-              </div>
-              <span className="inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full bg-[#1E8E3E] px-3 py-1.5 text-xs font-bold text-white">
-                <span className="h-1.5 w-1.5 rounded-full bg-white" /> API Sync: Online
-              </span>
-            </div>
-
-            <section>
-              <h2 className="text-lg font-bold text-[#0B3D91]">Live Task Allocation &amp; Field Sync Status</h2>
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <MetricCard title="Dispatched to Mobile App" value="18" detail="Technicians currently in the field." />
-                <MetricCard title="Pending QA & Certification" value="5" detail="Field data synced. Awaiting Manager Approval." tone="amber" />
-                <MetricCard title="In-Lab Desktop Verifications" value="12" detail="Instruments brought to the station." />
-              </div>
-            </section>
-
-            <section>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-[#0B3D91]">Inspection Pipeline &amp; Quality Assurance</h2>
-                <span className="rounded-full bg-[#E3F2FD] px-2 py-1 text-[11px] font-semibold text-[#0B3D91]">Manager&apos;s Desk</span>
-              </div>
-              <div className="mt-4 overflow-hidden rounded-lg border border-[#E0E0E0]">
-                <div className="overflow-x-auto">
-                  <Table className="mobile-card-table min-w-[1100px]">
-                    <TableHeader>
-                      <TableRow className="border-b border-[#E0E0E0] bg-[#F5F7FA] hover:bg-[#F5F7FA]">
-                        <TableHead className="h-12 px-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">App ID &amp; Client</TableHead>
-                        <TableHead className="h-12 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">Instrument</TableHead>
-                        <TableHead className="h-12 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">Inspection Mode</TableHead>
-                        <TableHead className="h-12 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">Assigned Technician</TableHead>
-                        <TableHead className="h-12 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">Status</TableHead>
-                        <TableHead className="h-12 pr-5 text-[11px] font-bold uppercase tracking-wide text-[#5C5C70]">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {tasks.map((task) => (
-                        <TableRow key={task.app} className="border-b border-[#E8E9EC] hover:bg-[#FAFBFC]">
-                          <TableCell className="px-5 py-5 align-top"><p className="font-semibold text-[#1A1A2E]">{task.app}</p><p className="mt-1 text-xs text-[#5C5C70]">{task.client}</p></TableCell>
-                          <TableCell className="max-w-[180px] py-5 align-top text-sm leading-5 text-[#1A1A2E]">{task.instrument}</TableCell>
-                          <TableCell className="py-5 align-top text-sm text-[#5C5C70]">{task.mode}</TableCell>
-                          <TableCell className="py-5 align-top text-sm font-medium text-[#1A1A2E]">{task.technician}</TableCell>
-                          <TableCell className="py-5 align-top"><span className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ${task.tone === "synced" ? "bg-[#E3F2FD] text-[#0B3D91]" : task.tone === "offline" ? "bg-[#FFF8E1] text-[#F9A825]" : "bg-[#E0E0E0] text-[#5C5C70]"}`}>{task.status}</span></TableCell>
-                          <TableCell className="pr-5 py-5 align-top">
-                            {task.tone === "synced" ? <Button className="h-9 whitespace-nowrap rounded-lg bg-[#FF6F00] px-3 text-xs font-bold text-white shadow-none hover:bg-[#E66000]">{task.action}</Button> : <Button variant="ghost" disabled={task.tone === "offline"} className={`h-9 whitespace-nowrap px-2 text-xs font-semibold ${task.tone === "offline" ? "text-[#9A9AA3]" : "text-[#0B3D91] hover:bg-primary/5 hover:text-[#0B3D91]"}`}>{task.action}</Button>}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold text-[#0B3D91]">Revenue Settlement - 20% Lab Share</h2>
-              <div className="mt-4 flex flex-col gap-4 rounded-lg border border-[#C8E6C9] bg-[#E8F5E9] p-4 lg:flex-row lg:items-center lg:justify-between">
-                <div><p className="font-bold text-[#1A1A2E]">Total Verification Fees Processed (YTD): ₹4,50,000</p></div>
-                <div><p className="font-bold text-[#1E8E3E]">Your Approved GATC Share (20%): ₹90,000</p><p className="mt-1 text-xs text-[#5C5C70]">Settled by State Treasury</p></div>
-                <Button variant="ghost" className="w-fit gap-2 font-semibold text-[#0B3D91] hover:bg-white/70 hover:text-[#0B3D91]"><Download className="h-4 w-4" /> Download Monthly Tax Invoice</Button>
-              </div>
-            </section>
-          </div>
-        </section>
-      </main>
-    </div>
+    <DashboardLayout role="gatc">
+      {appStatus === "unauthorized" ? (
+        <ApplicationWizard
+          step={step}
+          setStep={setStep}
+          isLoading={isLoading}
+          selectedScope={selectedScope}
+          toggleScope={toggleScope}
+          onSubmit={handleSubmit}
+        />
+      ) : (
+        <PendingStatus />
+      )}
+    </DashboardLayout>
   );
 }
 
-function MetricCard({ title, value, detail, tone = "blue" }: { title: string; value: string; detail: string; tone?: "blue" | "amber" }) {
-  return <div className="rounded-lg border border-[#E0E0E0] bg-white p-4 shadow-card"><p className="text-sm font-medium text-[#5C5C70]">{title}</p><p className={`mt-3 text-3xl font-extrabold tracking-tight ${tone === "amber" ? "text-[#F9A825]" : "text-[#0B3D91]"}`}>{value}</p><p className="mt-2 min-h-10 text-xs leading-5 text-[#5C5C70]">{detail}</p></div>;
+function ApplicationWizard({
+  step,
+  setStep,
+  isLoading,
+  selectedScope,
+  toggleScope,
+  onSubmit,
+}: Readonly<{
+  step: number;
+  setStep: (step: number) => void;
+  isLoading: boolean;
+  selectedScope: string[];
+  toggleScope: (category: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}>) {
+  return (
+    <section className="mx-auto max-w-270 rounded-xl border border-[#E0E0E0] bg-white shadow-card">
+      <div className="border-b border-[#E8E9EC] px-5 py-6 sm:px-8">
+        <p className="text-xs font-bold uppercase tracking-widest text-[#FF6F00]">
+          Legal Metrology Compliance Portal
+        </p>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1A1A2E]">
+          GATC Recognition Application &amp; Onboarding
+        </h1>
+        <p className="mt-2 text-sm text-[#5C5C70]">
+          Apply for recognition as a Government Approved Test Centre under the
+          GATC Rules, 2013 and 2026 amendments.
+        </p>
+      </div>
+      <div className="grid grid-cols-3 border-b border-[#E8E9EC] bg-[#F5F7FA] px-5 sm:px-8">
+        {[
+          [1, "Lab Details"],
+          [2, "Technical Infrastructure"],
+          [3, "Scope & Submission"],
+        ].map(([number, label]) => (
+          <div
+            key={number}
+            className={`relative flex items-center gap-2 border-b-2 px-1 py-4 text-xs font-bold sm:gap-3 sm:text-sm ${step >= Number(number) ? "border-[#0B3D91] text-[#0B3D91]" : "border-transparent text-[#8A8A98]"}`}
+          >
+            <span
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs ${step > Number(number) ? "bg-[#1E8E3E] text-white" : step === Number(number) ? "bg-[#0B3D91] text-white" : "bg-[#E0E0E0] text-[#5C5C70]"}`}
+            >
+              {step > Number(number) ? <Check className="h-4 w-4" /> : number}
+            </span>
+            <span className="hidden sm:inline">{label}</span>
+          </div>
+        ))}
+      </div>
+      <form onSubmit={onSubmit} className="px-5 py-6 sm:px-8 sm:py-8">
+        {step === 1 && <OrganizationStep />}
+        {step === 2 && <InfrastructureStep />}
+        {step === 3 && (
+          <ScopeStep selectedScope={selectedScope} toggleScope={toggleScope} />
+        )}
+        <div className="mt-8 flex flex-col-reverse justify-between gap-3 border-t border-[#E8E9EC] pt-5 sm:flex-row">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={step === 1 || isLoading}
+            onClick={() => setStep(step - 1)}
+            className="gap-2 text-[#0B3D91] hover:bg-[#E3F2FD]"
+          >
+            <ChevronLeft className="h-4 w-4" /> Previous
+          </Button>
+          {step < 3 ? (
+            <Button
+              type="button"
+              onClick={() => setStep(step + 1)}
+              className="gap-2 bg-[#0B3D91] font-bold text-white hover:bg-[#082f70]"
+            >
+              Continue <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              disabled={isLoading || selectedScope.length === 0}
+              className="bg-[#FF6F00] font-bold text-white shadow-none hover:bg-[#E66000]"
+            >
+              {isLoading
+                ? "Submitting Application..."
+                : "Submit Application & Pay Processing Fee"}
+            </Button>
+          )}
+        </div>
+      </form>
+    </section>
+  );
+}
+
+function OrganizationStep() {
+  return (
+    <StepSection
+      title="Organization & Principal Officer"
+      description="Provide the legal identity and qualified officer responsible for the testing centre."
+    >
+      <div className="grid gap-5 md:grid-cols-2">
+        <SelectField
+          label="Organization Type"
+          name="organizationType"
+          options={[
+            "Private Laboratory",
+            "Engineering College",
+            "ITI",
+            "Polytechnic",
+          ]}
+        />
+        <Field
+          label="Registered Laboratory Name"
+          name="laboratoryName"
+          required
+        />
+        <div className="md:col-span-2">
+          <Field label="Registered Address" name="address" required />
+        </div>
+        <Field label="Principal Officer Name" name="officerName" required />
+        <SelectField
+          label="Highest Qualification"
+          name="qualification"
+          options={[
+            "M.Sc Physics",
+            "B.Tech",
+            "B.Sc Physics",
+            "Diploma in Metrology",
+          ]}
+        />
+        <div>
+          <Field
+            label="Years of Metrology Experience"
+            name="experience"
+            type="number"
+            min={3}
+            required
+          />
+          <p className="mt-1.5 text-xs text-[#5C5C70]">
+            Minimum 3 years required by law.
+          </p>
+        </div>
+      </div>
+    </StepSection>
+  );
+}
+
+function InfrastructureStep() {
+  return (
+    <StepSection
+      title="Technical Infrastructure & Traceability"
+      description="Upload current evidence for accreditation, equipment traceability, and lawful premises use."
+    >
+      <div className="grid gap-5 md:grid-cols-3">
+        <FileField
+          label="NABL Accreditation Certificate"
+          name="nablCertificate"
+        />
+        <FileField
+          label="Equipment Calibration Traceability Proof"
+          name="traceabilityProof"
+        />
+        <FileField
+          label="Premises Ownership / Lease Agreement"
+          name="premisesAgreement"
+        />
+      </div>
+    </StepSection>
+  );
+}
+
+function ScopeStep({
+  selectedScope,
+  toggleScope,
+}: Readonly<{
+  selectedScope: string[];
+  toggleScope: (category: string) => void;
+}>) {
+  return (
+    <StepSection
+      title="Requested Scope of Authorization (2026 Rules)"
+      description="Select every category for which your laboratory seeks authorization. The final scope will be assessed during joint inspection."
+    >
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {scopeCategories.map((category) => (
+          <label
+            key={category}
+            className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition-colors ${selectedScope.includes(category) ? "border-[#0B3D91] bg-[#E3F2FD] text-[#0B3D91]" : "border-[#E0E0E0] text-[#1A1A2E] hover:border-[#8A8A98]"}`}
+          >
+            <input
+              type="checkbox"
+              checked={selectedScope.includes(category)}
+              onChange={() => toggleScope(category)}
+              className="mt-0.5 h-4 w-4 accent-[#0B3D91]"
+            />
+            <span>{category}</span>
+          </label>
+        ))}
+      </div>
+      <p className="mt-4 text-xs text-[#5C5C70]">
+        {selectedScope.length} authorization categories selected.
+      </p>
+    </StepSection>
+  );
+}
+
+function PendingStatus() {
+  const timeline = [
+    ["Application Submitted", "Green/Done"],
+    ["Document Verification", "Green/Done"],
+    [
+      "Mandatory Joint Inspection by State & Central Authorities",
+      "Amber/In-Progress",
+    ],
+    ["Final Administrator Approval", "Gray/Pending"],
+  ] as const;
+  return (
+    <section className="mx-auto max-w-270 space-y-6">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest text-[#FF6F00]">
+          Track Application
+        </p>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1A1A2E]">
+          Application Status: Pending Joint Inspection
+        </h1>
+      </div>
+      <div className="rounded-xl border border-[#E0E0E0] bg-white p-5 shadow-card sm:p-8">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-[#0B3D91]">
+              GATC Recognition Application
+            </p>
+            <p className="mt-1 text-xs text-[#5C5C70]">
+              Application ID: GATC-APP-2026-0917
+            </p>
+          </div>
+          <span className="rounded-full bg-[#FFF8E1] px-3 py-1.5 text-xs font-bold text-[#F9A825]">
+            Pending Review
+          </span>
+        </div>
+        <div className="space-y-7">
+          {timeline.map(([label, status], index) => {
+            const done = index < 2;
+            const active = index === 2;
+            return (
+              <div key={label} className="relative flex gap-4">
+                {index < timeline.length - 1 && (
+                  <span
+                    className={`absolute left-3.5 top-8 h-full w-0.5 ${done ? "bg-[#1E8E3E]" : "bg-[#E0E0E0]"}`}
+                  />
+                )}
+                <span
+                  className={`z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${done ? "bg-[#1E8E3E] text-white" : active ? "bg-[#F9A825] text-white" : "bg-[#E0E0E0] text-[#5C5C70]"}`}
+                >
+                  {done ? <Check className="h-4 w-4" /> : index + 1}
+                </span>
+                <div className="pb-1">
+                  <p className="font-bold text-[#1A1A2E]">{label}</p>
+                  <p
+                    className={`mt-1 text-xs font-semibold ${done ? "text-[#1E8E3E]" : active ? "text-[#F9A825]" : "text-[#8A8A98]"}`}
+                  >
+                    {status}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="flex items-start gap-3 rounded-lg bg-[#E3F2FD] p-4 text-sm leading-6 text-[#0B3D91]">
+        <UploadCloud className="mt-1 h-5 w-5 shrink-0" />
+        <p>
+          Your application has been forwarded to the Director of Legal
+          Metrology. A physical joint inspection of your premises will be
+          scheduled shortly.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function StepSection({
+  title,
+  description,
+  children,
+}: Readonly<{
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}>) {
+  return (
+    <section>
+      <h2 className="text-lg font-bold text-[#0B3D91]">{title}</h2>
+      <p className="mt-1 text-sm text-[#5C5C70]">{description}</p>
+      <div className="mt-6">{children}</div>
+    </section>
+  );
+}
+function Field({
+  label,
+  name,
+  type = "text",
+  min,
+  required = false,
+}: Readonly<{
+  label: string;
+  name: string;
+  type?: string;
+  min?: number;
+  required?: boolean;
+}>) {
+  return (
+    <label className="block text-sm font-semibold text-[#1A1A2E]">
+      {label}
+      <Input
+        name={name}
+        type={type}
+        min={min}
+        required={required}
+        className="mt-2 h-10 rounded-lg border-[#E0E0E0] shadow-none"
+      />
+    </label>
+  );
+}
+function SelectField({
+  label,
+  name,
+  options,
+}: Readonly<{
+  label: string;
+  name: string;
+  options: string[];
+}>) {
+  return (
+    <label className="block text-sm font-semibold text-[#1A1A2E]">
+      {label}
+      <select
+        name={name}
+        required
+        className="mt-2 flex h-10 w-full rounded-lg border border-[#E0E0E0] bg-white px-3 text-sm font-normal outline-none focus:border-[#0B3D91]"
+      >
+        <option value="">Select an option</option>
+        {options.map((option) => (
+          <option key={option}>{option}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+function FileField({ label, name }: Readonly<{ label: string; name: string }>) {
+  return (
+    <label className="block rounded-lg border border-dashed border-[#8A8A98] bg-[#F5F7FA] p-4 text-sm font-semibold text-[#1A1A2E]">
+      {label}
+      <Input
+        name={name}
+        type="file"
+        required
+        className="mt-3 h-11 bg-white py-2 text-xs shadow-none"
+      />
+    </label>
+  );
 }

@@ -41,7 +41,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { notifications } from "@/lib/emaap-data";
 
-type Role = "business" | "admin";
+type Role = "business" | "admin" | "gatc";
 
 const NAV: Record<
   Role,
@@ -66,11 +66,15 @@ const NAV: Record<
     { label: "Revenue Reports", href: "/admin/revenue", icon: BarChart3 },
     { label: "Master Data", href: "/admin/master-data", icon: Database },
   ],
+  gatc: [
+    { label: "Recognition Application", href: "/gatc/dashboard", icon: FilePlus2 },
+  ],
 };
 
 const ROLE_LABEL: Record<Role, string> = {
   business: "Reliance Retail Ltd.",
   admin: "Central Controller · New Delhi",
+  gatc: "Private Laboratory Applicant",
 };
 
 export function DashboardLayout({

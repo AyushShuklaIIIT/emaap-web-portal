@@ -260,4 +260,11 @@ export const notifications = {
       tone: "warning" as const,
     },
   ],
+  gatc: [
+    {
+      title: "Complete your GATC recognition application to begin review.",
+      time: "Today",
+      tone: "warning" as const,
+    },
+  ],
 };

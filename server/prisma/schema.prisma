@@ -12,9 +12,260 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  BUSINESS
+  LMO
+  GATC_PRINCIPAL
+  ADMIN
+}
+
+enum EntityType {
+  MANUFACTURER
+  DEALER
+  USER
+}
+
+enum GatcStatus {
+  ACTIVE
+  SUSPENDED
+  REVOKED
+}
+
+enum AccuracyClass {
+  CLASS_I
+  CLASS_II
+  CLASS_III
+  CLASS_IIII
+}
+
+enum InstrumentStatus {
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum AppType {
+  INITIAL
+  RE_VERIFICATION
+}
+
+enum WorkflowStatus {
+  SUBMITTED
+  ALLOCATED
+  CERTIFIED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum InspectionMode {
+  FIELD_OFFLINE
+  LAB
+}
+
+enum TestVerdict {
+  PASS
+  FAIL
+}
+
+enum SealType {
+  LEAD_WIRE
+  HOLOGRAM_STICKER
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+  user_id               String             @id @default(uuid())
+  name                  String
+  email                 String             @unique
+  role                  UserRole
+  jurisdiction_district String?
+  jurisdiction_state    String?
+
+
+  business_profile      BusinessProfile?
+  gatc_centres          GatcCentre?        @relation("GatcPrincipal")
+  assigned_apps         VerificationApp[]  @relation("AssignedOfficer")
+  inspections           InspectionRecord[] @relation("Inspector")
+
+  @@map("users")
+}
+
+model BusinessProfile {
+  business_id         String                @id @default(uuid())
+  registration_number String                @unique
+  trade_name          String
+  entity_type         EntityType
+  geo_address         String
+
+  user_id             String                @unique
+
+  instruments         MeasuringInstrument[]
+  applications        VerificationApp[]
+  user                User                  @relation(fields: [user_id], references: [user_id])
+
+  @@map("businessProfiles")
+}
+
+model GatcCentre {
+  gatc_id              String            @id @default(uuid())
+  centre_code          String            @unique
+  approval_cert_no     String
+  ind_mark_code        String
+  valid_from           DateTime
+  valid_to             DateTime
+  status               GatcStatus
+  approved_categories  String[]
+
+  principal_officer_id String           @unique
+
+  applications         VerificationApp[]
+  principal_officer    User             @relation("GatcPrincipal", fields: [principal_officer_id], references: [user_id])
+
+  @@map("gatcCentres")
+}
+
+model InstrumentCategory {
+  category_id               String                @id @default(uuid())
+  category_name             String
+  accuracy_class            AccuracyClass
+  oiml_standard_ref         String
+  standard_fee              Float
+  verification_cycle_months Int
+
+  instruments               MeasuringInstrument[]
+
+  @@map("instrumentCategories")
+}
+
+model MeasuringInstrument {
+  instrument_id     String               @id @default(uuid())
+  serial_number     String
+  model_approval_no String
+  manufacturer_name String
+  capacity_rating   String
+  geo_location      String
+
+  business_id       String
+  category_id       String
+
+  status            InstrumentStatus
+  applications      VerificationApp[]
+  certificates      DigitalCertificate[]
+  technical_specs   TechnicalSpec?
+  business          BusinessProfile      @relation(fields: [business_id], references: [business_id])
+  category          InstrumentCategory   @relation(fields: [category_id], references: [category_id])
+
+  @@map("measuringInstruments")
+}
+
+model VerificationApp {
+  app_id               String             @id @default(uuid())
+  application_no       String             @unique
+  app_type             AppType
+  submission_timestamp DateTime           @default(now())
+  workflow_status      WorkflowStatus
+
+  instrument_id        String
+  business_id          String
+  assigned_officer_id  String?
+  assigned_gatc_id     String?
+
+  receipts             PaymentReceipt?
+  inspections          InspectionRecord[]
+  instrument           MeasuringInstrument @relation(fields: [instrument_id], references: [instrument_id])
+  business             BusinessProfile    @relation(fields: [business_id], references: [business_id])
+  assigned_officer     User?              @relation("AssignedOfficer", fields: [assigned_officer_id], references: [user_id])
+  assigned_gatc        GatcCentre?        @relation(fields: [assigned_gatc_id], references: [gatc_id])
+
+  @@map("verifications")
+}
+
+model PaymentReceipt {
+  receipt_id        String          @id @default(uuid())
+  receipt_no        String          @unique
+  statutory_fee     Float
+  carriage_charges  Float
+  adjusting_charges Float
+  total_amount      Float
+  govt_share        Float
+  gatc_share        Float
+  payment_status    PaymentStatus   @default(PENDING)
+
+  app_id            String          @unique
+
+  application       VerificationApp @relation(fields: [app_id], references: [app_id])
+
+  @@map("paymentReceipts")
+}
+
+model InspectionRecord {
+  inspection_id          String              @id @default(uuid())
+  inspection_date        DateTime            @default(now())
+  time_taken_minutes     Int
+  inspection_mode        InspectionMode
+  test_verdict           TestVerdict
+  geo_latitude           Float
+  geo_longitude          Float
+  offline_sync_timestamp DateTime?
+
+  inspector_id           String
+  app_id                 String
+
+  certificate            DigitalCertificate?
+  seals                  SealEvidence[]
+  application            VerificationApp     @relation(fields: [app_id], references: [app_id])
+  inspector              User                @relation("Inspector", fields: [inspector_id], references: [user_id])
+
+  @@map("inspectionRecords")
+}
+
+model SealEvidence {
+  seal_id       String           @id @default(uuid())
+  seal_number   String
+  seal_type     SealType
+  s3_photo_url  String
+  geo_lat       Float
+  geo_long      Float
+  captured_at   DateTime
+  photo_sha256  String
+
+  inspection_id String
+
+  inspection    InspectionRecord @relation(fields: [inspection_id], references: [inspection_id])
+
+  @@map("sealEvidences")
+}
+
+model DigitalCertificate {
+  cert_id               String              @id @default(uuid())
+  certificate_no        String              @unique
+  stamping_quarter_code String
+  issue_date            DateTime            @default(now())
+  expiry_date           DateTime
+  sha256_hash           String
+  dynamic_qr_url        String
+  rejection_reason      String?
+
+  inspection_id         String              @unique
+  instrument_id         String
+
+  inspection            InspectionRecord    @relation(fields: [inspection_id], references: [inspection_id])
+  instrument            MeasuringInstrument @relation(fields: [instrument_id], references: [instrument_id])
+
+  @@map("digitalCertificates")
+}
+
+model TechnicalSpec {
+  id            String              @id @default(uuid()) @map("_id")
+  spec_data     Json
+
+  instrument_id String              @unique
+
+  instrument    MeasuringInstrument @relation(fields: [instrument_id], references: [instrument_id])
+
+  @@map("technical_specs")
 }

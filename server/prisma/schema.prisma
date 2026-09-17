@@ -77,13 +77,20 @@ enum SealType {
   HOLOGRAM_STICKER
 }
 
+enum FeeBasis {
+  PER_PIECE
+  PER_METRE
+  PER_LITRE
+  FIXED
+}
+
 model User {
   user_id               String             @id @default(uuid())
   name                  String
   email                 String             @unique
   role                  UserRole
-  jurisdiction_district String?
-  jurisdiction_state    String?
+  jurisdiction_district String
+  jurisdiction_state    String
 
 
   business_profile      BusinessProfile?
@@ -101,11 +108,14 @@ model BusinessProfile {
   entity_type         EntityType
   geo_address         String
 
+  state_id            String             
   user_id             String                @unique
 
   instruments         MeasuringInstrument[]
   applications        VerificationApp[]
+
   user                User                  @relation(fields: [user_id], references: [user_id])
+  state               State @relation(fields: [state_id], references: [state_id])
 
   @@map("businessProfiles")
 }
@@ -119,6 +129,8 @@ model GatcCentre {
   valid_to             DateTime
   status               GatcStatus
   approved_categories  String[]
+  lat              Float
+  long             Float
 
   principal_officer_id String           @unique
 
@@ -130,13 +142,14 @@ model GatcCentre {
 
 model InstrumentCategory {
   category_id               String                @id @default(uuid())
+  category_code             String                @unique
   category_name             String
   accuracy_class            AccuracyClass
   oiml_standard_ref         String
-  standard_fee              Float
   verification_cycle_months Int
 
   instruments               MeasuringInstrument[]
+  fee_rules                 FeeRule[]
 
   @@map("instrumentCategories")
 }
@@ -146,7 +159,8 @@ model MeasuringInstrument {
   serial_number     String
   model_approval_no String
   manufacturer_name String
-  capacity_rating   String
+  capacity_value    Decimal? @db.Decimal(12, 3)
+  capacity_unit     String?
   geo_location      String
 
   business_id       String
@@ -268,4 +282,39 @@ model TechnicalSpec {
   instrument    MeasuringInstrument @relation(fields: [instrument_id], references: [instrument_id])
 
   @@map("technical_specs")
+}
+
+model State {
+  state_id   String       @id @default(uuid())
+  state_code String       @unique
+  state_name String       @unique
+
+  fee_rules   FeeRule[]
+  businesses BusinessProfile[]
+
+  @@map("states")
+}
+
+model FeeRule {
+  fee_rule_id       String   @id @default(uuid())
+
+  state_id          String
+  category_id       String
+
+  min_value         Decimal? @db.Decimal(12, 3)
+  max_value         Decimal? @db.Decimal(12, 3)
+
+  unit              String
+  fee_amount        Decimal  @db.Decimal(10, 2)
+  fee_basis         FeeBasis
+
+  condition         String?
+  additional_fee    Decimal? @db.Decimal(10, 2)
+  additional_unit   Decimal? @db.Decimal(12, 3)
+  maximum_fee       Decimal? @db.Decimal(10, 2)
+
+  state             State              @relation(fields: [state_id], references: [state_id])
+  category          InstrumentCategory @relation(fields: [category_id], references: [category_id])
+
+  @@map("feeRules")
 }

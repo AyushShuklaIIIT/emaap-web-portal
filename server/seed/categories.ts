@@ -1,0 +1,254 @@
+export const categories = [
+  {
+    category_code: "BULLION_WEIGHTS",
+    category_name: "Bullion Weights",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "CARAT_WEIGHTS",
+    category_name: "Carat Weights",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "CYLINDRICAL_KNOB_WEIGHTS",
+    category_name: "Cylindrical Knob Type Weights",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "SHEET_METAL_WEIGHTS",
+    category_name: "Sheet Metal Weight",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS",
+    category_name:
+      "Iron Hexagonal Knob Type Weights and Parallelepiped Weights",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS",
+    category_name:
+      "Standard Weights for Testing of High Capacity Weighing Machines",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "CAPACITY_MEASURES",
+    category_name: "Capacity Measures",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "NON_FLEXIBLE_LENGTH_MEASURES",
+    category_name: "Non-Flexible Length Measures",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "FABRIC_PLASTIC_WOVEN_STEEL_TAPES",
+    category_name: "Fabric, Plastic, Woven and Steel Tapes",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "FOLDING_SCALES",
+    category_name: "Folding Scales",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "SURVEYING_CHAIN",
+    category_name: "Surveying Chain",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "BEAM_SCALES_CLASS_A_B",
+    category_name: "Beam Scales Class A and B",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "BEAM_SCALES_CLASS_C_D",
+    category_name: "Beam Scales Class C and D",
+    accuracy_class: "CLASS_III",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV",
+    category_name:
+      "Non-Automatic Weighing Instruments - Mechanical (Analogue) Class III and IV",
+    accuracy_class: "CLASS_III",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV",
+    category_name:
+      "Non-Automatic Weighing Instruments - Electronic Class III and IV",
+    accuracy_class: "CLASS_III",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
+    category_name:
+      "Non-Automatic Weighing Instruments - Mechanical and Electronic Class I and II",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS",
+    category_name: "Automatic Weighing Instruments",
+    accuracy_class: "CLASS_III",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "DISPENSING_PUMPS",
+    category_name: "Dispensing Pumps",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "VOLUMETRIC_TOTALIZING_COUNTER",
+    category_name: "Volumetric Measuring Instrument Totalizing Counter",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "VOLUMETRIC_OTHER_INSTRUMENTS",
+    category_name: "Other Volumetric Measuring Instruments",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "BULK_METERS_LIQUID_OTHER_THAN_WATER",
+    category_name:
+      "Bulk Meters and Measuring Systems for Liquid Other Than Water",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "BULK_METER_TOTALIZING_COUNTER",
+    category_name: "Bulk Meter Totalizing Counter",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "TAXI_AUTO_RICKSHAW_METERS",
+    category_name: "Taxi and Auto-Rickshaw Meters",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "OTHER_LINEAR_METERS",
+    category_name: "Other Linear Meters",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "CLINICAL_THERMOMETER",
+    category_name: "Clinical Thermometer",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "WATER_METER",
+    category_name: "Water Meter",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "PEG_MEASURE",
+    category_name: "Peg Measure",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "CNG_DISPENSERS",
+    category_name: "CNG Dispensers",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "CNG_TOTALIZING_COUNTERS",
+    category_name: "CNG Totalizing Counters",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+  {
+    category_code: "LPG_DISPENSERS",
+    category_name: "LPG Dispensers",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+
+  {
+    category_code: "LPG_TOTALIZING_COUNTERS",
+    category_name: "LPG Totalizing Counters",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+];

@@ -10,7 +10,7 @@ interface VerificationAppData {
   assigned_gatc_code?: string;
 }
 
-export const verificationAppsData = [
+export const verificationAppsData: VerificationAppData[] = [
   {
     application_no: "EMAAP-VER-2026-0001",
     app_type: "INITIAL",

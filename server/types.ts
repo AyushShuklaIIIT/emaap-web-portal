@@ -1,3 +1,5 @@
+import { Prisma } from "./generated/prisma/client";
+
 export interface State {
   state_code: string;
   state_name: string;
@@ -56,4 +58,57 @@ export interface VerificationApp {
   assigned_officer_id?: string;
   assigned_gatc_id?: string;
   cert_id?: string;
+}
+
+export interface Certificate {
+  cert_id: string;
+  certificate_no: string;
+  stamping_quarter_code: string;
+  issue_date: Date;
+  expiry_date: Date;
+  sha256_hash: string;
+  dynamic_qr_url: string;
+  rejection_reason: string | null;
+  inspection_id: string;
+  instrument_id: string;
+}
+
+export interface Instrument {
+  instrument_id: string;
+  serial_number: string;
+  model_approval_no: string;
+  manufacturer_name: string;
+  capacity_value: Prisma.Decimal;
+  capacity_unit: string | null;
+  geo_location: string;
+  business_id: string;
+  category_id: string;
+  status: "VERIFIED" | "REJECTED" | "EXPIRED";
+
+  certificates: Certificate[];
+}
+
+export interface InspectionData {
+  inspection_date: Date;
+  time_taken_minutes: number;
+  inspection_mode: "FIELD_OFFLINE" | "LAB";
+  test_verdict: "PASS" | "FAIL";
+  geo_latitude: number;
+  geo_longitude: number;
+
+  application_no: string;
+  inspector_email: string;
+}
+
+export interface DigitalCertificateData {
+  certificate_no: string;
+  stamping_quarter_code: string;
+  issue_date: Date;
+  expiry_date: Date;
+  sha256_hash: string;
+  dynamic_qr_url: string;
+  rejection_reason: string | null;
+
+  application_no: string;
+  instrument_serial_number: string;
 }

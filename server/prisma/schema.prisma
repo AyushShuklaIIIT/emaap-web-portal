@@ -165,8 +165,8 @@ model MeasuringInstrument {
 
   business_id       String
   category_id       String
-
   status            InstrumentStatus
+  
   applications      VerificationApp[]
   certificates      DigitalCertificate[]
   technical_specs   TechnicalSpec?

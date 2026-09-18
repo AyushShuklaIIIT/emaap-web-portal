@@ -11,6 +11,8 @@ import {
 import { adminUsersData, businessUsersData, gatcUsersData } from "./users.js";
 import { verificationAppsData } from "./verificationApp.js";
 import { measuringInstrumentsData } from "./instruments.js";
+import { inspectionRecordsData } from "./inspection.js";
+import { digitalCertificatesData } from "./certificates.js";
 
 async function seed() {
   console.log("Begin Seeding States");
@@ -282,6 +284,96 @@ async function seed() {
 
         assigned_officer_id: officer?.user_id,
         assigned_gatc_id: gatc?.gatc_id,
+      },
+    });
+  }
+
+  console.log("Seeding Inspection");
+
+  for (const inspection of inspectionRecordsData) {
+    const application = await prisma.verificationApp.findUnique({
+      where: {
+        application_no: inspection.application_no,
+      },
+    });
+
+    if (!application) {
+      throw new Error(`Application not found: ${inspection.application_no}`);
+    }
+
+    const inspector = await prisma.user.findUnique({
+      where: {
+        email: inspection.inspector_email,
+      },
+    });
+
+    if (!inspector) {
+      throw new Error(`Inspector not found: ${inspection.inspector_email}`);
+    }
+    await prisma.inspectionRecord.create({
+      data: {
+        inspection_date: inspection.inspection_date,
+        time_taken_minutes: inspection.time_taken_minutes,
+        inspection_mode: inspection.inspection_mode,
+        test_verdict: inspection.test_verdict,
+        geo_latitude: inspection.geo_latitude,
+        geo_longitude: inspection.geo_longitude,
+
+        app_id: application.app_id,
+        inspector_id: inspector.user_id,
+      },
+    });
+  }
+
+  console.log("Seeding Certifictes");
+
+  for (const certificate of digitalCertificatesData) {
+    const application = await prisma.verificationApp.findUnique({
+      where: {
+        application_no: certificate.application_no,
+      },
+    });
+
+    if (!application) {
+      throw new Error(`Application not found: ${certificate.application_no}`);
+    }
+
+    const inspection = await prisma.inspectionRecord.findFirst({
+      where: {
+        app_id: application.app_id,
+      },
+    });
+
+    if (!inspection) {
+      throw new Error(
+        `Inspection not found for application: ${certificate.application_no}`,
+      );
+    }
+
+    const instrument = await prisma.measuringInstrument.findFirst({
+      where: {
+        serial_number: certificate.instrument_serial_number,
+      },
+    });
+
+    if (!instrument) {
+      throw new Error(
+        `Instrument not found: ${certificate.instrument_serial_number}`,
+      );
+    }
+
+    await prisma.digitalCertificate.create({
+      data: {
+        certificate_no: certificate.certificate_no,
+        stamping_quarter_code: certificate.stamping_quarter_code,
+        issue_date: certificate.issue_date,
+        expiry_date: certificate.expiry_date,
+        sha256_hash: certificate.sha256_hash,
+        dynamic_qr_url: certificate.dynamic_qr_url,
+        rejection_reason: certificate.rejection_reason,
+
+        inspection_id: inspection.inspection_id,
+        instrument_id: instrument.instrument_id,
       },
     });
   }

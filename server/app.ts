@@ -5,8 +5,10 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { createServer as createHttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
+
 import { router as uploadRouter } from "./routes/app.routes";
 import { router as dashboardRouter } from "./routes/dashboard.routes";
+import { router as instrumentRouter } from "./routes/instrument.routes";
 
 interface CertificateData {
   instrumentSerialNumber: string;
@@ -43,6 +45,7 @@ export function createServer() {
   app.use("/api", uploadRouter);
 
   app.use("/api/dashboard", dashboardRouter);
+  app.use("/api/instrument", instrumentRouter);
 
   const certificates = new Map<string, CertificateData>();
 

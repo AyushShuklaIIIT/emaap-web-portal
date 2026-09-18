@@ -84,6 +84,12 @@ enum FeeBasis {
   FIXED
 }
 
+enum PaymentMethod {
+  UPI
+  NET_BANKING
+  NEFT_RTGS
+}
+
 model User {
   user_id               String             @id @default(uuid())
   name                  String
@@ -210,17 +216,23 @@ model VerificationApp {
 model PaymentReceipt {
   receipt_id        String          @id @default(uuid())
   receipt_no        String          @unique
+
+  transaction_id    String?         @unique
+  transaction_date  DateTime?
+  payment_method    PaymentMethod?
+  due_date          DateTime?
+
   statutory_fee     Float
   carriage_charges  Float
   adjusting_charges Float
   total_amount      Float
   govt_share        Float
   gatc_share        Float
+
   payment_status    PaymentStatus   @default(PENDING)
 
   app_id            String          @unique
-
-  application       VerificationApp @relation(fields: [app_id], references: [app_id])
+  application       VerificationApp @relation(fields: [app_id],references: [app_id])
 
   @@map("paymentReceipts")
 }

@@ -7,6 +7,8 @@ import {
   AccuracyClass,
   AppType,
   InstrumentStatus,
+  PaymentMethod,
+  PaymentStatus,
   WorkflowStatus,
 } from "../generated/prisma/enums.js";
 import { adminUsersData, businessUsersData, gatcUsersData } from "./users.js";
@@ -14,6 +16,7 @@ import { verificationAppsData } from "./verificationApp.js";
 import { measuringInstrumentsData } from "./instruments.js";
 import { inspectionRecordsData } from "./inspection.js";
 import { digitalCertificatesData } from "./certificates.js";
+import { paymentReceiptsData } from "./payment.js";
 
 async function seed() {
   console.log("Begin Seeding States");
@@ -333,6 +336,38 @@ async function seed() {
 
         app_id: application.app_id,
         inspector_id: inspector.user_id,
+      },
+    });
+  }
+
+  for (const payment of paymentReceiptsData) {
+    const application = await prisma.verificationApp.findUnique({
+      where: {
+        application_no: payment.application_no,
+      },
+    });
+
+    if (!application) {
+      console.log(`Application not found: ${payment.application_no}`);
+      continue;
+    }
+
+    await prisma.paymentReceipt.create({
+      data: {
+        receipt_no: payment.receipt_no,
+        transaction_id: payment.transaction_id,
+        transaction_date: payment.transaction_date,
+        payment_method: payment.payment_method as PaymentMethod,
+        due_date: payment.due_date,
+        statutory_fee: payment.statutory_fee,
+        carriage_charges: payment.carriage_charges,
+        adjusting_charges: payment.adjusting_charges,
+        total_amount: payment.total_amount,
+        govt_share: payment.govt_share,
+        gatc_share: payment.gatc_share,
+        payment_status: payment.payment_status as PaymentStatus,
+
+        app_id: application.app_id,
       },
     });
   }

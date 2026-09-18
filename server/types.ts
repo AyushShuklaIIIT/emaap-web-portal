@@ -166,3 +166,50 @@ export interface DigitalCertificateData {
   application_no: string;
   instrument_serial_number: string;
 }
+
+export interface PaymentData {
+  receipt_id: string;
+  receipt_no: string;
+
+  transaction_id: string | null;
+  transaction_date: Date | null;
+  payment_method: "UPI" | "NET_BANKING" | "NEFT_RTGS" | null;
+
+  due_date: Date | null;
+
+  statutory_fee: number;
+  carriage_charges: number;
+  adjusting_charges: number;
+  total_amount: number;
+  govt_share: number;
+  gatc_share: number;
+
+  payment_status: "PENDING" | "SUCCESS" | "FAILED";
+
+  app_id: string;
+}
+
+export interface PaymentDashboardData {
+  total_paid_ytd: number;
+
+  pending_payments: {
+    receipt_id: string;
+    receipt_no: string;
+    application_id: string;
+    instrument: string;
+    due_date: Date | null;
+    statutory_fee: number;
+    total_amount: number;
+  }[];
+
+  recent_transactions: {
+    receipt_id: string;
+    transaction_id: string | null;
+    transaction_date: Date | null;
+    application_id: string;
+    instrument: string;
+    payment_method: "UPI" | "NET_BANKING" | "NEFT_RTGS" | null;
+    total_amount: number;
+    payment_status: "PENDING" | "SUCCESS" | "FAILED";
+  }[];
+}

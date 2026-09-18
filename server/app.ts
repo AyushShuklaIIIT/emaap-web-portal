@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import crypto from "node:crypto";
 import cors from "cors";
-import { handleDemo } from "./routes/demo";
+import { handleDemo } from "./demo";
 import { createServer as createHttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 
@@ -10,6 +10,8 @@ import { router as uploadRouter } from "./routes/app.routes";
 import { router as dashboardRouter } from "./routes/dashboard.routes";
 import { router as instrumentRouter } from "./routes/instrument.routes";
 import { router as verificationRouter } from "./routes/verificationApp.routes";
+import { router as paymentRouter } from "./routes/payment.routes";
+
 import { prisma } from "./lib/prisma";
 
 export function createServer() {
@@ -39,6 +41,7 @@ export function createServer() {
   app.use("/api/dashboard", dashboardRouter);
   app.use("/api/instrument", instrumentRouter);
   app.use("/api/verification", verificationRouter);
+  app.use("/api/payment", paymentRouter);
 
   io.on("connection", (socket) => {
     console.log(`socket connected:${socket.id}`);

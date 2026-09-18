@@ -1,7 +1,4 @@
-interface State {
-  state_code: string;
-  state_name: string;
-}
+import type { State } from "../types";
 
 export const states: State[] = [
   { state_code: "AP", state_name: "Andhra Pradesh" },

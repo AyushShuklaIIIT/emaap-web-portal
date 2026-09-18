@@ -3,12 +3,24 @@ import { prisma } from "../lib/prisma";
 import { states } from "./states.js";
 import { categories } from "./categories.js";
 import { stateFees } from "./feeRules.js";
-import { AccuracyClass } from "../generated/prisma/enums.js";
+import {
+  AccuracyClass,
+  AppType,
+  WorkflowStatus,
+} from "../generated/prisma/enums.js";
 import { adminUsersData, businessUsersData, gatcUsersData } from "./users.js";
+import { verificationAppsData } from "./verificationApp.js";
+import { measuringInstrumentsData } from "./instruments.js";
 
 async function seed() {
   console.log("Begin Seeding States");
 
+  await prisma.digitalCertificate.deleteMany();
+  await prisma.sealEvidence.deleteMany();
+  await prisma.inspectionRecord.deleteMany();
+  await prisma.paymentReceipt.deleteMany();
+  await prisma.verificationApp.deleteMany();
+  await prisma.measuringInstrument.deleteMany();
   await prisma.businessProfile.deleteMany();
   await prisma.gatcCentre.deleteMany();
   await prisma.feeRule.deleteMany();
@@ -167,6 +179,109 @@ async function seed() {
         geo_address: business.geo_address,
         state_id: state.state_id,
         user_id: user.user_id,
+      },
+    });
+  }
+
+  console.log("Seeding Measuring Instrument");
+
+  for (const instrument of measuringInstrumentsData) {
+    const user = await prisma.user.findUnique({
+      where: { email: instrument.business_email },
+    });
+
+    if (!user) {
+      throw new Error(`User not found: ${instrument.business_email}`);
+    }
+
+    const business = await prisma.businessProfile.findUnique({
+      where: { user_id: user.user_id },
+    });
+
+    if (!business) {
+      throw new Error(`User not found: ${instrument.business_email}`);
+    }
+
+    const category = await prisma.instrumentCategory.findUnique({
+      where: {
+        category_code: instrument.category_code,
+      },
+    });
+
+    if (!category) {
+      throw new Error(
+        `Instrument category not found: ${instrument.category_code}`,
+      );
+    }
+
+    await prisma.measuringInstrument.create({
+      data: {
+        serial_number: instrument.serial_number,
+        model_approval_no: instrument.model_approval_no,
+        manufacturer_name: instrument.manufacturer_name,
+        capacity_value: instrument.capacity_value,
+        capacity_unit: instrument.capacity_unit,
+        geo_location: instrument.geo_location,
+        status: instrument.status,
+
+        business_id: business.business_id,
+        category_id: category.category_id,
+      },
+    });
+  }
+
+  console.log("Seeding Verification App");
+
+  for (const app of verificationAppsData) {
+    const business = await prisma.businessProfile.findFirst({
+      where: {
+        user: {
+          email: app.business_email,
+        },
+      },
+    });
+
+    if (!business) {
+      throw new Error(`Business not found for ${app.business_email}`);
+    }
+
+    const instrument = await prisma.measuringInstrument.findFirst({
+      where: {
+        serial_number: app.instrument_serial_number,
+      },
+    });
+
+    if (!instrument) {
+      throw new Error(`Instrument not found: ${app.instrument_serial_number}`);
+    }
+
+    const officer = app.assigned_officer_email
+      ? await prisma.user.findUnique({
+          where: {
+            email: app.assigned_officer_email,
+          },
+        })
+      : null;
+
+    const gatc = app.assigned_gatc_code
+      ? await prisma.gatcCentre.findUnique({
+          where: {
+            centre_code: app.assigned_gatc_code,
+          },
+        })
+      : null;
+
+    await prisma.verificationApp.create({
+      data: {
+        application_no: app.application_no,
+        app_type: app.app_type as AppType,
+        workflow_status: app.workflow_status as WorkflowStatus,
+
+        business_id: business.business_id,
+        instrument_id: instrument.instrument_id,
+
+        assigned_officer_id: officer?.user_id,
+        assigned_gatc_id: gatc?.gatc_id,
       },
     });
   }

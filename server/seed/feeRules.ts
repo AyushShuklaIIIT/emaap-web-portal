@@ -1,16 +1,4 @@
-interface FeeRuleSeed {
-  state_code: string;
-  category_code: string;
-  min_value?: number;
-  max_value?: number;
-  unit: string;
-  fee_amount: number;
-  fee_basis: "PER_PIECE" | "PER_METRE" | "PER_LITRE" | "FIXED";
-  condition?: string;
-  additional_fee?: number;
-  additional_unit?: number;
-  maximum_fee?: number;
-}
+import { FeeRuleSeed } from "../types";
 
 const feeRules_MH: FeeRuleSeed[] = [
   {

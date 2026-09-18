@@ -1,32 +1,4 @@
-import { EntityType, GatcStatus, UserRole } from "../generated/prisma/enums";
-
-interface User {
-  name: string;
-  email: string;
-  role: UserRole;
-  jurisdiction_district?: string;
-  jurisdiction_state?: string;
-}
-
-interface Gatc extends User {
-  centre_code: string;
-  approval_cert_no: string;
-  ind_mark_code: string;
-  valid_from: Date;
-  valid_to: Date;
-  status: GatcStatus;
-  approved_categories: string[];
-  lat: number;
-  long: number;
-}
-
-interface Business extends User {
-  registration_number: string;
-  trade_name: string;
-  entity_type: EntityType;
-  geo_address: string;
-  state_code: string;
-}
+import { BusinessUser, GatcUser, User } from "../types";
 
 export const adminUsersData: User[] = [
   {
@@ -45,7 +17,7 @@ export const adminUsersData: User[] = [
   },
 ];
 
-export const gatcUsersData: Gatc[] = [
+export const gatcUsersData: GatcUser[] = [
   {
     name: "Dr. Christopher Nolan",
     email: "principal@delhi-metrology-lab.com",
@@ -92,7 +64,7 @@ export const gatcUsersData: Gatc[] = [
   },
 ];
 
-export const businessUsersData: Business[] = [
+export const businessUsersData: BusinessUser[] = [
   {
     name: "Stanley Kubrick",
     email: "kubrick@gmail.com",

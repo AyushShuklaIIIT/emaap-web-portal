@@ -6,6 +6,7 @@ import { handleDemo } from "./routes/demo";
 import { createServer as createHttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 import { router as uploadRouter } from "./routes/app.routes";
+import { router as dashboardRouter } from "./routes/dashboard.routes";
 
 interface CertificateData {
   instrumentSerialNumber: string;
@@ -22,7 +23,7 @@ export function createServer() {
   const httpServer = createHttpServer(app);
   const allowedOrigins = process.env.FRONTEND_URL?.split(",")
     .map((origin) => origin.trim())
-    .filter(Boolean); 
+    .filter(Boolean);
   const corsOrigin = allowedOrigins?.length ? allowedOrigins : "*";
 
   const io = new SocketIOServer(httpServer, {
@@ -40,6 +41,8 @@ export function createServer() {
   app.use(express.urlencoded({ extended: true }));
   app.use("/uploads", express.static("uploads"));
   app.use("/api", uploadRouter);
+
+  app.use("/api/dashboard", dashboardRouter);
 
   const certificates = new Map<string, CertificateData>();
 
@@ -111,6 +114,14 @@ export function createServer() {
       imageSrc = `data:image/jpeg;base64,${imageSrc}`;
     }
 
+    if (!latestCertificate.instrumentCategory) {
+      console.log(`Instrument Category not found`);
+    }
+
+    if (!latestCertificate.instrumentSerialNumber) {
+      console.log(`Instrument Serial Number not found`);
+    }
+
     const htmlPage = `
       <!DOCTYPE html>
       <html lang="en">
@@ -129,8 +140,8 @@ export function createServer() {
       <body>
         <div class="card">
           <div class="success">✅ VERIFIED LEGAL METROLOGY</div>
-          <p><strong>Instrument:</strong> ${latestCertificate.instrumentCategory || "CNG Dispenser"}</p>
-          <p><strong>Serial Number:</strong> ${latestCertificate.instrumentSerialNumber || "SN-8849201"}</p>
+          <p><strong>Instrument:</strong> ${latestCertificate.instrumentCategory}</p>
+          <p><strong>Serial Number:</strong> ${latestCertificate.instrumentSerialNumber}</p>
           <p><strong>Certificate ID:</strong> ${latestCertificate.certificateId}</p>
           
           <div style="text-align: left; margin-top: 20px;">

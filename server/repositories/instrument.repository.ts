@@ -3,21 +3,19 @@ import { prisma } from "../lib/prisma";
 import { findBusinessByUserId } from "./dashboard.repository";
 
 export const getVerifiedInstrumentsByBusinessId = async (
-  business_id: string,
-): Promise<Instrument[] | null> => {
-  const instruments = await prisma.measuringInstrument.findMany({
+  businessId: string,
+) => {
+  return prisma.measuringInstrument.findMany({
     where: {
-      business_id: business_id,
+      business_id: businessId,
       status: "VERIFIED",
     },
     include: {
+      category: true,
       certificates: true,
     },
   });
-
-  return instruments;
 };
-
 export const getInstrumentBySearch = async (
   business_id: string,
   search: string,

@@ -9,7 +9,7 @@ export function KpiCard({
   trend,
 }: {
   label: string;
-  value: string;
+  value: string | number;
   icon: LucideIcon;
   tone?: "primary" | "success" | "warning" | "error";
   trend?: { value: string; positive: boolean };

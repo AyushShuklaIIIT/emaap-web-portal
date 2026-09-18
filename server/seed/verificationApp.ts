@@ -24,7 +24,7 @@ export const verificationAppsData: VerificationAppSeedData[] = [
   {
     application_no: "EMAAP-VER-2026-0005",
     app_type: "RE_VERIFICATION",
-    workflow_status: "SUBMITTED",
+    workflow_status: "CERTIFIED",
 
     instrument_serial_number: "HW-WM-001",
     business_email: "kubrick@gmail.com",

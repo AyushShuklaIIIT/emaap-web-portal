@@ -6,6 +6,7 @@ export interface State {
 }
 
 export interface User {
+  user_id?: string;
   name: string;
   email: string;
   role: "BUSINESS" | "LMO" | "GATC_PRINCIPAL" | "ADMIN";
@@ -114,34 +115,33 @@ export interface Certificate {
 
 export interface Instrument {
   instrument_id: string;
-
   serial_number: string;
   model_no: string;
   model_approval_no: string | null;
   manufacturer_name: string;
-
   accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
-
   metric: string;
-
   address: string;
   pincode: number;
   state: string;
-
   lat: number;
   long: number;
-
   capacity_value: Prisma.Decimal | null;
   capacity_unit: string | null;
-
   business_id: string;
   category_id: string;
-
   status: "VERIFIED" | "REJECTED" | "EXPIRED";
-
   certificates: Certificate[];
 }
 
+export interface InstrumentCategory {
+  category_id: string;
+  category_code: string;
+  category_name: string;
+  accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
+  oiml_standard_ref: string;
+  verification_cycle_months: number;
+}
 export interface InspectionData {
   inspection_date: Date;
   time_taken_minutes: number;
@@ -164,7 +164,6 @@ export interface DigitalCertificateData {
   rejection_reason: string | null;
 
   application_no: string;
-  instrument_serial_number: string;
 }
 
 export interface PaymentData {

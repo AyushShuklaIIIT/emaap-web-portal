@@ -11,6 +11,7 @@ import { router as dashboardRouter } from "./routes/dashboard.routes";
 import { router as instrumentRouter } from "./routes/instrument.routes";
 import { router as verificationRouter } from "./routes/verificationApp.routes";
 import { router as paymentRouter } from "./routes/payment.routes";
+import { router as certificateRouter } from "./routes/certificate.routes";
 
 import { prisma } from "./lib/prisma";
 
@@ -42,6 +43,7 @@ export function createServer() {
   app.use("/api/instrument", instrumentRouter);
   app.use("/api/verification", verificationRouter);
   app.use("/api/payment", paymentRouter);
+  app.use("/api/certificates", certificateRouter);
 
   io.on("connection", (socket) => {
     console.log(`socket connected:${socket.id}`);
@@ -263,29 +265,6 @@ export function createServer() {
       console.error("Certificate verification failed:", error);
 
       return res.status(500).send("Internal server error");
-    }
-  });
-
-  app.get("/api/certificates", async (_req, res) => {
-    try {
-      const certificates = await prisma.digitalCertificate.findMany({
-        include: {
-          instrument: {
-            include: {
-              category: true,
-            },
-          },
-        },
-      });
-
-      return res.json(certificates);
-    } catch (error) {
-      console.error(error);
-
-      return res.status(500).json({
-        success: false,
-        message: "Failed to fetch certificates",
-      });
     }
   });
 

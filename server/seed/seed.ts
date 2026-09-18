@@ -159,6 +159,7 @@ async function seed() {
   for (const business of businessUsersData) {
     const user = await prisma.user.create({
       data: {
+        ...(business.user_id ? { user_id: business.user_id } : {}),
         name: business.name,
         email: business.email,
         role: business.role,
@@ -385,27 +386,25 @@ async function seed() {
       throw new Error(`Application not found: ${certificate.application_no}`);
     }
 
+    if (application.workflow_status !== WorkflowStatus.CERTIFIED) {
+      throw new Error(
+        `Certificate application is not certified: ${certificate.application_no}`,
+      );
+    }
+
     const inspection = await prisma.inspectionRecord.findFirst({
       where: {
         app_id: application.app_id,
+        test_verdict: "PASS",
+      },
+      orderBy: {
+        inspection_date: "desc",
       },
     });
 
     if (!inspection) {
       throw new Error(
-        `Inspection not found for application: ${certificate.application_no}`,
-      );
-    }
-
-    const instrument = await prisma.measuringInstrument.findFirst({
-      where: {
-        serial_number: certificate.instrument_serial_number,
-      },
-    });
-
-    if (!instrument) {
-      throw new Error(
-        `Instrument not found: ${certificate.instrument_serial_number}`,
+        `Passing inspection not found for application: ${certificate.application_no}`,
       );
     }
 
@@ -420,7 +419,7 @@ async function seed() {
         rejection_reason: certificate.rejection_reason,
 
         inspection_id: inspection.inspection_id,
-        instrument_id: instrument.instrument_id,
+        instrument_id: application.instrument_id,
       },
     });
   }
@@ -434,6 +433,6 @@ seed()
     console.log(err);
     process.exit(1);
   })
-  .finally(() => {
-    prisma.$disconnect;
+  .finally(async () => {
+    await prisma.$disconnect;
   });

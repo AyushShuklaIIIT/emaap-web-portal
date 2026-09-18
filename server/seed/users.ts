@@ -66,6 +66,7 @@ export const gatcUsersData: GatcUser[] = [
 
 export const businessUsersData: BusinessUser[] = [
   {
+    user_id: "68abe63f-d9dc-40a4-9225-45fcb3b268bd",
     name: "Stanley Kubrick",
     email: "kubrick@gmail.com",
     role: "BUSINESS",

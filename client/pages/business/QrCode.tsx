@@ -1,70 +1,9 @@
-import { useEffect, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
-import { backendUrl } from "@/lib/backend-url";
+import { useCertificates } from "@/hooks/useCertificates";
 
-interface Certificate {
-  certificateId: string;
-  instrumentCategory: string;
-  instrumentSerialNumber: string;
-  issueDate: string;
-  hash: string;
-  verificationUrl: string;
-}
-
-interface CertificateApiResponse {
-  cert_id: string;
-  certificate_no: string;
-  issue_date: string;
-  sha256_hash: string;
-  dynamic_qr_url: string;
-  instrument: {
-    serial_number: string;
-    category: {
-      category_name: string;
-    };
-  };
-}
-
-export default function QRCodes() {
-  const [certificates, setCertificates] = useState<Certificate[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCertificates = async () => {
-      try {
-        const response = await fetch(`${backendUrl}/api/certificates`);
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch certificates");
-        }
-
-        const data: CertificateApiResponse[] = await response.json();
-
-        const mappedCertificates: Certificate[] = data.map((certificate) => ({
-          certificateId: certificate.certificate_no,
-
-          instrumentCategory: certificate.instrument.category.category_name,
-
-          instrumentSerialNumber: certificate.instrument.serial_number,
-
-          issueDate: certificate.issue_date,
-
-          hash: certificate.sha256_hash,
-
-          verificationUrl: certificate.dynamic_qr_url,
-        }));
-
-        setCertificates(mappedCertificates);
-      } catch (error) {
-        console.error("Failed to load certificates:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCertificates();
-  }, []);
+export default function QRCodes({ userId }: { userId: string }) {
+  const { certificates, isLoading, isError } = useCertificates(userId);
 
   return (
     <DashboardLayout role="business">
@@ -79,9 +18,15 @@ export default function QRCodes() {
           </p>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="py-12 text-center text-gray-500">
             Loading QR codes...
+          </div>
+        ) : isError ? (
+          <div className="rounded-xl border border-red-200 bg-white p-12 text-center">
+            <p className="font-semibold text-red-600">
+              Failed to load QR codes.
+            </p>
           </div>
         ) : certificates.length === 0 ? (
           <div className="rounded-xl border border-[#E0E0E0] bg-white p-12 text-center">
@@ -93,12 +38,12 @@ export default function QRCodes() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {certificates.map((certificate) => (
               <div
-                key={certificate.certificateId}
+                key={certificate.cert_id}
                 className="rounded-xl border border-[#E0E0E0] bg-white p-6 shadow-sm"
               >
                 <div className="flex justify-center">
                   <QRCodeCanvas
-                    value={certificate.verificationUrl}
+                    value={certificate.dynamic_qr_url}
                     size={180}
                     level="H"
                     marginSize={4}
@@ -108,26 +53,34 @@ export default function QRCodes() {
                 <div className="mt-6 space-y-2">
                   <p className="text-sm">
                     <span className="font-semibold">Certificate ID:</span>{" "}
-                    {certificate.certificateId}
+                    {certificate.certificate_no}
                   </p>
 
                   <p className="text-sm">
                     <span className="font-semibold">Instrument:</span>{" "}
-                    {certificate.instrumentCategory}
+                    {certificate.instrument.category.category_name}
                   </p>
 
                   <p className="text-sm">
                     <span className="font-semibold">Serial Number:</span>{" "}
-                    {certificate.instrumentSerialNumber}
+                    {certificate.instrument.serial_number}
                   </p>
 
                   <p className="text-sm text-gray-500">
-                    {new Date(certificate.issueDate).toLocaleString()}
+                    Issued:{" "}
+                    {new Date(certificate.issue_date).toLocaleString("en-IN")}
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+                    Expires:{" "}
+                    {new Date(certificate.expiry_date).toLocaleDateString(
+                      "en-IN",
+                    )}
                   </p>
                 </div>
 
                 <a
-                  href={certificate.verificationUrl}
+                  href={certificate.dynamic_qr_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-5 block rounded-lg bg-[#0B3D91] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#082b66]"

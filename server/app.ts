@@ -10,16 +10,7 @@ import { router as uploadRouter } from "./routes/app.routes";
 import { router as dashboardRouter } from "./routes/dashboard.routes";
 import { router as instrumentRouter } from "./routes/instrument.routes";
 import { router as verificationRouter } from "./routes/verificationApp.routes";
-
-interface CertificateData {
-  instrumentSerialNumber: string;
-  instrumentCategory?: string;
-  lat: number;
-  long: number;
-  sealImageBase64: string;
-  hash: string;
-  certificateId: string;
-}
+import { prisma } from "./lib/prisma";
 
 export function createServer() {
   const app = express();
@@ -49,8 +40,6 @@ export function createServer() {
   app.use("/api/instrument", instrumentRouter);
   app.use("/api/verification", verificationRouter);
 
-  const certificates = new Map<string, CertificateData>();
-
   io.on("connection", (socket) => {
     console.log(`socket connected:${socket.id}`);
 
@@ -68,25 +57,119 @@ export function createServer() {
       console.log(reason);
     });
 
-    socket.on("inspection_approved", (data) => {
-      console.log("Tanishq ne approve kar diya hai! Aage jaane do...");
-      const issueTimestamp = new Date().toISOString();
-      const rawDataToHash = `${data.instrumentSerialNumber}|${data.lat},${data.long}|${issueTimestamp}|LMO-MP-1048|${data.sealImageBase64}`;
-      const realHash = crypto
-        .createHash("sha256")
-        .update(rawDataToHash)
-        .digest("hex");
-      console.log("Generated Cryptographic Hash:", realHash);
+    socket.on("inspection_approved", async (data) => {
+      try {
+        console.log("Inspection approved. Generating certificate...");
 
-      const finalCertPayload = {
-        ...data,
-        certificateId: `CERT-${crypto.randomUUID()}`,
-        issueDate: issueTimestamp,
-        hash: realHash,
-      };
-      certificates.set(finalCertPayload.certificateId, finalCertPayload);
+        const inspection = await prisma.inspectionRecord.findUnique({
+          where: {
+            inspection_id: data.inspectionId,
+          },
+          include: {
+            application: {
+              include: {
+                instrument: {
+                  include: {
+                    category: true,
+                  },
+                },
+              },
+            },
+          },
+        });
 
-      io.emit("certificate_generated", finalCertPayload);
+        if (!inspection) {
+          socket.emit("certificate_error", {
+            message: "Inspection not found",
+          });
+          return;
+        }
+
+        if (inspection.test_verdict !== "PASS") {
+          socket.emit("certificate_error", {
+            message:
+              "Certificate can only be generated for a passed inspection",
+          });
+          return;
+        }
+
+        const instrument = inspection.application.instrument;
+
+        const existingCertificate = await prisma.digitalCertificate.findUnique({
+          where: {
+            inspection_id: inspection.inspection_id,
+          },
+        });
+
+        if (existingCertificate) {
+          socket.emit("certificate_error", {
+            message: "Certificate already exists for this inspection",
+          });
+          return;
+        }
+
+        const issueTimestamp = new Date();
+
+        const rawDataToHash =
+          `${instrument.serial_number}|` +
+          `${instrument.lat},${instrument.long}|` +
+          `${issueTimestamp.toISOString()}|` +
+          `LMO-MP-1048|` +
+          `${data.sealImageBase64}`;
+
+        const realHash = crypto
+          .createHash("sha256")
+          .update(rawDataToHash)
+          .digest("hex");
+
+        const certificateId = `CERT-${crypto.randomUUID()}`;
+
+        const dynamicQrUrl = `${process.env.BACKEND_URL}/verify/${certificateId}`;
+
+        const expiryDate = new Date(issueTimestamp);
+
+        expiryDate.setMonth(
+          expiryDate.getMonth() + instrument.category.verification_cycle_months,
+        );
+        const month = issueTimestamp.getUTCMonth();
+        const quarter = Math.floor(month / 3) + 1;
+        const year = issueTimestamp.getUTCFullYear();
+
+        const stampingQuarterCode = `Q${quarter}-${year}`;
+        const certificate = await prisma.digitalCertificate.create({
+          data: {
+            certificate_no: certificateId,
+            stamping_quarter_code: stampingQuarterCode,
+            issue_date: issueTimestamp,
+            expiry_date: expiryDate,
+            sha256_hash: realHash,
+            dynamic_qr_url: dynamicQrUrl,
+            inspection_id: inspection.inspection_id,
+            instrument_id: instrument.instrument_id,
+          },
+        });
+
+        console.log("Certificate saved:", certificate.cert_id);
+
+        const finalCertPayload = {
+          ...data,
+          certificateId,
+          instrumentSerialNumber: instrument.serial_number,
+          instrumentCategory: instrument.category.category_name,
+          issueDate: issueTimestamp.toISOString(),
+          expiryDate: expiryDate.toISOString(),
+          hash: realHash,
+          dynamicQrUrl,
+        };
+
+        io.emit("certificate_generated", finalCertPayload);
+      } catch (error) {
+        console.error("Certificate generation failed:", error);
+
+        socket.emit("certificate_error", {
+          message: "Failed to generate certificate",
+        });
+      }
     });
   });
 
@@ -97,78 +180,110 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  app.get("/verify/:certificateId", (req, res) => {
-    const { certificateId } = req.params;
+  app.get("/verify/:certificateId", async (req, res) => {
+    try {
+      const { certificateId } = req.params;
 
-    const latestCertificate: CertificateData | undefined =
-      certificates.get(certificateId);
+      const certificate = await prisma.digitalCertificate.findUnique({
+        where: {
+          certificate_no: certificateId,
+        },
+        include: {
+          instrument: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      });
 
-    console.log("Accepted certificate data: ", latestCertificate);
+      if (!certificate) {
+        return res.status(404).send(`
+        <h2 style="text-align:center;font-family:sans-serif;margin-top:50px;">
+          Certificate not found.
+        </h2>
+      `);
+      }
 
-    if (!latestCertificate) {
-      return res
-        .status(404)
-        .send(
-          "<h2 style='text-align:center; font-family:sans-serif; margin-top:50px;'>No certificate generated yet.</h2>",
-        );
-    }
-
-    // Safely check and format the Base64 string
-    let imageSrc = latestCertificate.sealImageBase64 || "";
-    if (imageSrc && !imageSrc.startsWith("data:image/")) {
-      imageSrc = `data:image/jpeg;base64,${imageSrc}`;
-    }
-
-    if (!latestCertificate.instrumentCategory) {
-      console.log(`Instrument Category not found`);
-    }
-
-    if (!latestCertificate.instrumentSerialNumber) {
-      console.log(`Instrument Serial Number not found`);
-    }
-
-    const htmlPage = `
+      const htmlPage = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>eMaap Verification</title>
-        <style>
-          body { font-family: sans-serif; padding: 20px; text-align: center; background-color: #F5F7FA; color: #1A1A2E; }
-          .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 4px solid #1E8E3E; }
-          .success { color: #1E8E3E; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-          .hash { font-family: monospace; background: #EEF0F3; padding: 10px; border-radius: 6px; font-size: 12px; word-break: break-all; }
-          img { max-width: 100%; border-radius: 8px; margin-top: 15px; border: 2px solid #0B3D91; }
-        </style>
       </head>
+
       <body>
         <div class="card">
-          <div class="success">✅ VERIFIED LEGAL METROLOGY</div>
-          <p><strong>Instrument:</strong> ${latestCertificate.instrumentCategory}</p>
-          <p><strong>Serial Number:</strong> ${latestCertificate.instrumentSerialNumber}</p>
-          <p><strong>Certificate ID:</strong> ${latestCertificate.certificateId}</p>
-          
-          <div style="text-align: left; margin-top: 20px;">
-            <p style="font-size: 14px; font-weight: bold; color: #5C5C70;">CRYPTOGRAPHIC HASH:</p>
-            <div class="hash">${latestCertificate.hash}</div>
+          <h2>VERIFIED LEGAL METROLOGY</h2>
+
+          <p>
+            <strong>Instrument:</strong>
+            ${certificate.instrument.category.category_name}
+          </p>
+
+          <p>
+            <strong>Serial Number:</strong>
+            ${certificate.instrument.serial_number}
+          </p>
+
+          <p>
+            <strong>Certificate ID:</strong>
+            ${certificate.certificate_no}
+          </p>
+
+          <p>
+            <strong>Issue Date:</strong>
+            ${certificate.issue_date.toISOString()}
+          </p>
+
+          <p>
+            <strong>Expiry Date:</strong>
+            ${certificate.expiry_date.toISOString()}
+          </p>
+
+          <p>
+            <strong>Cryptographic Hash:</strong>
+          </p>
+
+          <div>
+            ${certificate.sha256_hash}
           </div>
-  
-          <h3 style="margin-top: 25px; color: #0B3D91;">Live Physical Seal Evidence:</h3>
-          <!-- Updated to use the sanitized imageSrc -->
-          <img src="${imageSrc}" alt="Tamper Seal Evidence" />
         </div>
       </body>
       </html>
     `;
 
-    res.send(htmlPage);
+      return res.send(htmlPage);
+    } catch (error) {
+      console.error("Certificate verification failed:", error);
+
+      return res.status(500).send("Internal server error");
+    }
   });
 
-  app.get("/api/certificates", (_req, res) => {
-    const certificatesList = Array.from(certificates.values());
+  app.get("/api/certificates", async (_req, res) => {
+    try {
+      const certificates = await prisma.digitalCertificate.findMany({
+        include: {
+          instrument: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      });
 
-    res.json(certificatesList);
+      return res.json(certificates);
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch certificates",
+      });
+    }
   });
 
   return { app, httpServer, io };

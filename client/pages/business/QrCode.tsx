@@ -5,10 +5,25 @@ import { backendUrl } from "@/lib/backend-url";
 
 interface Certificate {
   certificateId: string;
-  instrumentCategory?: string;
-  instrumentSerialNumber?: string;
-  issueDate?: string;
-  hash?: string;
+  instrumentCategory: string;
+  instrumentSerialNumber: string;
+  issueDate: string;
+  hash: string;
+  verificationUrl: string;
+}
+
+interface CertificateApiResponse {
+  cert_id: string;
+  certificate_no: string;
+  issue_date: string;
+  sha256_hash: string;
+  dynamic_qr_url: string;
+  instrument: {
+    serial_number: string;
+    category: {
+      category_name: string;
+    };
+  };
 }
 
 export default function QRCodes() {
@@ -24,8 +39,23 @@ export default function QRCodes() {
           throw new Error("Failed to fetch certificates");
         }
 
-        const data = await response.json();
-        setCertificates(data);
+        const data: CertificateApiResponse[] = await response.json();
+
+        const mappedCertificates: Certificate[] = data.map((certificate) => ({
+          certificateId: certificate.certificate_no,
+
+          instrumentCategory: certificate.instrument.category.category_name,
+
+          instrumentSerialNumber: certificate.instrument.serial_number,
+
+          issueDate: certificate.issue_date,
+
+          hash: certificate.sha256_hash,
+
+          verificationUrl: certificate.dynamic_qr_url,
+        }));
+
+        setCertificates(mappedCertificates);
       } catch (error) {
         console.error("Failed to load certificates:", error);
       } finally {
@@ -40,7 +70,9 @@ export default function QRCodes() {
     <DashboardLayout role="business">
       <section className="mx-auto max-w-7xl p-4 sm:p-8">
         <div className="mb-8">
-          <h1 className="text-xl font-bold text-[#1A1A2E] sm:text-2xl">Saved QR Codes</h1>
+          <h1 className="text-xl font-bold text-[#1A1A2E] sm:text-2xl">
+            Saved QR Codes
+          </h1>
 
           <p className="mt-1 text-sm text-[#5C5C70]">
             All generated verification certificates.
@@ -59,57 +91,51 @@ export default function QRCodes() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {certificates.map((certificate) => {
-              const verificationUrl = `${backendUrl}/verify/${certificate.certificateId}`;
-
-              return (
-                <div
-                  key={certificate.certificateId}
-                  className="rounded-xl border border-[#E0E0E0] bg-white p-6 shadow-sm"
-                >
-                  <div className="flex justify-center">
-                    <QRCodeCanvas
-                      value={verificationUrl}
-                      size={180}
-                      level="H"
-                      marginSize={4}
-                    />
-                  </div>
-
-                  <div className="mt-6 space-y-2">
-                    <p className="text-sm">
-                      <span className="font-semibold">Certificate ID:</span>{" "}
-                      {certificate.certificateId}
-                    </p>
-
-                    <p className="text-sm">
-                      <span className="font-semibold">Instrument:</span>{" "}
-                      {certificate.instrumentCategory ?? "N/A"}
-                    </p>
-
-                    <p className="text-sm">
-                      <span className="font-semibold">Serial Number:</span>{" "}
-                      {certificate.instrumentSerialNumber ?? "N/A"}
-                    </p>
-
-                    <p className="text-sm text-gray-500">
-                      {certificate.issueDate
-                        ? new Date(certificate.issueDate).toLocaleString()
-                        : ""}
-                    </p>
-                  </div>
-
-                  <a
-                    href={verificationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-5 block rounded-lg bg-[#0B3D91] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#082b66]"
-                  >
-                    Open Verification
-                  </a>
+            {certificates.map((certificate) => (
+              <div
+                key={certificate.certificateId}
+                className="rounded-xl border border-[#E0E0E0] bg-white p-6 shadow-sm"
+              >
+                <div className="flex justify-center">
+                  <QRCodeCanvas
+                    value={certificate.verificationUrl}
+                    size={180}
+                    level="H"
+                    marginSize={4}
+                  />
                 </div>
-              );
-            })}
+
+                <div className="mt-6 space-y-2">
+                  <p className="text-sm">
+                    <span className="font-semibold">Certificate ID:</span>{" "}
+                    {certificate.certificateId}
+                  </p>
+
+                  <p className="text-sm">
+                    <span className="font-semibold">Instrument:</span>{" "}
+                    {certificate.instrumentCategory}
+                  </p>
+
+                  <p className="text-sm">
+                    <span className="font-semibold">Serial Number:</span>{" "}
+                    {certificate.instrumentSerialNumber}
+                  </p>
+
+                  <p className="text-sm text-gray-500">
+                    {new Date(certificate.issueDate).toLocaleString()}
+                  </p>
+                </div>
+
+                <a
+                  href={certificate.verificationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 block rounded-lg bg-[#0B3D91] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#082b66]"
+                >
+                  Open Verification
+                </a>
+              </div>
+            ))}
           </div>
         )}
       </section>

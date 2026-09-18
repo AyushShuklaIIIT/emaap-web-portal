@@ -21,6 +21,14 @@ export const verificationAppsData: VerificationAppSeedData[] = [
     assigned_officer_email: "principal@delhi-metrology-lab.com",
     assigned_gatc_code: "GATC-DL-001",
   },
+  {
+    application_no: "EMAAP-VER-2026-0005",
+    app_type: "RE_VERIFICATION",
+    workflow_status: "SUBMITTED",
+
+    instrument_serial_number: "HW-WM-001",
+    business_email: "kubrick@gmail.com",
+  },
 
   {
     application_no: "EMAAP-VER-2026-0003",
@@ -47,7 +55,7 @@ export const verificationAppsData: VerificationAppSeedData[] = [
   },
 
   {
-    application_no: "EMAAP-VER-2026-0005",
+    application_no: "EMAAP-VER-2026-0006",
     app_type: "RE_VERIFICATION",
     workflow_status: "ALLOCATED",
 

@@ -5,7 +5,7 @@ import {
 } from "../repositories/dashboard.repository";
 import {
   getInstrumentBySearch,
-  getVerifiedInstrumentsByUserId,
+  getVerifiedInstrumentsByBusinessId,
 } from "../repositories/instrument.repository";
 import { Instrument } from "../types";
 
@@ -18,7 +18,7 @@ export const getVerifiedInstrumentsService = async (
   const business = await findBusinessByUserId(userId);
   if (!business) throw new AppError(404, "Business not found");
 
-  const instruments = await getVerifiedInstrumentsByUserId(
+  const instruments = await getVerifiedInstrumentsByBusinessId(
     business.business_id,
   );
 

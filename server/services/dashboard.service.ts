@@ -6,7 +6,7 @@ import {
   findUserByUserId,
   getDashboardDetails,
 } from "../repositories/dashboard.repository";
-import { VerificationApp } from "../types";
+import { VerificationCertificateApp } from "../types";
 
 export const getBusinessDashboardService = async (
   userId: string,
@@ -28,7 +28,7 @@ export const getBusinessDashboardService = async (
 
 export const getApplicationsDashboardService = async (
   userId: string,
-): Promise<VerificationApp[]> => {
+): Promise<VerificationCertificateApp[]> => {
   const user = await findUserByUserId(userId);
   if (!user) throw new AppError(404, "User Not Found");
 

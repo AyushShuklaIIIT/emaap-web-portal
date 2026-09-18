@@ -1,16 +1,6 @@
-import { AppType, WorkflowStatus } from "../generated/prisma/enums";
+import { VerificationAppSeedData } from "../types";
 
-interface VerificationAppData {
-  application_no: string;
-  app_type: AppType;
-  workflow_status: WorkflowStatus;
-  business_email: string;
-  instrument_serial_number: string;
-  assigned_officer_email?: string;
-  assigned_gatc_code?: string;
-}
-
-export const verificationAppsData: VerificationAppData[] = [
+export const verificationAppsData: VerificationAppSeedData[] = [
   {
     application_no: "EMAAP-VER-2026-0001",
     app_type: "INITIAL",

@@ -6,6 +6,7 @@ import { stateFees } from "./feeRules.js";
 import {
   AccuracyClass,
   AppType,
+  InstrumentStatus,
   WorkflowStatus,
 } from "../generated/prisma/enums.js";
 import { adminUsersData, businessUsersData, gatcUsersData } from "./users.js";
@@ -219,12 +220,23 @@ async function seed() {
     await prisma.measuringInstrument.create({
       data: {
         serial_number: instrument.serial_number,
+        model_no: instrument.model_no,
         model_approval_no: instrument.model_approval_no,
         manufacturer_name: instrument.manufacturer_name,
+
+        accuracy_class: instrument.accuracy_class as AccuracyClass,
+        metric: instrument.metric,
+
         capacity_value: instrument.capacity_value,
         capacity_unit: instrument.capacity_unit,
-        geo_location: instrument.geo_location,
-        status: instrument.status,
+
+        address: instrument.address,
+        pincode: instrument.pincode,
+        state: instrument.state,
+        lat: instrument.lat,
+        long: instrument.long,
+
+        status: instrument.status as InstrumentStatus,
 
         business_id: business.business_id,
         category_id: category.category_id,

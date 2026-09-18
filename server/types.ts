@@ -47,7 +47,7 @@ export interface FeeRuleSeed {
   maximum_fee?: number;
 }
 
-export interface VerificationApp {
+export interface VerificationCertificateApp {
   app_id: string;
   application_no: string;
   app_type: "INITIAL" | "RE_VERIFICATION";
@@ -58,6 +58,45 @@ export interface VerificationApp {
   assigned_officer_id?: string;
   assigned_gatc_id?: string;
   cert_id?: string;
+}
+
+export interface VerificationAppSeedData {
+  application_no: string;
+  app_type: "INITIAL" | "RE_VERIFICATION";
+  workflow_status: "SUBMITTED" | "ALLOCATED" | "CERTIFIED" | "REJECTED";
+  business_email: string;
+  instrument_serial_number: string;
+  assigned_officer_email?: string;
+  assigned_gatc_code?: string;
+}
+
+export interface VerificationAppData {
+  app_id: string;
+  application_no: string;
+  app_type: "INITIAL" | "RE_VERIFICATION";
+  submission_timestamp: Date;
+  workflow_status: "SUBMITTED" | "ALLOCATED" | "CERTIFIED" | "REJECTED";
+
+  instrument_id: string;
+  business_id: string;
+  assigned_officer_id?: string;
+  assigned_gatc_id?: string;
+}
+
+export interface VerificationForm {
+  applicationId: string;
+  instrumentCategory: string;
+  instrumentSubCategory: string;
+  modelNo: string;
+  accuracyClass: "Class I" | "Class II" | "Class III" | "Class IIII";
+  manufacturerName: string;
+  instrumentSerialNumber: string;
+  metric: string;
+  address: string;
+  pincode: number;
+  state: string;
+  lat: number;
+  long: number;
 }
 
 export interface Certificate {
@@ -75,14 +114,29 @@ export interface Certificate {
 
 export interface Instrument {
   instrument_id: string;
+
   serial_number: string;
-  model_approval_no: string;
+  model_no: string;
+  model_approval_no: string | null;
   manufacturer_name: string;
-  capacity_value: Prisma.Decimal;
+
+  accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
+
+  metric: string;
+
+  address: string;
+  pincode: number;
+  state: string;
+
+  lat: number;
+  long: number;
+
+  capacity_value: Prisma.Decimal | null;
   capacity_unit: string | null;
-  geo_location: string;
+
   business_id: string;
   category_id: string;
+
   status: "VERIFIED" | "REJECTED" | "EXPIRED";
 
   certificates: Certificate[];

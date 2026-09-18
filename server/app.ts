@@ -9,6 +9,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { router as uploadRouter } from "./routes/app.routes";
 import { router as dashboardRouter } from "./routes/dashboard.routes";
 import { router as instrumentRouter } from "./routes/instrument.routes";
+import { router as verificationRouter } from "./routes/verificationApp.routes";
 
 interface CertificateData {
   instrumentSerialNumber: string;
@@ -46,6 +47,7 @@ export function createServer() {
 
   app.use("/api/dashboard", dashboardRouter);
   app.use("/api/instrument", instrumentRouter);
+  app.use("/api/verification", verificationRouter);
 
   const certificates = new Map<string, CertificateData>();
 

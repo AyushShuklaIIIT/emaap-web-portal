@@ -4,6 +4,7 @@ import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getCurrentUser } from "@/lib/current-user";
 
 const readOnlyFieldClass =
   "h-10 rounded-lg border-[#E0E0E0] bg-[#F8F9FB] text-sm text-[#1A1A2E] shadow-none";
@@ -30,6 +31,9 @@ function PreferenceToggle({
 }
 
 export default function BusinessSettings() {
+  const currentUser = getCurrentUser();
+  const businessName = currentUser?.businessName || currentUser?.fullName || "Business User";
+  const initials = businessName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   const [webhookEnabled, setWebhookEnabled] = useState(true);
   const [expiryAlerts, setExpiryAlerts] = useState(true);
   const [inspectionUpdates, setInspectionUpdates] = useState(true);
@@ -48,14 +52,14 @@ export default function BusinessSettings() {
         <div className="space-y-9 px-4 pb-8 pt-7 sm:px-9">
           <div className="flex flex-col gap-5 rounded-lg bg-[#F5F7FA] p-4 sm:flex-row sm:items-center">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#0B3D91] text-xl font-bold text-white">
-              RR
+              {initials}
             </div>
             <div className="min-w-0 flex-1">
               <h2 className="text-lg font-bold text-[#1A1A2E]">
-                Reliance Retail Ltd.
+                {businessName}
               </h2>
               <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm text-[#5C5C70]">
-                <span>Corporate ID (CIN): L01100GJ1999PLC036018</span>
+                <span>Registered email: {currentUser?.email ?? "Not available"}</span>
                 <span className="hidden text-[#B1B4BC] sm:inline">•</span>
                 <span className="inline-flex items-center gap-1 font-medium text-[#1E8E3E]">
                   Status: KYC Verified{" "}
@@ -80,16 +84,16 @@ export default function BusinessSettings() {
               responsible for metrological compliance.
             </p>
             <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
-              <ReadOnlyField label="Director Name" value="Vikram Sharma" />
+              <ReadOnlyField label="Account holder" value={currentUser?.fullName ?? businessName} />
               <ReadOnlyField
                 label="Director Identification Number (DIN)"
-                value="08341209"
+                value={currentUser?.userId ?? "Not available"}
               />
               <ReadOnlyField
                 label="Registered Email"
-                value="compliance@relianceretail.com"
+                value={currentUser?.email ?? "Not available"}
               />
-              <ReadOnlyField label="Mobile Number" value="+91-9892012345" />
+              <ReadOnlyField label="Mobile Number" value={currentUser?.mobile ?? "Not available"} />
             </div>
           </section>
 

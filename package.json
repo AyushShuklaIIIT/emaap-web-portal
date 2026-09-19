@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config vite.config.dev.ts",
-    "build": "npm run build:client && npm run build:server",
+    "build": "pnpm run build:client && pnpm run build:server",
     "build:client": "vite build",
     "build:server": "vite build --config vite.config.server.ts",
     "start": "node dist/server/server.mjs",
@@ -13,12 +13,14 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "axios": "^1.20.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "multer": "^2.3.0",
     "qrcode.react": "^4.2.0",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",
+    "uuid": "^14.0.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -77,6 +79,7 @@
     "next-themes": "^0.4.6",
     "postcss": "^8.5.23",
     "prettier": "^3.9.6",
+    "prisma": "^7.10.0",
     "react": "^18.3.1",
     "react-day-picker": "^9.8.1",
     "react-dom": "^18.3.1",

@@ -11,6 +11,7 @@ import {
   Building2,
   BarChart3,
   Database,
+  UserCheck,
   Bell,
   ChevronDown,
   Settings,
@@ -40,6 +41,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { notifications } from "@/lib/emaap-data";
+import { getCurrentUser } from "@/lib/current-user";
 
 type Role = "business" | "admin" | "gatc";
 
@@ -61,6 +63,7 @@ const NAV: Record<
   ],
   admin: [
     { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
+    { label: "Registration Approvals", href: "/admin/registrations", icon: UserCheck },
     { label: "Pendency Queue", href: "/admin/pendency", icon: ListChecks },
     { label: "GATC Management", href: "/admin/gatc", icon: Building2 },
     { label: "Revenue Reports", href: "/admin/revenue", icon: BarChart3 },
@@ -69,12 +72,6 @@ const NAV: Record<
   gatc: [
     { label: "Recognition Application", href: "/gatc/dashboard", icon: FilePlus2 },
   ],
-};
-
-const ROLE_LABEL: Record<Role, string> = {
-  business: "Reliance Retail Ltd.",
-  admin: "Central Controller · New Delhi",
-  gatc: "Private Laboratory Applicant",
 };
 
 export function DashboardLayout({
@@ -92,6 +89,14 @@ export function DashboardLayout({
   const isMobile = useIsMobile();
   const items = NAV[role];
   const roleNotifications = notifications[role];
+  const currentUser = getCurrentUser();
+  const displayName =
+    currentUser?.businessName ||
+    currentUser?.fullName ||
+    (role === "business" ? "Business User" : role === "admin" ? "Administrator" : "LMO / GATC User");
+  const roleDescription =
+    role === "business" ? "Business User" : role === "admin" ? "Administrator" : "LMO / GATC User";
+  const initials = displayName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -183,17 +188,15 @@ export function DashboardLayout({
               <button className="flex items-center gap-2 rounded-md py-1.5 pl-1.5 pr-2 hover:bg-muted">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary text-white text-xs font-semibold">
-                    {role === "business" ? "RR" : "AC"}
+                    {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden text-left leading-tight sm:block">
                   <div className="text-sm font-medium text-foreground">
-                    {role === "business"
-                      ? "Reliance Retail Ltd."
-                      : "Admin Controller"}
+                    {displayName}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {role === "business" ? "Business User" : "Administrator"}
+                    {roleDescription}
                   </div>
                 </div>
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -218,7 +221,13 @@ export function DashboardLayout({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => navigate("/")}
+                onClick={() => {
+                  window.localStorage.removeItem("emaap_auth_token");
+                  window.localStorage.removeItem("emaap_role");
+                  window.localStorage.removeItem("emaap_admin_user_id");
+                  window.localStorage.removeItem("emaap_current_user");
+                  navigate("/");
+                }}
                 className="flex items-center gap-2 text-error focus:text-error"
               >
                 <LogOut className="h-4 w-4" /> Sign out
@@ -271,7 +280,9 @@ export function DashboardLayout({
               Settings &amp; Profile
             </Link>
             <div className="mt-2 rounded-lg bg-sidebar-accent/40 px-3 py-2.5 text-xs text-sidebar-foreground/60">
-              {ROLE_LABEL[role]}
+              {currentUser?.jurisdictionState
+                ? `${currentUser.jurisdictionState}${currentUser.jurisdictionDistrict ? ` · ${currentUser.jurisdictionDistrict}` : ""}`
+                : roleDescription}
             </div>
           </div>
         </aside>

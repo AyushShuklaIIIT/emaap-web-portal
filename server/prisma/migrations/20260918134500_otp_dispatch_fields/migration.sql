@@ -1,0 +1,4 @@
+ALTER TABLE "OtpVerificationSession"
+    ADD COLUMN "mobileOtpSalt" TEXT,
+    ADD COLUMN "emailOtpSalt" TEXT,
+    ADD COLUMN "lastSentAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

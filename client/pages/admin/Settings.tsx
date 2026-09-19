@@ -4,10 +4,14 @@ import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getCurrentUser } from "@/lib/current-user";
 
 const readOnlyClass = "h-10 rounded-lg border-[#E0E0E0] bg-[#F8F9FB] text-sm text-[#1A1A2E] shadow-none";
 
 export default function AdminSettings() {
+  const currentUser = getCurrentUser();
+  const displayName = currentUser?.fullName ?? "Administrator";
+  const initials = displayName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   const [autoRoute, setAutoRoute] = useState(true);
   const [offlineSync, setOfflineSync] = useState(true);
   const [auditTrail, setAuditTrail] = useState(true);
@@ -25,11 +29,11 @@ export default function AdminSettings() {
 
         <div className="space-y-9 px-4 pb-8 pt-7 sm:px-9">
           <div className="flex flex-col gap-5 rounded-lg bg-[#F5F7FA] p-4 sm:flex-row sm:items-center">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#0B3D91] text-xl font-bold text-white">AC</div>
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#0B3D91] text-xl font-bold text-white">{initials}</div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-bold text-[#1A1A2E]">Dr. Rajesh Kumar</h2>
+              <h2 className="text-lg font-bold text-[#1A1A2E]">{displayName}</h2>
               <p className="mt-1 text-sm leading-5 text-[#5C5C70]">
-                Designation: Joint Controller, Legal Metrology • Jurisdiction: Central Command (New Delhi)
+                Role: Administrator • Jurisdiction: {currentUser?.jurisdictionDistrict ?? "Not available"}, {currentUser?.jurisdictionState ?? "Not available"}
               </p>
             </div>
             <span className="w-fit rounded-full bg-[#1E8E3E] px-3 py-1.5 text-xs font-bold text-white">SuperAdmin Access</span>
@@ -39,9 +43,9 @@ export default function AdminSettings() {
             <h3 className="text-base font-bold text-[#0B3D91]">Officer Identity Details</h3>
             <p className="mt-1 text-sm text-[#5C5C70]">Linked with Government e-Directory (NIC). To update these details, contact the central HRMS portal.</p>
             <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
-              <ReadOnlyField label="Govt Employee ID" value="EMP-LM-2015-8821" />
+              <ReadOnlyField label="User ID" value={currentUser?.userId ?? "Not available"} />
               <ReadOnlyField label="Department" value="Dept. of Consumer Affairs (DoCA)" />
-              <ReadOnlyField label="Official Email" value="rajesh.kumar.lm@nic.in" />
+              <ReadOnlyField label="Official Email" value={currentUser?.email ?? "Not available"} />
               <div className="flex flex-col gap-2">
                 <Label className="text-sm font-bold text-[#5C5C70]">Authorized Digital Signature</Label>
                 <div className="relative">

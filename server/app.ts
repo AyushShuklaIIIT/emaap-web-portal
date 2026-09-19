@@ -9,6 +9,20 @@ import { Server as SocketIOServer } from "socket.io";
 import { router as uploadRouter } from "./routes/app.routes";
 import { router as dashboardRouter } from "./routes/dashboard.routes";
 import { router as instrumentRouter } from "./routes/instrument.routes";
+import { router as gatewayRouter } from "./routes/gateway.routes";
+import { aadhaarRouter } from "./routes/aadhaar.routes";
+import { authRouter } from "./routes/auth.routes";
+import { registrationRouter } from "./routes/registration.routes";
+import { adminReviewRouter } from "./routes/admin-review.routes";
+import { gstnRouter } from "./routes/gstn.routes";
+import { panRouter } from "./routes/pan.routes";
+import { nswsRouter } from "./routes/nsws.routes";
+import path from "node:path";
+import { correlationIdMiddleware } from "./middleware/correlation-id";
+import {
+  createCertificateSignature,
+  verifyCertificateSignature,
+} from "./services/qr-payload.service";
 
 interface CertificateData {
   instrumentSerialNumber: string;
@@ -18,6 +32,7 @@ interface CertificateData {
   sealImageBase64: string;
   hash: string;
   certificateId: string;
+  verificationSignature?: string;
 }
 
 export function createServer() {
@@ -38,14 +53,23 @@ export function createServer() {
   app.set("io", io);
 
   // Middleware
+  app.use(correlationIdMiddleware);
   app.use(cors({ origin: corsOrigin }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use("/uploads", express.static("uploads"));
+  app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
   app.use("/api", uploadRouter);
 
   app.use("/api/dashboard", dashboardRouter);
   app.use("/api/instrument", instrumentRouter);
+  app.use("/api/gateway", gatewayRouter);
+  app.use("/api/v1/gateway/aadhaar", aadhaarRouter);
+  app.use("/api/v1/gateway/gstn", gstnRouter);
+  app.use("/api/v1/gateway/pan", panRouter);
+  app.use("/api/v1/auth", authRouter);
+  app.use("/api/v1/auth", registrationRouter);
+  app.use("/api/v1/admin", adminReviewRouter);
+  app.use("/api/v1/nsws", nswsRouter);
 
   const certificates = new Map<string, CertificateData>();
 
@@ -78,10 +102,14 @@ export function createServer() {
 
       const finalCertPayload = {
         ...data,
-        certificateId: `CERT-${crypto.randomUUID()}`,
+        certificateId: crypto.randomUUID(),
         issueDate: issueTimestamp,
         hash: realHash,
       };
+      finalCertPayload.verificationSignature = createCertificateSignature(
+        finalCertPayload.certificateId,
+        finalCertPayload.hash,
+      );
       certificates.set(finalCertPayload.certificateId, finalCertPayload);
 
       io.emit("certificate_generated", finalCertPayload);
@@ -100,6 +128,15 @@ export function createServer() {
 
     const latestCertificate: CertificateData | undefined =
       certificates.get(certificateId);
+
+    const signature = typeof req.query.sig === "string" ? req.query.sig : "";
+    if (
+      !latestCertificate ||
+      !signature ||
+      !verifyCertificateSignature(latestCertificate.hash, signature)
+    ) {
+      return res.status(403).send("Invalid or missing certificate signature.");
+    }
 
     console.log("Accepted certificate data: ", latestCertificate);
 
@@ -164,7 +201,13 @@ export function createServer() {
   });
 
   app.get("/api/certificates", (_req, res) => {
-    const certificatesList = Array.from(certificates.values());
+    const certificatesList = Array.from(certificates.values()).map((certificate) => ({
+      ...certificate,
+      verificationSignature: createCertificateSignature(
+        certificate.certificateId,
+        certificate.hash,
+      ),
+    }));
 
     res.json(certificatesList);
   });

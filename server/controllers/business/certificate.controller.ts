@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
-import { AppError } from "../errors/AppError";
-import { getCertificatesService } from "../services/certificate.service";
+import { AppError } from "../../errors/AppError";
+import { getCertificatesService } from "../../services/business/certificate.service";
 
 export const getCertificates = async (req: Request, res: Response) => {
   try {

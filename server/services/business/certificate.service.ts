@@ -1,10 +1,10 @@
-import { AppError } from "../errors/AppError";
-import { getCertificatesByBusinessId } from "../repositories/certificate.repository";
+import { AppError } from "../../errors/AppError";
+import { getCertificatesByBusinessId } from "../../repositories/certificate.repository";
 
 import {
   findUserByUserId,
   findBusinessByUserId,
-} from "../repositories/dashboard.repository";
+} from "../../repositories/dashboard.repository";
 
 export const getCertificatesService = async (userId: string) => {
   const user = await findUserByUserId(userId);

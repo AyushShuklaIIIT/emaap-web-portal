@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useInstruments } from "@/hooks/useInstruments";
-import { Instrument } from "@/services/instrument.service";
+import { Instrument } from "@/services/business/instrument.service";
 
 const EXPIRING_DAYS = 30;
 

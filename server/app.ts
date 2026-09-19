@@ -7,11 +7,12 @@ import { createServer as createHttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 
 import { router as uploadRouter } from "./routes/app.routes";
-import { router as dashboardRouter } from "./routes/dashboard.routes";
-import { router as instrumentRouter } from "./routes/instrument.routes";
-import { router as verificationRouter } from "./routes/verificationApp.routes";
-import { router as paymentRouter } from "./routes/payment.routes";
-import { router as certificateRouter } from "./routes/certificate.routes";
+import { router as dashboardRouter } from "./routes/business/dashboard.routes";
+import { router as instrumentRouter } from "./routes/business/instrument.routes";
+import { router as verificationRouter } from "./routes/business/verificationApp.routes";
+import { router as paymentRouter } from "./routes/business/payment.routes";
+import { router as certificateRouter } from "./routes/business/certificate.routes";
+import { router as adminDashboardRouter } from "./routes/admin/dashboard.routes";
 
 import { prisma } from "./lib/prisma";
 
@@ -44,6 +45,7 @@ export function createServer() {
   app.use("/api/verification", verificationRouter);
   app.use("/api/payment", paymentRouter);
   app.use("/api/certificates", certificateRouter);
+  app.use("/api/admin", adminDashboardRouter);
 
   io.on("connection", (socket) => {
     console.log(`socket connected:${socket.id}`);
@@ -56,6 +58,12 @@ export function createServer() {
     socket.on("data", (data) => {
       console.log("Recieved data:", data);
       socket.broadcast.emit("message", data);
+    });
+
+    socket.on("join_admin_dashboard", () => {
+      socket.join("admin-dashboard");
+
+      console.log(`Socket ${socket.id} joined admin dashboard`);
     });
 
     socket.on("disconnect", (reason) => {

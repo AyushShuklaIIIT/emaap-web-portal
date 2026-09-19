@@ -1,4 +1,4 @@
-import { getCertificates } from "@/services/certificate.service";
+import { getCertificates } from "@/services/business/certificate.service";
 import { useQuery } from "@tanstack/react-query";
 
 export const useCertificates = (userId: string) => {

@@ -1,13 +1,13 @@
-import { AppError } from "../errors/AppError";
+import { AppError } from "../../errors/AppError";
 import {
   findBusinessByUserId,
   findUserByUserId,
-} from "../repositories/dashboard.repository";
+} from "../../repositories/dashboard.repository";
 import {
   getInstrumentBySearch,
   getVerifiedInstrumentsByBusinessId,
-} from "../repositories/instrument.repository";
-import { Instrument } from "../types";
+} from "../../repositories/instrument.repository";
+import { Instrument } from "../../types";
 
 export const getVerifiedInstrumentsService = async (
   userId: string,

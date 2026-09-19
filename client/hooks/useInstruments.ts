@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getInstrumentSearch,
   getVerifiedInstruments,
-} from "@/services/instrument.service";
+} from "@/services/business/instrument.service";
 
 export const useInstruments = (userId: string | undefined, search: string) => {
   const trimmedSearch = search.trim();

@@ -1,7 +1,7 @@
 import {
   getPaymentDashboard,
   getPaymentReceipt,
-} from "@/services/payment.service";
+} from "@/services/business/payment.service";
 import { useQuery } from "@tanstack/react-query";
 
 export const usePaymentDashboard = (userId: string) => {

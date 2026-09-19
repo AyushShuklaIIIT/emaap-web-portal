@@ -1,9 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-
 import {
   getApplicationsDashboard,
   getBusinessDashboard,
-} from "@/services/dashboard.service";
+} from "@/services/business/dashboard.service";
+import { useQuery } from "@tanstack/react-query";
 
 export const useBusinessDashboard = (userId: string | undefined) => {
   const dashboardQuery = useQuery({

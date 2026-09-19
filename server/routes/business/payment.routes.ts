@@ -1,9 +1,8 @@
 import { Router } from "express";
-
 import {
   getPaymentDashboard,
   getPaymentReceipt,
-} from "../controllers/payment.controller";
+} from "../../controllers/business/payment.controller";
 
 export const router = Router();
 

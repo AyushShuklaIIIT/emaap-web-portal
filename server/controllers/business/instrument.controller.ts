@@ -1,9 +1,9 @@
-import { AppError } from "../errors/AppError";
 import { Request, Response } from "express";
 import {
   getInstrumentSearchService,
   getVerifiedInstrumentsService,
-} from "../services/instrument.service";
+} from "../../services/business/instrument.service";
+import { AppError } from "../../errors/AppError";
 
 export const getVerifiedInstruments = async (req: Request, res: Response) => {
   try {

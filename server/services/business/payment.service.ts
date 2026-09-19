@@ -1,15 +1,13 @@
-import { AppError } from "../errors/AppError";
+import { AppError } from "../../errors/AppError";
 import {
   findUserByUserId,
   findBusinessByUserId,
-} from "../repositories/dashboard.repository";
-
+} from "../../repositories/dashboard.repository";
 import {
   getPaymentReceiptsByBusinessId,
   getPaymentReceiptById,
-} from "../repositories/payment.repository";
-
-import { PaymentDashboardData } from "../types";
+} from "../../repositories/payment.repository";
+import { PaymentDashboardData } from "../../types";
 
 export const getPaymentDashboardService = async (
   userId: string,

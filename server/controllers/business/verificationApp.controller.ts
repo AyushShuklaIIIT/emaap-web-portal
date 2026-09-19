@@ -1,10 +1,10 @@
-import { AppError } from "../errors/AppError";
 import { Request, Response } from "express";
+import { VerificationForm } from "../../types";
 import {
   getVerificationAppService,
   postVerificationAppService,
-} from "../services/verification.service";
-import { VerificationForm } from "../types";
+} from "../../services/business/verification.service";
+import { AppError } from "../../errors/AppError";
 
 export const getVerificationApp = async (req: Request, res: Response) => {
   try {

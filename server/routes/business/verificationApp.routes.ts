@@ -2,7 +2,7 @@ import express from "express";
 import {
   getVerificationApp,
   postVerificationApp,
-} from "../controllers/verificationApp.controller";
+} from "../../controllers/business/verificationApp.controller";
 
 export const router = express.Router();
 

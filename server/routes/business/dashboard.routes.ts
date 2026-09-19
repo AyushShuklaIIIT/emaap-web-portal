@@ -1,8 +1,8 @@
-import express from "express";
 import {
   getApplicationsDashboard,
   getBusinessDashboard,
-} from "../controllers/dashboard.controller";
+} from "../../controllers/business/dashboard.controller";
+import express from "express";
 
 export const router = express.Router();
 

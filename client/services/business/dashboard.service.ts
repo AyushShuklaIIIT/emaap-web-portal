@@ -1,4 +1,4 @@
-import { api } from "../lib/api";
+import { api } from "@/lib/api";
 
 export interface BusinessDashboard {
   active_instruments: number;

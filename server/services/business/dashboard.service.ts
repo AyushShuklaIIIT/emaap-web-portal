@@ -1,12 +1,11 @@
-import { AppError } from "../errors/AppError";
-import { getApplicationsByUserId } from "../repositories/dashboard.repository";
-
+import { AppError } from "../../errors/AppError";
 import {
-  findBusinessByUserId,
   findUserByUserId,
+  findBusinessByUserId,
   getDashboardDetails,
-} from "../repositories/dashboard.repository";
-import { VerificationCertificateApp } from "../types";
+  getApplicationsByUserId,
+} from "../../repositories/dashboard.repository";
+import { VerificationCertificateApp } from "../../types";
 
 export const getBusinessDashboardService = async (
   userId: string,

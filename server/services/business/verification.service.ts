@@ -1,15 +1,15 @@
-import { AppError } from "../errors/AppError";
+import { AppError } from "../../errors/AppError";
 import {
-  findBusinessByUserId,
   findUserByUserId,
-} from "../repositories/dashboard.repository";
-import { findVerifiedInstrumentForBusiness } from "../repositories/instrument.repository";
+  findBusinessByUserId,
+} from "../../repositories/dashboard.repository";
+import { findVerifiedInstrumentForBusiness } from "../../repositories/instrument.repository";
 import {
-  findActiveVerificationAppByInstrumentId,
   getAllVerificationsByBusinessId,
+  findActiveVerificationAppByInstrumentId,
   postVerificationAppByBusinessId,
-} from "../repositories/verificationApp.repository";
-import { VerificationAppData, VerificationForm } from "../types";
+} from "../../repositories/verificationApp.repository";
+import { VerificationAppData, VerificationForm } from "../../types";
 
 export const getVerificationAppService = async (
   userId: string,

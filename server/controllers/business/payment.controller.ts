@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { AppError } from "../errors/AppError";
 import {
   getPaymentDashboardService,
   getPaymentReceiptService,
-} from "../services/payment.service";
+} from "../../services/business/payment.service";
+import { AppError } from "../../errors/AppError";
 
 export const getPaymentDashboard = async (req: Request, res: Response) => {
   try {

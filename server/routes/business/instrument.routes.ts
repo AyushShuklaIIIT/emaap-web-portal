@@ -2,7 +2,7 @@ import express from "express";
 import {
   getInstrumentSearch,
   getVerifiedInstruments,
-} from "../controllers/instrument.controller";
+} from "../../controllers/business/instrument.controller";
 
 export const router = express.Router();
 

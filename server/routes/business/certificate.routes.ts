@@ -1,5 +1,5 @@
+import { getCertificates } from "../../controllers/business/certificate.controller";
 import { Router } from "express";
-import { getCertificates } from "../controllers/certificate.controller";
 
 export const router = Router();
 

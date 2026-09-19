@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
-import { AppError } from "../errors/AppError";
+
 import {
   getApplicationsDashboardService,
   getBusinessDashboardService,
-} from "../services/dashboard.service";
+} from "../../services/business/dashboard.service";
+import { AppError } from "../../errors/AppError";
 
 export const getBusinessDashboard = async (req: Request, res: Response) => {
   try {

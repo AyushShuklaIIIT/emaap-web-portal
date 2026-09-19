@@ -13,6 +13,7 @@ import { router as verificationRouter } from "./routes/business/verificationApp.
 import { router as paymentRouter } from "./routes/business/payment.routes";
 import { router as certificateRouter } from "./routes/business/certificate.routes";
 import { router as adminDashboardRouter } from "./routes/admin/dashboard.routes";
+import { router as adminPendencyRouter } from "./routes/admin/pendency.routes";
 
 import { prisma } from "./lib/prisma";
 
@@ -46,6 +47,7 @@ export function createServer() {
   app.use("/api/payment", paymentRouter);
   app.use("/api/certificates", certificateRouter);
   app.use("/api/admin", adminDashboardRouter);
+  app.use("/api/admin/pendency", adminPendencyRouter);
 
   io.on("connection", (socket) => {
     console.log(`socket connected:${socket.id}`);

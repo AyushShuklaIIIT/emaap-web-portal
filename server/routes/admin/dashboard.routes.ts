@@ -7,7 +7,7 @@ import {
 
 export const router = Router();
 
-///api/admin/dashboard
+///api/admin
 router.get("/dashboard", getAdminDashboard);
 router.get("/allocations", getAdminAllocations);
 router.get("/dashboard/export", exportAdminDashboard);

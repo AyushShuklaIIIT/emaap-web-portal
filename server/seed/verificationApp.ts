@@ -13,14 +13,12 @@ export const verificationAppsData: VerificationAppSeedData[] = [
   {
     application_no: "EMAAP-VER-2026-0002",
     app_type: "INITIAL",
-    workflow_status: "ALLOCATED",
+    workflow_status: "SUBMITTED",
 
     business_email: "andrei@gmail.com",
     instrument_serial_number: "TK-BS-001",
-
-    assigned_officer_email: "principal@delhi-metrology-lab.com",
-    assigned_gatc_code: "GATC-DL-001",
   },
+
   {
     application_no: "EMAAP-VER-2026-0005",
     app_type: "RE_VERIFICATION",

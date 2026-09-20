@@ -6,7 +6,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "CARAT_WEIGHTS",
     category_name: "Carat Weights",
@@ -14,7 +13,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "CYLINDRICAL_KNOB_WEIGHTS",
     category_name: "Cylindrical Knob Type Weights",
@@ -22,7 +20,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "SHEET_METAL_WEIGHTS",
     category_name: "Sheet Metal Weight",
@@ -30,7 +27,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS",
     category_name:
@@ -39,7 +35,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS",
     category_name:
@@ -48,7 +43,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "CAPACITY_MEASURES",
     category_name: "Capacity Measures",
@@ -56,7 +50,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "NON_FLEXIBLE_LENGTH_MEASURES",
     category_name: "Non-Flexible Length Measures",
@@ -64,7 +57,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "FABRIC_PLASTIC_WOVEN_STEEL_TAPES",
     category_name: "Fabric, Plastic, Woven and Steel Tapes",
@@ -72,7 +64,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "FOLDING_SCALES",
     category_name: "Folding Scales",
@@ -80,7 +71,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "SURVEYING_CHAIN",
     category_name: "Surveying Chain",
@@ -88,7 +78,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "BEAM_SCALES_CLASS_A_B",
     category_name: "Beam Scales Class A and B",
@@ -96,7 +85,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "BEAM_SCALES_CLASS_C_D",
     category_name: "Beam Scales Class C and D",
@@ -104,7 +92,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV",
     category_name:
@@ -113,7 +100,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV",
     category_name:
@@ -122,7 +108,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
     category_name:
@@ -131,7 +116,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS",
     category_name: "Automatic Weighing Instruments",
@@ -139,7 +123,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "DISPENSING_PUMPS",
     category_name: "Dispensing Pumps",
@@ -147,7 +130,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "VOLUMETRIC_TOTALIZING_COUNTER",
     category_name: "Volumetric Measuring Instrument Totalizing Counter",
@@ -155,7 +137,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "VOLUMETRIC_OTHER_INSTRUMENTS",
     category_name: "Other Volumetric Measuring Instruments",
@@ -163,7 +144,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "BULK_METERS_LIQUID_OTHER_THAN_WATER",
     category_name:
@@ -172,7 +152,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "BULK_METER_TOTALIZING_COUNTER",
     category_name: "Bulk Meter Totalizing Counter",
@@ -180,7 +159,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "TAXI_AUTO_RICKSHAW_METERS",
     category_name: "Taxi and Auto-Rickshaw Meters",
@@ -188,7 +166,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "OTHER_LINEAR_METERS",
     category_name: "Other Linear Meters",
@@ -196,7 +173,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "CLINICAL_THERMOMETER",
     category_name: "Clinical Thermometer",
@@ -204,7 +180,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "WATER_METER",
     category_name: "Water Meter",
@@ -212,7 +187,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "PEG_MEASURE",
     category_name: "Peg Measure",
@@ -220,7 +194,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "CNG_DISPENSERS",
     category_name: "CNG Dispensers",
@@ -228,7 +201,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "CNG_TOTALIZING_COUNTERS",
     category_name: "CNG Totalizing Counters",
@@ -243,7 +215,6 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
-
   {
     category_code: "LPG_TOTALIZING_COUNTERS",
     category_name: "LPG Totalizing Counters",

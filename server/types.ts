@@ -6,6 +6,7 @@ export interface State {
 }
 
 export interface User {
+  user_id?: string;
   name: string;
   email: string;
   role: "BUSINESS" | "LMO" | "GATC_PRINCIPAL" | "ADMIN";
@@ -47,7 +48,7 @@ export interface FeeRuleSeed {
   maximum_fee?: number;
 }
 
-export interface VerificationApp {
+export interface VerificationCertificateApp {
   app_id: string;
   application_no: string;
   app_type: "INITIAL" | "RE_VERIFICATION";
@@ -58,6 +59,45 @@ export interface VerificationApp {
   assigned_officer_id?: string;
   assigned_gatc_id?: string;
   cert_id?: string;
+}
+
+export interface VerificationAppSeedData {
+  application_no: string;
+  app_type: "INITIAL" | "RE_VERIFICATION";
+  workflow_status: "SUBMITTED" | "ALLOCATED" | "CERTIFIED" | "REJECTED";
+  business_email: string;
+  instrument_serial_number: string;
+  assigned_officer_email?: string;
+  assigned_gatc_code?: string;
+}
+
+export interface VerificationAppData {
+  app_id: string;
+  application_no: string;
+  app_type: "INITIAL" | "RE_VERIFICATION";
+  submission_timestamp: Date;
+  workflow_status: "SUBMITTED" | "ALLOCATED" | "CERTIFIED" | "REJECTED";
+
+  instrument_id: string;
+  business_id: string;
+  assigned_officer_id?: string;
+  assigned_gatc_id?: string;
+}
+
+export interface VerificationForm {
+  applicationId: string;
+  instrumentCategory: string;
+  instrumentSubCategory: string;
+  modelNo: string;
+  accuracyClass: "Class I" | "Class II" | "Class III" | "Class IIII";
+  manufacturerName: string;
+  instrumentSerialNumber: string;
+  metric: string;
+  address: string;
+  pincode: number;
+  state: string;
+  lat: number;
+  long: number;
 }
 
 export interface Certificate {
@@ -76,18 +116,32 @@ export interface Certificate {
 export interface Instrument {
   instrument_id: string;
   serial_number: string;
-  model_approval_no: string;
+  model_no: string;
+  model_approval_no: string | null;
   manufacturer_name: string;
-  capacity_value: Prisma.Decimal;
+  accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
+  metric: string;
+  address: string;
+  pincode: number;
+  state: string;
+  lat: number;
+  long: number;
+  capacity_value: Prisma.Decimal | null;
   capacity_unit: string | null;
-  geo_location: string;
   business_id: string;
   category_id: string;
   status: "VERIFIED" | "REJECTED" | "EXPIRED";
-
   certificates: Certificate[];
 }
 
+export interface InstrumentCategory {
+  category_id: string;
+  category_code: string;
+  category_name: string;
+  accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
+  oiml_standard_ref: string;
+  verification_cycle_months: number;
+}
 export interface InspectionData {
   inspection_date: Date;
   time_taken_minutes: number;
@@ -110,5 +164,51 @@ export interface DigitalCertificateData {
   rejection_reason: string | null;
 
   application_no: string;
-  instrument_serial_number: string;
+}
+
+export interface PaymentData {
+  receipt_id: string;
+  receipt_no: string;
+
+  transaction_id: string | null;
+  transaction_date: Date | null;
+  payment_method: "UPI" | "NET_BANKING" | "NEFT_RTGS" | null;
+
+  due_date: Date | null;
+
+  statutory_fee: number;
+  carriage_charges: number;
+  adjusting_charges: number;
+  total_amount: number;
+  govt_share: number;
+  gatc_share: number;
+
+  payment_status: "PENDING" | "SUCCESS" | "FAILED";
+
+  app_id: string;
+}
+
+export interface PaymentDashboardData {
+  total_paid_ytd: number;
+
+  pending_payments: {
+    receipt_id: string;
+    receipt_no: string;
+    application_id: string;
+    instrument: string;
+    due_date: Date | null;
+    statutory_fee: number;
+    total_amount: number;
+  }[];
+
+  recent_transactions: {
+    receipt_id: string;
+    transaction_id: string | null;
+    transaction_date: Date | null;
+    application_id: string;
+    instrument: string;
+    payment_method: "UPI" | "NET_BANKING" | "NEFT_RTGS" | null;
+    total_amount: number;
+    payment_status: "PENDING" | "SUCCESS" | "FAILED";
+  }[];
 }

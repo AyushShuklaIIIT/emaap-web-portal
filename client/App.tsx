@@ -30,6 +30,7 @@ import { GatewayApiProvider } from "./contexts/GatewayApiContext";
 import RegistrationPage from "./pages/RegistrationPage";
 
 const queryClient = new QueryClient();
+let userId = "68abe63f-d9dc-40a4-9225-45fcb3b268bd";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -45,7 +46,10 @@ const App = () => (
 
           <Route path="/socket-test" element={<SocketTest />} />
 
-          <Route path="/business/dashboard" element={<BusinessDashboard />} />
+          <Route
+            path="/business/dashboard"
+            element={<BusinessDashboard userId={userId} />}
+          />
           <Route
             path="/business/new-application"
             element={<NewApplication />}
@@ -54,8 +58,14 @@ const App = () => (
             path="/business/application-submitted"
             element={<ApplicationSubmitted />}
           />
-          <Route path="/business/instruments" element={<Instruments />} />
-          <Route path="/business/payments" element={<Payments />} />
+          <Route
+            path="/business/instruments"
+            element={<Instruments userId={userId} />}
+          />
+          <Route
+            path="/business/payments"
+            element={<Payments userId={userId} />}
+          />
           <Route path="/business/helpdesk" element={<Helpdesk />} />
           <Route path="/business/settings" element={<BusinessSettings />} />
 
@@ -68,7 +78,10 @@ const App = () => (
           <Route path="/admin/settings" element={<AdminSettings />} />
 
           <Route path="/gatc/dashboard" element={<GatcDashboard />} />
-          <Route path="/business/qr-codes" element={<QRCodes />} />
+          <Route
+            path="/business/qr-codes"
+            element={<QRCodes userId={userId} />}
+          />
 
           <Route path="*" element={<NotFound />} />
           </Routes>

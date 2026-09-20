@@ -2,22 +2,20 @@ import { Certificate, Instrument } from "../types";
 import { prisma } from "../lib/prisma";
 import { findBusinessByUserId } from "./dashboard.repository";
 
-export const getVerifiedInstrumentsByUserId = async (
-  business_id: string,
-): Promise<Instrument[] | null> => {
-  const instruments = await prisma.measuringInstrument.findMany({
+export const getVerifiedInstrumentsByBusinessId = async (
+  businessId: string,
+) => {
+  return prisma.measuringInstrument.findMany({
     where: {
-      business_id: business_id,
+      business_id: businessId,
       status: "VERIFIED",
     },
     include: {
+      category: true,
       certificates: true,
     },
   });
-
-  return instruments;
 };
-
 export const getInstrumentBySearch = async (
   business_id: string,
   search: string,
@@ -64,4 +62,37 @@ export const getInstrumentBySearch = async (
   });
 
   return instruments;
+};
+
+export const findVerifiedInstrumentForBusiness = async (
+  businessId: string,
+  serialNumber: string,
+  categoryName: string,
+) => {
+  return prisma.measuringInstrument.findFirst({
+    where: {
+      business_id: businessId,
+      serial_number: serialNumber,
+      status: "VERIFIED",
+      category: {
+        category_name: categoryName,
+      },
+    },
+    select: {
+      instrument_id: true,
+      serial_number: true,
+      business_id: true,
+      category_id: true,
+      model_approval_no: true,
+      manufacturer_name: true,
+      status: true,
+      category: {
+        select: {
+          category_id: true,
+          category_name: true,
+          accuracy_class: true,
+        },
+      },
+    },
+  });
 };

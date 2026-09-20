@@ -6,6 +6,9 @@ import { stateFees } from "./feeRules.js";
 import {
   AccuracyClass,
   AppType,
+  InstrumentStatus,
+  PaymentMethod,
+  PaymentStatus,
   WorkflowStatus,
 } from "../generated/prisma/enums.js";
 import { adminUsersData, businessUsersData, gatcUsersData } from "./users.js";
@@ -13,6 +16,7 @@ import { verificationAppsData } from "./verificationApp.js";
 import { measuringInstrumentsData } from "./instruments.js";
 import { inspectionRecordsData } from "./inspection.js";
 import { digitalCertificatesData } from "./certificates.js";
+import { paymentReceiptsData } from "./payment.js";
 
 async function seed() {
   console.log("Begin Seeding States");
@@ -155,6 +159,7 @@ async function seed() {
   for (const business of businessUsersData) {
     const user = await prisma.user.create({
       data: {
+        ...(business.user_id ? { user_id: business.user_id } : {}),
         name: business.name,
         email: business.email,
         role: business.role,
@@ -219,12 +224,23 @@ async function seed() {
     await prisma.measuringInstrument.create({
       data: {
         serial_number: instrument.serial_number,
+        model_no: instrument.model_no,
         model_approval_no: instrument.model_approval_no,
         manufacturer_name: instrument.manufacturer_name,
+
+        accuracy_class: instrument.accuracy_class as AccuracyClass,
+        metric: instrument.metric,
+
         capacity_value: instrument.capacity_value,
         capacity_unit: instrument.capacity_unit,
-        geo_location: instrument.geo_location,
-        status: instrument.status,
+
+        address: instrument.address,
+        pincode: instrument.pincode,
+        state: instrument.state,
+        lat: instrument.lat,
+        long: instrument.long,
+
+        status: instrument.status as InstrumentStatus,
 
         business_id: business.business_id,
         category_id: category.category_id,
@@ -325,6 +341,38 @@ async function seed() {
     });
   }
 
+  for (const payment of paymentReceiptsData) {
+    const application = await prisma.verificationApp.findUnique({
+      where: {
+        application_no: payment.application_no,
+      },
+    });
+
+    if (!application) {
+      console.log(`Application not found: ${payment.application_no}`);
+      continue;
+    }
+
+    await prisma.paymentReceipt.create({
+      data: {
+        receipt_no: payment.receipt_no,
+        transaction_id: payment.transaction_id,
+        transaction_date: payment.transaction_date,
+        payment_method: payment.payment_method as PaymentMethod,
+        due_date: payment.due_date,
+        statutory_fee: payment.statutory_fee,
+        carriage_charges: payment.carriage_charges,
+        adjusting_charges: payment.adjusting_charges,
+        total_amount: payment.total_amount,
+        govt_share: payment.govt_share,
+        gatc_share: payment.gatc_share,
+        payment_status: payment.payment_status as PaymentStatus,
+
+        app_id: application.app_id,
+      },
+    });
+  }
+
   console.log("Seeding Certifictes");
 
   for (const certificate of digitalCertificatesData) {
@@ -338,27 +386,25 @@ async function seed() {
       throw new Error(`Application not found: ${certificate.application_no}`);
     }
 
+    if (application.workflow_status !== WorkflowStatus.CERTIFIED) {
+      throw new Error(
+        `Certificate application is not certified: ${certificate.application_no}`,
+      );
+    }
+
     const inspection = await prisma.inspectionRecord.findFirst({
       where: {
         app_id: application.app_id,
+        test_verdict: "PASS",
+      },
+      orderBy: {
+        inspection_date: "desc",
       },
     });
 
     if (!inspection) {
       throw new Error(
-        `Inspection not found for application: ${certificate.application_no}`,
-      );
-    }
-
-    const instrument = await prisma.measuringInstrument.findFirst({
-      where: {
-        serial_number: certificate.instrument_serial_number,
-      },
-    });
-
-    if (!instrument) {
-      throw new Error(
-        `Instrument not found: ${certificate.instrument_serial_number}`,
+        `Passing inspection not found for application: ${certificate.application_no}`,
       );
     }
 
@@ -373,7 +419,7 @@ async function seed() {
         rejection_reason: certificate.rejection_reason,
 
         inspection_id: inspection.inspection_id,
-        instrument_id: instrument.instrument_id,
+        instrument_id: application.instrument_id,
       },
     });
   }
@@ -387,6 +433,6 @@ seed()
     console.log(err);
     process.exit(1);
   })
-  .finally(() => {
-    prisma.$disconnect;
+  .finally(async () => {
+    await prisma.$disconnect;
   });

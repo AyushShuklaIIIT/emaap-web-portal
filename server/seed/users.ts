@@ -26,17 +26,20 @@ export const gatcUsersData: GatcUser[] = [
     jurisdiction_state: "Delhi",
 
     centre_code: "GATC-DL-001",
-    approval_cert_no: "GOI/ GOVERNMENT APPROVED TEST CENTRE/07/2024/001",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/07/2024/001",
     ind_mark_code: "IND/24/01",
     valid_from: new Date("2024-01-01T00:00:00Z"),
     valid_to: new Date("2029-01-01T00:00:00Z"),
     status: "ACTIVE",
+
     approved_categories: [
-      "Water meter",
-      "Clinical Thermometer",
-      "Tape Measures",
-      "Non-automatic weighing instrument of Accuracy Class-IIII/ Class-III (upto 150kg)",
+      "WATER_METERS",
+      "CLINICAL_THERMOMETERS",
+      "FABRIC_PLASTIC_WOVEN_STEEL_TAPES",
+      "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV",
+      "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV",
     ],
+
     lat: 28.6139,
     long: 77.209,
   },
@@ -49,16 +52,19 @@ export const gatcUsersData: GatcUser[] = [
     jurisdiction_state: "Maharashtra",
 
     centre_code: "GATC-MH-002",
-    approval_cert_no: "GOI/ GOVERNMENT APPROVED TEST CENTRE/27/2025/002",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/002",
     ind_mark_code: "IND/25/02",
     valid_from: new Date("2025-06-01T00:00:00Z"),
     valid_to: new Date("2030-05-31T00:00:00Z"),
     status: "ACTIVE",
+
     approved_categories: [
-      "Automatic Rail Weighbridges",
-      "Load cell",
-      "Beam Scale",
+      "BEAM_SCALES_CLASS_A_B",
+      "BEAM_SCALES_CLASS_C_D",
+      "AUTOMATIC_WEIGHING_INSTRUMENTS",
+      "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
     ],
+
     lat: 19.076,
     long: 72.8777,
   },
@@ -66,6 +72,7 @@ export const gatcUsersData: GatcUser[] = [
 
 export const businessUsersData: BusinessUser[] = [
   {
+    user_id: "68abe63f-d9dc-40a4-9225-45fcb3b268bd",
     name: "Stanley Kubrick",
     email: "kubrick@gmail.com",
     role: "BUSINESS",

@@ -1,16 +1,6 @@
-import { AppType, WorkflowStatus } from "../generated/prisma/enums";
+import { VerificationAppSeedData } from "../types";
 
-interface VerificationAppData {
-  application_no: string;
-  app_type: AppType;
-  workflow_status: WorkflowStatus;
-  business_email: string;
-  instrument_serial_number: string;
-  assigned_officer_email?: string;
-  assigned_gatc_code?: string;
-}
-
-export const verificationAppsData: VerificationAppData[] = [
+export const verificationAppsData: VerificationAppSeedData[] = [
   {
     application_no: "EMAAP-VER-2026-0001",
     app_type: "INITIAL",
@@ -23,13 +13,19 @@ export const verificationAppsData: VerificationAppData[] = [
   {
     application_no: "EMAAP-VER-2026-0002",
     app_type: "INITIAL",
-    workflow_status: "ALLOCATED",
+    workflow_status: "SUBMITTED",
 
     business_email: "andrei@gmail.com",
     instrument_serial_number: "TK-BS-001",
+  },
 
-    assigned_officer_email: "principal@delhi-metrology-lab.com",
-    assigned_gatc_code: "GATC-DL-001",
+  {
+    application_no: "EMAAP-VER-2026-0005",
+    app_type: "RE_VERIFICATION",
+    workflow_status: "CERTIFIED",
+
+    instrument_serial_number: "HW-WM-001",
+    business_email: "kubrick@gmail.com",
   },
 
   {
@@ -57,7 +53,7 @@ export const verificationAppsData: VerificationAppData[] = [
   },
 
   {
-    application_no: "EMAAP-VER-2026-0005",
+    application_no: "EMAAP-VER-2026-0006",
     app_type: "RE_VERIFICATION",
     workflow_status: "ALLOCATED",
 

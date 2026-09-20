@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Upload, FileText, CheckCircle2, ChevronDown, Check, Loader2 } from "lucide-react";
 import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
 import { SuccessPopup } from "../../components/ui/SuccessPopUp";
@@ -563,14 +564,24 @@ export default function NewApplication() {
           </Button>
           <Button
             type="submit"
+            disabled={isSubmitting}
             className="h-11 rounded-lg bg-[#0B3D91] px-5 font-bold text-white shadow-none hover:bg-[#082b66]"
           >
-            Pay ₹10,000 &amp; Submit Application
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Pay ₹10,000 & Submit Application"
+            )}
           </Button>
         </div>
       </form>
     );
   };
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submitApplication = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -595,6 +606,8 @@ export default function NewApplication() {
       alert("Please enter valid latitude and longitude coordinates");
       return;
     }
+
+    setIsSubmitting(true);
 
     const payload: VerificationForm = {
       applicationId,
@@ -637,6 +650,8 @@ export default function NewApplication() {
     } catch (error) {
       console.error("File upload failed", error);
     }
+    
+    setIsSubmitting(false);
     navigate("/business/application-submitted", {
       state: { applicationId },
     });

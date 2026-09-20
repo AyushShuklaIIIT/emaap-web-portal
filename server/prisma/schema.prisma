@@ -439,10 +439,12 @@ model GeneratedCertificate {
   instrumentSerialNumber String
   lat                    Float
   long                   Float
-  sealImageUrl           String
+  sealImageUrls          String[]
   hash                   String
   issueDate              DateTime @default(now())
   verificationSignature  String?
+  status                 String   @default("APPROVED_CHECKLIST")
+  tokenHash              String?
 
   @@map("generatedCertificates")
 }

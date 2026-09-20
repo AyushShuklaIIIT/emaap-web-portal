@@ -15,6 +15,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { backendUrl } from "@/lib/backend-url";
+import { storeCurrentUser } from "@/lib/current-user";
+import { PasswordInput } from "@/components/ui/password-input";
 
 type Role = "business" | "admin" | "gatc";
 
@@ -60,7 +63,7 @@ export default function Index() {
     checkHealth();
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone.trim() || !password.trim()) {
       setError("Please enter your registered mobile number and password.");
@@ -69,11 +72,43 @@ export default function Index() {
 
     setError("");
     setIsLoading(true);
-    setTimeout(() => {
-      localStorage.setItem("emaap_auth_token", "demo-token-123");
+    try {
+      const response = await fetch(`${backendUrl}/api/v1/auth/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mobile: phone, password, role }),
+      });
+      const result = await response.json() as {
+        success?: boolean;
+        error?: string;
+        data?: {
+          token: string;
+          userId: string;
+          fullName: string | null;
+          email: string;
+          mobile: string | null;
+          businessName: string | null;
+          jurisdictionState: string;
+          jurisdictionDistrict: string;
+        };
+      };
+      if (!response.ok || !result.success || !result.data) {
+        throw new Error(result.error ?? "Unable to log in");
+      }
+      localStorage.setItem("emaap_auth_token", result.data.token);
       localStorage.setItem("emaap_role", role);
+      storeCurrentUser({ ...result.data, role });
+      if (role === "admin") {
+        localStorage.setItem("emaap_admin_user_id", result.data.userId);
+      } else {
+        localStorage.removeItem("emaap_admin_user_id");
+      }
       navigate(ROLE_ROUTE[role]);
-    }, 1500);
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : "Unable to log in");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -192,9 +227,8 @@ export default function Index() {
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <Label htmlFor={`pass-${r}`}>Password</Label>
-                      <Input
+                      <PasswordInput
                         id={`pass-${r}`}
-                        type="password"
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => {
@@ -244,7 +278,11 @@ export default function Index() {
 
             <p className="mt-8 text-center text-xs text-muted-foreground">
               New business user?{" "}
-              <button className="font-medium text-primary hover:underline">
+              <button
+                type="button"
+                className="font-medium text-primary hover:underline"
+                onClick={() => navigate("/register")}
+              >
                 Register your organisation
               </button>
             </p>

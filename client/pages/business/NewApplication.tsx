@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormEvent, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
 import { SuccessPopup } from "../../components/ui/SuccessPopUp";
@@ -135,6 +136,7 @@ const statesAndUnionTerritories = [
 ];
 
 export default function NewApplication() {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [instrumentSubCategory, setInstrumentSubCategory] = useState("");
@@ -635,11 +637,13 @@ export default function NewApplication() {
     } catch (error) {
       console.error("File upload failed", error);
     }
-    setShowSuccessPopup(true);
+    navigate("/business/application-submitted", {
+      state: { applicationId },
+    });
   };
 
   if (certificateData) {
-    const verificationUrl = `${backendUrl}/verify/${certificateData.certificateId}`;
+    const verificationUrl = `${backendUrl}/verify/${certificateData.certificateId}?sig=${encodeURIComponent(certificateData.verificationSignature ?? "")}`;
 
     return (
       <DashboardLayout role="business">

@@ -1,8 +1,25 @@
 import multer from "multer";
 import express from "express";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
 export const router = express.Router();
-const upload = multer({ dest: "uploads/" });
+
+cloudinary.config();
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (_req, file) => {
+    const isPdf = file.mimetype === "application/pdf";
+    return {
+      folder: "emaap/applications",
+      allowed_formats: ["pdf", "jpg", "jpeg", "png"],
+      format: isPdf ? "pdf" : undefined,
+    } as any;
+  },
+});
+
+const upload = multer({ storage });
 
 interface Result {
   applicationId: string;
@@ -27,36 +44,22 @@ router.post(
     }
 
     const applicationId: string = req.body.applicationId;
-
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
-    if (
-      !files?.["manufacturerFile"] ||
-      files["manufacturerFile"].length === 0
-    ) {
+    if (!files?.["manufacturerFile"] || files["manufacturerFile"].length === 0) {
       console.log("Manufacturer file is required");
-      console.log(files);
       return res.status(400).json({
         success: false,
         message: "Manufacturer file is required",
       });
     }
 
-    const manufacturerFilename = files["manufacturerFile"][0].filename;
-    const forwardedProtocol = req.get("x-forwarded-proto")?.split(",")[0].trim();
-    const publicBaseUrl = (
-      process.env.PUBLIC_BACKEND_URL ??
-      `${forwardedProtocol || req.protocol}://${req.get("host")}`
-    ).replace(/\/$/, "");
-    const manufacturerFileUrl = `${publicBaseUrl}/uploads/${manufacturerFilename}`;
+    // With multer-storage-cloudinary, req.file.path holds the Cloudinary URL
+    const manufacturerFileUrl = files["manufacturerFile"][0].path;
 
     let prevCertificateFileUrl = null;
-    if (
-      files["prevCertificateFile"] &&
-      files["prevCertificateFile"].length > 0
-    ) {
-      const prevCertFilename = files["prevCertificateFile"][0].filename;
-      prevCertificateFileUrl = `${publicBaseUrl}/uploads/${prevCertFilename}`;
+    if (files["prevCertificateFile"] && files["prevCertificateFile"].length > 0) {
+      prevCertificateFileUrl = files["prevCertificateFile"][0].path;
     }
 
     const io = req.app.get("io");

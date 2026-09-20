@@ -10,3 +10,20 @@
 export interface DemoResponse {
   message: string;
 }
+
+export interface GatewayProxyRequest {
+  targetUrl: string;
+  method?: string;
+  body?: unknown;
+  headers?: Record<string, string>;
+  timeoutMs?: number;
+  retryCount?: number;
+}
+
+export interface GatewayResponse<T = unknown> {
+  success: boolean;
+  statusCode: number;
+  correlationId: string;
+  data: T;
+  error?: string;
+}

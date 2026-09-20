@@ -1,0 +1,325 @@
+import {
+  randomBytes,
+  scrypt as scryptCallback,
+} from "node:crypto";
+import path from "node:path";
+import { promisify } from "node:util";
+import type { RequestHandler } from "express";
+import type { Express } from "express";
+import { z } from "zod";
+import { dispatchOtp } from "../services/otpService";
+import { randomUUID } from "node:crypto";
+
+const scrypt = promisify(scryptCallback);
+
+const registrationSchema = z.object({
+  role: z.enum([
+    "STAKEHOLDER",
+    "ADMIN",
+    "GATC_OPERATOR",
+  ]),
+  category: z
+    .enum(["MANUFACTURER", "DEALER", "REPAIRER", "IMPORTER", "PACKER", "TRADER"])
+    .optional(),
+  fullName: z.string().trim().min(3).max(100).regex(/^[A-Za-z][A-Za-z .'-]*$/),
+  mobile: z.string().regex(/^[6-9]\d{9}$/),
+  email: z.string().email(),
+  password: z.string().min(8).max(128),
+  businessName: z.string().trim().min(2).max(200).optional(),
+  tradeLicenseNo: z.string().trim().max(100).optional(),
+  gstin: z
+    .string()
+    .regex(/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/)
+    .optional(),
+  pan: z.string().regex(/^[A-Z]{5}\d{4}[A-Z]$/).optional(),
+  employeeId: z.string().trim().min(1).max(100).optional(),
+  jurisdictionDistrict: z.string().trim().min(1).max(100).optional(),
+  jurisdictionState: z.string().trim().min(1).max(100).optional(),
+});
+
+const allowedMimeTypes = new Set(["application/pdf", "image/jpeg", "image/png"]);
+const maxFileSize = 5 * 1024 * 1024;
+
+const roleMap = {
+  STAKEHOLDER: "BUSINESS",
+  ADMIN: "ADMIN",
+  GATC_OPERATOR: "GATC_PRINCIPAL",
+} as const;
+
+function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  return scrypt(password, salt, 64).then((derivedKey) =>
+    `${salt}:${Buffer.from(derivedKey as Buffer).toString("hex")}`,
+  );
+}
+
+function getFiles(req: Parameters<RequestHandler>[0]): Express.Multer.File[] {
+  const files = req.files;
+  if (!files) return [];
+  return Array.isArray(files)
+    ? files
+    : Object.values(files).flat();
+}
+
+function validateFiles(files: Express.Multer.File[]): string | undefined {
+  for (const file of files) {
+    if (!allowedMimeTypes.has(file.mimetype)) {
+      return `${file.originalname}: only PDF, JPEG, and PNG files are allowed`;
+    }
+    if (file.size > maxFileSize) {
+      return `${file.originalname}: file size must not exceed 5MB`;
+    }
+  }
+  return undefined;
+}
+
+async function verifyIdentifiers(
+  payload: z.infer<typeof registrationSchema>,
+): Promise<void> {
+  if (process.env.MOCK_MODE?.toLowerCase() === "true") return;
+
+  const checks: Array<[string | undefined, Record<string, string>]> = [
+    [process.env.GSTN_VERIFICATION_URL, payload.gstin ? { gstin: payload.gstin } : {}],
+    [process.env.PAN_VERIFICATION_URL, payload.pan ? { pan: payload.pan } : {}],
+  ];
+
+  for (const [endpoint, body] of checks) {
+    if (!endpoint || Object.keys(body).length === 0) continue;
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-correlation-id": randomUUID(),
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new RegistrationError("Business identity verification failed", 422);
+    }
+  }
+}
+
+export class RegistrationError extends Error {
+  constructor(
+    message: string,
+    readonly statusCode: number,
+  ) {
+    super(message);
+    this.name = "RegistrationError";
+  }
+}
+
+export const registerUser: RequestHandler = async (req, res) => {
+  const parsed = registrationSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      error: "Invalid registration details",
+      details: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  const files = getFiles(req);
+  const fileError = validateFiles(files);
+  if (fileError) {
+    return res.status(400).json({ success: false, error: fileError });
+  }
+
+  const input = parsed.data;
+  if (input.role === "STAKEHOLDER" && !input.businessName) {
+    return res.status(400).json({
+      success: false,
+      error: "businessName is required for stakeholders",
+    });
+  }
+  if (
+    ["ADMIN", "GATC_OPERATOR"].includes(input.role) &&
+    !input.employeeId
+  ) {
+    return res.status(400).json({
+      success: false,
+      error: "employeeId is required for staff registrations",
+    });
+  }
+
+  try {
+    await verifyIdentifiers(input);
+    const { prisma } = await import("../lib/prisma");
+    const existing = await prisma.user.findFirst({
+      where: { OR: [{ email: input.email }, { mobile: input.mobile }] },
+      select: {
+        user_id: true,
+        email: true,
+        mobile: true,
+        isActive: true,
+        registration_applications: {
+          where: { status: "OTP_PENDING" },
+          select: { id: true },
+          take: 1,
+        },
+      },
+    });
+    if (existing) {
+      const canRetryPendingRegistration =
+        !existing.isActive &&
+        existing.email === input.email &&
+        existing.mobile === input.mobile &&
+        existing.registration_applications.length > 0;
+
+      if (canRetryPendingRegistration) {
+        const passwordHash = await hashPassword(input.password);
+        const user = await prisma.$transaction(async (transaction) => {
+          await transaction.otpVerificationSession.deleteMany({
+            where: { userId: existing.user_id },
+          });
+          await transaction.userDocument.deleteMany({
+            where: { userId: existing.user_id },
+          });
+          await transaction.registrationApplication.deleteMany({
+            where: { userId: existing.user_id },
+          });
+
+          const updatedUser = await transaction.user.update({
+            where: { user_id: existing.user_id },
+            data: {
+              name: input.fullName,
+              fullName: input.fullName,
+              passwordHash,
+              role: roleMap[input.role],
+              registrationRole: input.role,
+              category: input.category,
+              businessName: input.businessName,
+              tradeLicenseNo: input.tradeLicenseNo,
+              gstin: input.gstin,
+              pan: input.pan,
+              employeeId: input.employeeId,
+              jurisdiction_district: input.jurisdictionDistrict ?? "PENDING",
+              jurisdiction_state: input.jurisdictionState ?? "PENDING",
+              isActive: false,
+              emailVerified: false,
+              mobileVerified: false,
+            },
+          });
+          const application = await transaction.registrationApplication.create({
+            data: {
+              userId: updatedUser.user_id,
+              role: input.role,
+              status: "OTP_PENDING",
+            },
+          });
+            if (files.length > 0) {
+              await transaction.userDocument.createMany({
+                data: files.map((file) => ({
+                  userId: updatedUser.user_id,
+                  docType: file.fieldname.toUpperCase(),
+                  fileName: file.originalname,
+                  fileType: file.mimetype,
+                  fileSize: file.size,
+                  storagePath: file.path,
+                })),
+              });
+            }
+            return { user: updatedUser, application };
+          });
+          const otp = await dispatchOtp({
+            userId: user.user.user_id,
+            mobileNumber: input.mobile,
+            emailAddress: input.email,
+          });
+          return res.status(201).json({
+            success: true,
+            userId: user.user.user_id,
+            applicationId: user.application.id,
+            status: "OTP_PENDING",
+            otpSessionId: otp.sessionId,
+          });
+        }
+
+        return res.status(409).json({
+          success: false,
+          error: existing.email === input.email ? "Email is already registered" : "Mobile is already registered",
+        });
+      }
+
+      const passwordHash = await hashPassword(input.password);
+      const user = await prisma.$transaction(async (transaction) => {
+        const createdUser = await transaction.user.create({
+          data: {
+            name: input.fullName,
+            fullName: input.fullName,
+            email: input.email,
+            mobile: input.mobile,
+            passwordHash,
+            role: roleMap[input.role],
+            registrationRole: input.role,
+            category: input.category,
+            businessName: input.businessName,
+            tradeLicenseNo: input.tradeLicenseNo,
+            gstin: input.gstin,
+            pan: input.pan,
+            employeeId: input.employeeId,
+            jurisdiction_district: input.jurisdictionDistrict ?? "PENDING",
+            jurisdiction_state: input.jurisdictionState ?? "PENDING",
+            isActive: false,
+          },
+        });
+
+        const application = await transaction.registrationApplication.create({
+          data: {
+            userId: createdUser.user_id,
+            role: input.role,
+            status: "OTP_PENDING",
+          },
+        });
+
+        if (files.length > 0) {
+          await transaction.userDocument.createMany({
+            data: files.map((file) => ({
+              userId: createdUser.user_id,
+              docType: file.fieldname.toUpperCase(),
+              fileName: file.originalname,
+              fileType: file.mimetype,
+              fileSize: file.size,
+              storagePath: file.path,
+            })),
+          });
+        }
+
+      return { user: createdUser, application };
+    });
+
+    const otp = await dispatchOtp({
+      userId: user.user.user_id,
+      mobileNumber: input.mobile,
+      emailAddress: input.email,
+    });
+
+    return res.status(201).json({
+      success: true,
+      userId: user.user.user_id,
+      applicationId: user.application.id,
+      status: "OTP_PENDING",
+      otpSessionId: otp.sessionId,
+    });
+  } catch (error) {
+    if (error instanceof RegistrationError) {
+      return res.status(error.statusCode).json({ success: false, error: error.message });
+    }
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
+      return res.status(409).json({
+        success: false,
+        error: "Email or mobile is already registered",
+      });
+    }
+    console.error("Registration request failed", error);
+    return res.status(502).json({
+      success: false,
+      error: "Unable to complete registration",
+    });
+  }
+};

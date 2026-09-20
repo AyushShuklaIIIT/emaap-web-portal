@@ -1,4 +1,9 @@
-import { BusinessUser, GatcUser, User, VerificationApp } from "../types";
+import {
+  BusinessUser,
+  GatcUser,
+  User,
+  VerificationCertificateApp,
+} from "../types";
 import { prisma } from "../lib/prisma";
 
 export const findUserByUserId = async (
@@ -126,7 +131,7 @@ export const getDashboardDetails = async (
 
 export const getApplicationsByUserId = async (
   userId: string,
-): Promise<VerificationApp[]> => {
+): Promise<VerificationCertificateApp[]> => {
   const business = await findBusinessByUserId(userId);
 
   const applications = await prisma.verificationApp.findMany({

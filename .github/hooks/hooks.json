@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "pnpm run lint:security"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "pnpm dlx axe-core ./src/components --rules gigw-3.0"
+      },
+      {
+        "type": "command",
+        "command": "pnpm run format"
+      }
+    ]
+  }
+}

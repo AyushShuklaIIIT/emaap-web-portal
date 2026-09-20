@@ -7,7 +7,11 @@ This project is the unified Legal Metrology Online Verification and Lifecycle Ma
 - **Frontend:** React.js, TailwindCSS, `react-hook-form`
 - **Backend:** Node.js (TypeScript), API Gateway (Kong/Spring Cloud)
 - **Database:** PostgreSQL with PostGIS extension, Prisma ORM
+<<<<<<< Updated upstream
 - **Package Manager:** Strictly use `pnpm` for all dependency installations, script executions, and CLI tool invocations. Never use `npm` or `yarn`. Replace all `npx` commands with `pnpm dlx` (or `pnpm exec`). For example, use `pnpm exec prisma migrate dev` instead of `pnpm exec prisma migrate dev`
+=======
+- **Package Manager:** Strictly use `pnpm` for all dependency installations, script executions, and CLI tool invocations. Never use `npm` or `yarn`. Replace all `npx` commands with `pnpm dlx` (or `pnpm exec`). For example, use `pnpm exec prisma migrate dev` instead of `npx prisma migrate dev`
+>>>>>>> Stashed changes
 
 ## Security & Compliance Rules (CERT-In & GIGW 3.0)
 - **Data Privacy & DPDP Act:** Never store or log raw Aadhaar, PAN, or GSTIN strings. All Personally Identifiable Information (PII) must be masked or hashed (SHA-256) locally before transmission or logging.

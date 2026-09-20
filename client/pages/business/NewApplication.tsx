@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { Upload, FileText, CheckCircle2, ChevronDown, Check, Loader2 } from "lucide-react";
 import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
-import { SuccessPopup } from "../../components/ui/SuccessPopUp";
 import { backendUrl } from "@/lib/backend-url.ts";
 
 const socket = io(backendUrl, {
@@ -157,7 +156,7 @@ export default function NewApplication() {
   const [connected, setConnected] = useState(false);
   const [socketId, setSocketId] = useState<string | undefined>();
   const [certificateData, setCertificateData] = useState<any>(null);
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     const onConnect = () => {
@@ -650,12 +649,76 @@ export default function NewApplication() {
     } catch (error) {
       console.error("File upload failed", error);
     }
+<<<<<<< Updated upstream
     
     setIsSubmitting(false);
     navigate("/business/application-submitted", {
       state: { applicationId },
     });
+=======
+    setIsSubmitted(true);
+>>>>>>> Stashed changes
   };
+
+  const startAnotherApplication = () => {
+    setIsSubmitted(false);
+    setCertificateData(null);
+    setCurrentStep(0);
+    setSelectedCategory("");
+    setInstrumentSubCategory("");
+    setModelNo("");
+    setAccuracyClass("Class II");
+    setManufacturerName("");
+    setInstrumentSerialNumber("");
+    setMetric("");
+    setAddress("");
+    setPincode(null);
+    setManufacturerInvoice(null);
+    setState("MH");
+    setCoordinates("");
+    setPrevCertificate(null);
+    setPaymentMethod("upi");
+  };
+
+  if (isSubmitted) {
+    return (
+      <DashboardLayout role="business">
+        <section className="mx-auto max-w-200 rounded-xl border border-[#E0E0E0] bg-white p-5 text-center shadow-card sm:p-10">
+          <div className="mb-6 flex justify-center">
+            <div className="rounded-full bg-[#E8F5E9] p-4">
+              <svg
+                className="h-12 w-12 text-[#1E8E3E]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <h1 className="mb-2 text-3xl font-bold text-[#1A1A2E]">
+            Application Submitted
+          </h1>
+          <p className="mx-auto max-w-xl text-[#5C5C70]">
+            Your verification application has been submitted successfully. Please wait for a response from the LMO officer.
+          </p>
+
+          <Button
+            className="mt-8 bg-[#0B3D91] hover:bg-[#082b66]"
+            onClick={startAnotherApplication}
+          >
+            Start Another Application
+          </Button>
+        </section>
+      </DashboardLayout>
+    );
+  }
 
   if (certificateData) {
     const verificationUrl = `${backendUrl}/verify/${certificateData.certificateId}?sig=${encodeURIComponent(certificateData.verificationSignature ?? "")}`;
@@ -812,10 +875,6 @@ export default function NewApplication() {
         {currentStep === 1 && renderLocationDocumentsForm()}
         {currentStep === 2 && renderReviewPaymentForm()}
       </section>
-      <SuccessPopup
-        show={showSuccessPopup}
-        onClose={() => setShowSuccessPopup(false)}
-      />
     </DashboardLayout>
   );
 }

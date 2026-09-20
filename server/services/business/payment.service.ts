@@ -19,7 +19,7 @@ export const getPaymentDashboardService = async (
 
   const business = await findBusinessByUserId(userId);
   if (!business) {
-    throw new AppError(404, "Business not found");
+    return [];
   }
 
   const receipts = await getPaymentReceiptsByBusinessId(business.business_id);

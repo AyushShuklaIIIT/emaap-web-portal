@@ -17,9 +17,6 @@ export const getBusinessDashboardService = async (
   const user = await findUserByUserId(userId);
   if (!user) throw new AppError(404, "User Not Found");
 
-  const business = await findBusinessByUserId(userId);
-  if (!business) throw new AppError(404, "User Business Not Found");
-
   const details = await getDashboardDetails(userId);
 
   return details;
@@ -30,9 +27,6 @@ export const getApplicationsDashboardService = async (
 ): Promise<VerificationCertificateApp[]> => {
   const user = await findUserByUserId(userId);
   if (!user) throw new AppError(404, "User Not Found");
-
-  const business = await findBusinessByUserId(userId);
-  if (!business) throw new AppError(404, "User Business Not Found");
 
   const applications = await getApplicationsByUserId(userId);
 

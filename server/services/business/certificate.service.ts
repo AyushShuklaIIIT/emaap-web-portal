@@ -16,7 +16,7 @@ export const getCertificatesService = async (userId: string) => {
   const business = await findBusinessByUserId(userId);
 
   if (!business) {
-    throw new AppError(404, "Business profile not found");
+    return [];
   }
 
   const certificates = await getCertificatesByBusinessId(business.business_id);

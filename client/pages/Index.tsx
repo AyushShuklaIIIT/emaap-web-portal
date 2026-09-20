@@ -103,7 +103,7 @@ export default function Index() {
       } else {
         localStorage.removeItem("emaap_admin_user_id");
       }
-      navigate(ROLE_ROUTE[role]);
+      window.location.href = ROLE_ROUTE[role];
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : "Unable to log in");
     } finally {

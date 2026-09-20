@@ -16,7 +16,7 @@ export const getVerifiedInstrumentsService = async (
   if (!user) throw new AppError(404, "User not found");
 
   const business = await findBusinessByUserId(userId);
-  if (!business) throw new AppError(404, "Business not found");
+  if (!business) return [];
 
   const instruments = await getVerifiedInstrumentsByBusinessId(
     business.business_id,
@@ -33,12 +33,12 @@ export const getInstrumentSearchService = async (
   if (!user) throw new AppError(404, "User not found");
 
   const business = await findBusinessByUserId(userId);
-  if (!business) throw new AppError(404, "Business not found");
+  if (!business) return [];
 
   const instruments = await getInstrumentBySearch(business.business_id, input);
 
   if (!instruments) {
-    throw new AppError(404, "Business not found");
+    return [];
   }
 
   return instruments;

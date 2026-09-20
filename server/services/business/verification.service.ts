@@ -18,7 +18,7 @@ export const getVerificationAppService = async (
   if (!user) throw new AppError(404, "User not found");
 
   const business = await findBusinessByUserId(userId);
-  if (!business) throw new AppError(404, "Business not found");
+  if (!business) return [];
 
   const applications = await getAllVerificationsByBusinessId(
     business.business_id,

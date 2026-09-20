@@ -128,11 +128,11 @@ model User {
   assigned_apps             VerificationApp[]         @relation("AssignedOfficer")
   inspections               InspectionRecord[]        @relation("Inspector")
   external_api_audit_logs   ExternalApiAuditLog[]
-  mobile                    String?                   @unique
-  passwordHash              String?
-  registrationRole          RoleType?
+  mobile                    String                    @unique
+  passwordHash              String
+  registrationRole          RoleType
   category                  StakeholderCategory?
-  fullName                  String?
+  fullName                  String
   employeeId                String?
   businessName              String?
   tradeLicenseNo            String?

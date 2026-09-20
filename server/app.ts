@@ -9,7 +9,11 @@ import { Server as SocketIOServer } from "socket.io";
 
 import { router as uploadRouter } from "./routes/app.routes";
 import { router as dashboardRouter } from "./routes/business/dashboard.routes";
+import { router as adminDashboardRouter } from "./routes/admin/dashboard.routes";
 import { router as instrumentRouter } from "./routes/business/instrument.routes";
+import { router as paymentRouter } from "./routes/business/payment.routes";
+import { router as verificationAppRouter } from "./routes/business/verificationApp.routes";
+import { router as certificateRouter } from "./routes/business/certificate.routes";
 import { router as gatewayRouter } from "./routes/gateway.routes";
 import { aadhaarRouter } from "./routes/aadhaar.routes";
 import { authRouter } from "./routes/auth.routes";
@@ -78,7 +82,11 @@ export function createServer() {
   app.use("/api", uploadRouter);
 
   app.use("/api/dashboard", dashboardRouter);
+  app.use("/api/admin", adminDashboardRouter);
   app.use("/api/instrument", instrumentRouter);
+  app.use("/api/payment", paymentRouter);
+  app.use("/api/verification", verificationAppRouter);
+  app.use("/api/certificates", certificateRouter);
   app.use("/api/gateway", gatewayRouter);
   app.use("/api/v1/gateway/aadhaar", aadhaarRouter);
   app.use("/api/v1/gateway/gstn", gstnRouter);

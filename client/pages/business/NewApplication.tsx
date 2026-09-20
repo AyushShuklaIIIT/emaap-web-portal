@@ -649,15 +649,10 @@ export default function NewApplication() {
     } catch (error) {
       console.error("File upload failed", error);
     }
-<<<<<<< Updated upstream
-    
     setIsSubmitting(false);
     navigate("/business/application-submitted", {
       state: { applicationId },
     });
-=======
-    setIsSubmitted(true);
->>>>>>> Stashed changes
   };
 
   const startAnotherApplication = () => {

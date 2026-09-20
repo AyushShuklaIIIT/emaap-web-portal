@@ -28,67 +28,73 @@ import QRCodes from "./pages/business/QrCode";
 import VerifyCertificate from "./pages/VerifyCertificate";
 import { GatewayApiProvider } from "./contexts/GatewayApiContext";
 import RegistrationPage from "./pages/RegistrationPage";
+import { getCurrentUser } from "./lib/current-user";
 
 const queryClient = new QueryClient();
-let userId = "68abe63f-d9dc-40a4-9225-45fcb3b268bd";
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <GatewayApiProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/register" element={<RegistrationPage />} />
-          <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
+const App = () => {
+  // Try to get dynamic user from localStorage, fallback to empty string if not logged in
+  const currentUser = getCurrentUser();
+  const userId = currentUser?.userId || "";
 
-          <Route path="/socket-test" element={<SocketTest />} />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <GatewayApiProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/register" element={<RegistrationPage />} />
+            <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
 
-          <Route
-            path="/business/dashboard"
-            element={<BusinessDashboard userId={userId} />}
-          />
-          <Route
-            path="/business/new-application"
-            element={<NewApplication />}
-          />
-          <Route
-            path="/business/application-submitted"
-            element={<ApplicationSubmitted />}
-          />
-          <Route
-            path="/business/instruments"
-            element={<Instruments userId={userId} />}
-          />
-          <Route
-            path="/business/payments"
-            element={<Payments userId={userId} />}
-          />
-          <Route path="/business/helpdesk" element={<Helpdesk />} />
-          <Route path="/business/settings" element={<BusinessSettings />} />
+            <Route path="/socket-test" element={<SocketTest />} />
 
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/pendency" element={<Pendency />} />
-          <Route path="/admin/registrations" element={<Registrations />} />
-          <Route path="/admin/gatc" element={<Gatc />} />
-          <Route path="/admin/revenue" element={<Revenue />} />
-          <Route path="/admin/master-data" element={<MasterData />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route
+              path="/business/dashboard"
+              element={<BusinessDashboard userId={userId} />}
+            />
+            <Route
+              path="/business/new-application"
+              element={<NewApplication />}
+            />
+            <Route
+              path="/business/application-submitted"
+              element={<ApplicationSubmitted />}
+            />
+            <Route
+              path="/business/instruments"
+              element={<Instruments userId={userId} />}
+            />
+            <Route
+              path="/business/payments"
+              element={<Payments userId={userId} />}
+            />
+            <Route path="/business/helpdesk" element={<Helpdesk />} />
+            <Route path="/business/settings" element={<BusinessSettings />} />
 
-          <Route path="/gatc/dashboard" element={<GatcDashboard />} />
-          <Route
-            path="/business/qr-codes"
-            element={<QRCodes userId={userId} />}
-          />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/pendency" element={<Pendency />} />
+            <Route path="/admin/registrations" element={<Registrations />} />
+            <Route path="/admin/gatc" element={<Gatc />} />
+            <Route path="/admin/revenue" element={<Revenue />} />
+            <Route path="/admin/master-data" element={<MasterData />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
 
-          <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </GatewayApiProvider>
-  </QueryClientProvider>
-);
+            <Route path="/gatc/dashboard" element={<GatcDashboard />} />
+            <Route
+              path="/business/qr-codes"
+              element={<QRCodes userId={userId} />}
+            />
+
+            <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </GatewayApiProvider>
+    </QueryClientProvider>
+  );
+};
 
 createRoot(document.getElementById("root")!).render(<App />);

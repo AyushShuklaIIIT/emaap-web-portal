@@ -86,6 +86,7 @@ export const getDashboardDetails = async (
   pending: number;
 }> => {
   const business = await findBusinessByUserId(userId);
+  if (!business) return { active_instruments: 0, expires_in: 0, pending: 0 };
 
   const now = new Date();
   const thirtyDaysFromNow = new Date();
@@ -133,6 +134,7 @@ export const getApplicationsByUserId = async (
   userId: string,
 ): Promise<VerificationCertificateApp[]> => {
   const business = await findBusinessByUserId(userId);
+  if (!business) return [];
 
   const applications = await prisma.verificationApp.findMany({
     where: { business_id: business.business_id },

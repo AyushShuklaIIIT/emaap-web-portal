@@ -2,13 +2,14 @@ import "dotenv/config";
 import express from "express";
 import crypto from "node:crypto";
 import cors from "cors";
-import { handleDemo } from "./routes/demo";
+import { PrismaClient } from "./generated/prisma";
+import type { Certificate } from "../client/hooks/useCertificates";
 import { createServer as createHttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 
 import { router as uploadRouter } from "./routes/app.routes";
-import { router as dashboardRouter } from "./routes/dashboard.routes";
-import { router as instrumentRouter } from "./routes/instrument.routes";
+import { router as dashboardRouter } from "./routes/business/dashboard.routes";
+import { router as instrumentRouter } from "./routes/business/instrument.routes";
 import { router as gatewayRouter } from "./routes/gateway.routes";
 import { aadhaarRouter } from "./routes/aadhaar.routes";
 import { authRouter } from "./routes/auth.routes";
@@ -168,7 +169,6 @@ export function createServer() {
     res.json({ message: ping });
   });
 
-  app.get("/api/demo", handleDemo);
 
   app.get("/api/verify/:certificateId", async (req, res) => {
     const { certificateId } = req.params;

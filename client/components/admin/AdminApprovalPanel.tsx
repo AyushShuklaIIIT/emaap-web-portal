@@ -203,31 +203,49 @@ function Detail({ label, value }: { label: string; value?: string | null }) {
 function DocumentPreview({ documents }: { documents: RegistrationDocument[] }) {
   const [active, setActive] = useState<RegistrationDocument | undefined>(documents[0]);
   const [source, setSource] = useState("");
+
   useEffect(() => {
-    let objectUrl = "";
-    if (!active) return;
-    void fetch(`${backendUrl}/api/v1/admin/registration-documents/${active.id}`, {
-      headers: { Authorization: `Bearer ${window.localStorage.getItem("emaap_auth_token") ?? ""}` },
-    })
-      .then((response) => {
-        if (!response.ok) throw new Error("Document unavailable");
-        return response.blob();
-      })
-      .then((blob) => {
-        objectUrl = URL.createObjectURL(blob);
-        setSource(objectUrl);
-      })
-      .catch(() => setSource(""));
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    if (!active) {
       setSource("");
-    };
+      return;
+    }
+    
+    let url = active.storagePath;
+    // Upgrade HTTP to HTTPS to prevent mixed content blocking in iframes/embeds
+    if (url.startsWith("http://")) {
+      url = url.replace("http://", "https://");
+    }
+    
+    // If it's a PDF but the URL lacks the .pdf extension (e.g. legacy uploads),
+    // append .pdf so Cloudinary sets the correct application/pdf MIME type.
+    if (active.fileType === "application/pdf" && !url.toLowerCase().endsWith(".pdf")) {
+      url = `${url}.pdf`;
+    }
+    
+    setSource(url);
   }, [active]);
+
   if (!documents.length) return <div className="rounded-lg border p-6 text-sm text-muted-foreground">No uploaded documents.</div>;
   return <div className="space-y-3 rounded-lg border p-4">
     <div className="flex flex-wrap gap-2">{documents.map((document) => <Button key={document.id} type="button" variant={active?.id === document.id ? "default" : "outline"} size="sm" onClick={() => setActive(document)}>{document.fileType.startsWith("image/") ? <ImageIcon className="mr-2 h-4 w-4" /> : <FileText className="mr-2 h-4 w-4" />}{document.docType}</Button>)}</div>
-    <div className="flex min-h-72 items-center justify-center overflow-hidden rounded-md bg-muted/30 p-2">
-      {active?.fileType.startsWith("image/") ? <img src={source} alt={active.fileName} className="max-h-[55vh] max-w-full object-contain" /> : <iframe title={active?.fileName} src={source} className="h-[55vh] w-full rounded border" />}
+    <div className="flex min-h-72 items-center justify-center overflow-hidden rounded-md bg-muted/30 p-2 relative group">
+      {active?.fileType.startsWith("image/") ? (
+        <img src={source} alt={active.fileName} className="max-h-[55vh] max-w-full object-contain" />
+      ) : (
+        <embed 
+          src={source} 
+          type="application/pdf" 
+          className="h-[55vh] w-full rounded border bg-white" 
+        />
+      )}
+      
+      {!active?.fileType.startsWith("image/") && (
+        <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button variant="secondary" size="sm" onClick={() => window.open(source, "_blank")}>
+            Open PDF in new tab
+          </Button>
+        </div>
+      )}
     </div>
     <p className="truncate text-xs text-muted-foreground">{active?.fileName} · {active ? (active.fileSize / 1024).toFixed(0) : 0} KB</p>
   </div>;

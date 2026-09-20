@@ -432,3 +432,17 @@ model ExternalApiAuditLog {
   @@index([user_id, created_at])
   @@map("externalApiAuditLogs")
 }
+
+model GeneratedCertificate {
+  certificateId          String   @id
+  instrumentCategory     String?
+  instrumentSerialNumber String
+  lat                    Float
+  long                   Float
+  sealImageUrl           String
+  hash                   String
+  issueDate              DateTime @default(now())
+  verificationSignature  String?
+
+  @@map("generatedCertificates")
+}

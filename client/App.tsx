@@ -25,6 +25,7 @@ import AdminSettings from "./pages/admin/Settings";
 import GatcDashboard from "./pages/gatc/Dashboard";
 import SocketTest from "./pages/Socketio-test";
 import QRCodes from "./pages/business/QrCode";
+import VerifyCertificate from "./pages/VerifyCertificate";
 import { GatewayApiProvider } from "./contexts/GatewayApiContext";
 import RegistrationPage from "./pages/RegistrationPage";
 
@@ -40,6 +41,7 @@ const App = () => (
           <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/register" element={<RegistrationPage />} />
+          <Route path="/verify/:certificateId" element={<VerifyCertificate />} />
 
           <Route path="/socket-test" element={<SocketTest />} />
 

@@ -1,16 +1,26 @@
 import express from "express";
 import multer from "multer";
-import { mkdirSync } from "node:fs";
-import path from "node:path";
 import { MulterError } from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { registerUser } from "../controllers/registrationController";
 
-const uploadDirectory =
-  process.env.REGISTRATION_UPLOAD_DIR ?? path.join(process.cwd(), "uploads", "registrations");
-mkdirSync(uploadDirectory, { recursive: true });
+cloudinary.config();
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (_req, file) => {
+    const isPdf = file.mimetype === "application/pdf";
+    return {
+      folder: "emaap/registrations",
+      allowed_formats: ["pdf", "jpg", "jpeg", "png"],
+      format: isPdf ? "pdf" : undefined,
+    } as any;
+  },
+});
 
 const upload = multer({
-  dest: uploadDirectory,
+  storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, callback) => {
     if (!["application/pdf", "image/jpeg", "image/png"].includes(file.mimetype)) {

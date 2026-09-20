@@ -207,83 +207,83 @@ export const registerUser: RequestHandler = async (req, res) => {
               status: "OTP_PENDING",
             },
           });
-          if (files.length > 0) {
-            await transaction.userDocument.createMany({
-              data: files.map((file) => ({
-                userId: updatedUser.user_id,
-                docType: file.fieldname.toUpperCase(),
-                fileName: file.originalname,
-                fileType: file.mimetype,
-                fileSize: file.size,
-                storagePath: `registration-uploads/${path.basename(file.path)}`,
-              })),
-            });
-          }
-          return { user: updatedUser, application };
-        });
-        const otp = await dispatchOtp({
-          userId: user.user.user_id,
-          mobileNumber: input.mobile,
-          emailAddress: input.email,
-        });
-        return res.status(201).json({
-          success: true,
-          userId: user.user.user_id,
-          applicationId: user.application.id,
-          status: "OTP_PENDING",
-          otpSessionId: otp.sessionId,
+            if (files.length > 0) {
+              await transaction.userDocument.createMany({
+                data: files.map((file) => ({
+                  userId: updatedUser.user_id,
+                  docType: file.fieldname.toUpperCase(),
+                  fileName: file.originalname,
+                  fileType: file.mimetype,
+                  fileSize: file.size,
+                  storagePath: file.path,
+                })),
+              });
+            }
+            return { user: updatedUser, application };
+          });
+          const otp = await dispatchOtp({
+            userId: user.user.user_id,
+            mobileNumber: input.mobile,
+            emailAddress: input.email,
+          });
+          return res.status(201).json({
+            success: true,
+            userId: user.user.user_id,
+            applicationId: user.application.id,
+            status: "OTP_PENDING",
+            otpSessionId: otp.sessionId,
+          });
+        }
+
+        return res.status(409).json({
+          success: false,
+          error: existing.email === input.email ? "Email is already registered" : "Mobile is already registered",
         });
       }
 
-      return res.status(409).json({
-        success: false,
-        error: existing.email === input.email ? "Email is already registered" : "Mobile is already registered",
-      });
-    }
+      const passwordHash = await hashPassword(input.password);
+      const user = await prisma.$transaction(async (transaction) => {
+        const createdUser = await transaction.user.create({
+          data: {
+            name: input.fullName,
+            fullName: input.fullName,
+            email: input.email,
+            mobile: input.mobile,
+            passwordHash,
+            role: roleMap[input.role],
+            registrationRole: input.role,
+            category: input.category,
+            businessName: input.businessName,
+            tradeLicenseNo: input.tradeLicenseNo,
+            gstin: input.gstin,
+            pan: input.pan,
+            employeeId: input.employeeId,
+            jurisdiction_district: input.jurisdictionDistrict ?? "PENDING",
+            jurisdiction_state: input.jurisdictionState ?? "PENDING",
+            isActive: false,
+          },
+        });
 
-    const passwordHash = await hashPassword(input.password);
-    const user = await prisma.$transaction(async (transaction) => {
-      const createdUser = await transaction.user.create({
-        data: {
-          name: input.fullName,
-          fullName: input.fullName,
-          email: input.email,
-          mobile: input.mobile,
-          passwordHash,
-          role: roleMap[input.role],
-          registrationRole: input.role,
-          category: input.category,
-          businessName: input.businessName,
-          tradeLicenseNo: input.tradeLicenseNo,
-          gstin: input.gstin,
-          pan: input.pan,
-          employeeId: input.employeeId,
-          jurisdiction_district: input.jurisdictionDistrict ?? "PENDING",
-          jurisdiction_state: input.jurisdictionState ?? "PENDING",
-          isActive: false,
-        },
-      });
-
-      const application = await transaction.registrationApplication.create({
-        data: {
-          userId: createdUser.user_id,
-          role: input.role,
-          status: "OTP_PENDING",
-        },
-      });
-
-      if (files.length > 0) {
-        await transaction.userDocument.createMany({
-          data: files.map((file) => ({
+        const application = await transaction.registrationApplication.create({
+          data: {
             userId: createdUser.user_id,
-            docType: file.fieldname.toUpperCase(),
-            fileName: file.originalname,
-            fileType: file.mimetype,
-            fileSize: file.size,
-            storagePath: `registration-uploads/${path.basename(file.path)}`,
-          })),
+            role: input.role,
+            status: "OTP_PENDING",
+          },
         });
-      }
+
+        if (files.length > 0) {
+          await transaction.userDocument.createMany({
+            data: files.map((file) => ({
+              userId: createdUser.user_id,
+              docType: file.fieldname.toUpperCase(),
+              fileName: file.originalname,
+              fileType: file.mimetype,
+              fileSize: file.size,
+              storagePath: file.path,
+            })),
+          });
+        }
 
       return { user: createdUser, application };
     });

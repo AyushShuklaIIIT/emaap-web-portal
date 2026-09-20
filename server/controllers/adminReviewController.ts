@@ -2,8 +2,6 @@ import type { RequestHandler } from "express";
 import type { Prisma } from "../generated/prisma/client";
 import { z } from "zod";
 import { sendWelcomeEmail } from "../services/welcome-email.service";
-import path from "node:path";
-import { stat } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { catchAsync } from "../middleware/catchAsync";
 import { AppError } from "../errors/AppError";
@@ -139,15 +137,4 @@ export const rejectRegistration: RequestHandler = catchAsync(async (req, res) =>
   return res.json({ success: true, application: result });
 });
 
-export const downloadRegistrationDocument: RequestHandler = catchAsync(async (req, res) => {
-  const documentId = z.string().uuid().safeParse(req.params.id);
-  if (!documentId.success) return res.status(400).json({ success: false, error: "Invalid document ID" });
-  const { prisma } = await import("../lib/prisma");
-  const document = await prisma.userDocument.findUnique({ where: { id: documentId.data } });
-  if (!document) throw new AppError(404, "Document not found");
-  const filename = path.basename(document.storagePath);
-  const filePath = path.join(process.cwd(), "uploads", "registrations", filename);
-  await stat(filePath);
-  res.setHeader("x-correlation-id", res.locals.correlationId ?? randomUUID());
-  return res.sendFile(filePath);
-});
+

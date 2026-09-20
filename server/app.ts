@@ -29,7 +29,7 @@ interface CertificateData {
   instrumentCategory?: string;
   lat: number;
   long: number;
-  sealImageBase64: string;
+  sealImageUrl: string;
   hash: string;
   certificateId: string;
   verificationSignature?: string;
@@ -41,7 +41,22 @@ export function createServer() {
   const allowedOrigins = process.env.FRONTEND_URL?.split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
-  const corsOrigin = allowedOrigins?.length ? allowedOrigins : "*";
+  
+  // Dynamically allow the requesting origin during local network testing to prevent CORS issues on mobile/LAN
+  const corsOrigin = function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    if (!origin) return callback(null, true);
+    
+    // Always allow localhost and local network IPs for testing
+    if (origin.includes("localhost") || origin.includes("192.168.") || origin.includes("10.0.") || origin.includes("172.")) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins && allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    callback(null, false);
+  };
 
   const io = new SocketIOServer(httpServer, {
     cors: {
@@ -57,7 +72,6 @@ export function createServer() {
   app.use(cors({ origin: corsOrigin }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
   app.use("/api", uploadRouter);
 
   app.use("/api/dashboard", dashboardRouter);
@@ -71,7 +85,7 @@ export function createServer() {
   app.use("/api/v1/admin", adminReviewRouter);
   app.use("/api/v1/nsws", nswsRouter);
 
-  const certificates = new Map<string, CertificateData>();
+
 
   io.on("connection", (socket) => {
     console.log(`socket connected:${socket.id}`);
@@ -90,10 +104,10 @@ export function createServer() {
       console.log(reason);
     });
 
-    socket.on("inspection_approved", (data) => {
+    socket.on("inspection_approved", async (data) => {
       console.log("Tanishq ne approve kar diya hai! Aage jaane do...");
       const issueTimestamp = new Date().toISOString();
-      const rawDataToHash = `${data.instrumentSerialNumber}|${data.lat},${data.long}|${issueTimestamp}|LMO-MP-1048|${data.sealImageBase64}`;
+      const rawDataToHash = `${data.instrumentSerialNumber}|${data.lat},${data.long}|${issueTimestamp}|LMO-MP-1048|${data.sealImageUrl}`;
       const realHash = crypto
         .createHash("sha256")
         .update(rawDataToHash)
@@ -110,9 +124,27 @@ export function createServer() {
         finalCertPayload.certificateId,
         finalCertPayload.hash,
       );
-      certificates.set(finalCertPayload.certificateId, finalCertPayload);
 
-      io.emit("certificate_generated", finalCertPayload);
+      try {
+        const { prisma } = await import("./lib/prisma");
+        await prisma.generatedCertificate.create({
+          data: {
+            certificateId: finalCertPayload.certificateId,
+            instrumentCategory: finalCertPayload.instrumentCategory,
+            instrumentSerialNumber: finalCertPayload.instrumentSerialNumber,
+            lat: finalCertPayload.lat,
+            long: finalCertPayload.long,
+            sealImageUrl: finalCertPayload.sealImageUrl,
+            hash: finalCertPayload.hash,
+            issueDate: new Date(finalCertPayload.issueDate),
+            verificationSignature: finalCertPayload.verificationSignature,
+          }
+        });
+        
+        io.emit("certificate_generated", finalCertPayload);
+      } catch (error) {
+        console.error("Failed to save certificate to database:", error);
+      }
     });
   });
 
@@ -123,11 +155,13 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  app.get("/verify/:certificateId", (req, res) => {
+  app.get("/api/verify/:certificateId", async (req, res) => {
     const { certificateId } = req.params;
 
-    const latestCertificate: CertificateData | undefined =
-      certificates.get(certificateId);
+    const { prisma } = await import("./lib/prisma");
+    const latestCertificate = await prisma.generatedCertificate.findUnique({
+      where: { certificateId },
+    });
 
     const signature = typeof req.query.sig === "string" ? req.query.sig : "";
     if (
@@ -135,81 +169,24 @@ export function createServer() {
       !signature ||
       !verifyCertificateSignature(latestCertificate.hash, signature)
     ) {
-      return res.status(403).send("Invalid or missing certificate signature.");
+      return res.status(403).json({ success: false, error: "Invalid or missing certificate signature." });
     }
 
     console.log("Accepted certificate data: ", latestCertificate);
-
-    if (!latestCertificate) {
-      return res
-        .status(404)
-        .send(
-          "<h2 style='text-align:center; font-family:sans-serif; margin-top:50px;'>No certificate generated yet.</h2>",
-        );
-    }
-
-    // Safely check and format the Base64 string
-    let imageSrc = latestCertificate.sealImageBase64 || "";
-    if (imageSrc && !imageSrc.startsWith("data:image/")) {
-      imageSrc = `data:image/jpeg;base64,${imageSrc}`;
-    }
-
-    if (!latestCertificate.instrumentCategory) {
-      console.log(`Instrument Category not found`);
-    }
-
-    if (!latestCertificate.instrumentSerialNumber) {
-      console.log(`Instrument Serial Number not found`);
-    }
-
-    const htmlPage = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>eMaap Verification</title>
-        <style>
-          body { font-family: sans-serif; padding: 20px; text-align: center; background-color: #F5F7FA; color: #1A1A2E; }
-          .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-top: 4px solid #1E8E3E; }
-          .success { color: #1E8E3E; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
-          .hash { font-family: monospace; background: #EEF0F3; padding: 10px; border-radius: 6px; font-size: 12px; word-break: break-all; }
-          img { max-width: 100%; border-radius: 8px; margin-top: 15px; border: 2px solid #0B3D91; }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <div class="success">✅ VERIFIED LEGAL METROLOGY</div>
-          <p><strong>Instrument:</strong> ${latestCertificate.instrumentCategory}</p>
-          <p><strong>Serial Number:</strong> ${latestCertificate.instrumentSerialNumber}</p>
-          <p><strong>Certificate ID:</strong> ${latestCertificate.certificateId}</p>
-          
-          <div style="text-align: left; margin-top: 20px;">
-            <p style="font-size: 14px; font-weight: bold; color: #5C5C70;">CRYPTOGRAPHIC HASH:</p>
-            <div class="hash">${latestCertificate.hash}</div>
-          </div>
-  
-          <h3 style="margin-top: 25px; color: #0B3D91;">Live Physical Seal Evidence:</h3>
-          <!-- Updated to use the sanitized imageSrc -->
-          <img src="${imageSrc}" alt="Tamper Seal Evidence" />
-        </div>
-      </body>
-      </html>
-    `;
-
-    res.send(htmlPage);
+    res.json({ success: true, certificate: latestCertificate });
   });
 
-  app.get("/api/certificates", (_req, res) => {
-    const certificatesList = Array.from(certificates.values()).map((certificate) => ({
-      ...certificate,
-      verificationSignature: createCertificateSignature(
-        certificate.certificateId,
-        certificate.hash,
-      ),
-    }));
-
-    res.json(certificatesList);
+  app.get("/api/certificates", async (_req, res) => {
+    try {
+      const { prisma } = await import("./lib/prisma");
+      const certificatesList = await prisma.generatedCertificate.findMany({
+        orderBy: { issueDate: 'desc' }
+      });
+      res.json(certificatesList);
+    } catch (error) {
+      console.error("Failed to list certificates:", error);
+      res.status(500).json({ success: false, error: "Database error" });
+    }
   });
 
   return { app, httpServer, io };

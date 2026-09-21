@@ -37,16 +37,16 @@ export default function QRCodes({ userId }: { userId: string }) {
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {certificates.map((certificate) => {
-              const verificationUrl = `${window.location.origin}/verify/${certificate.certificateId}?sig=${encodeURIComponent((certificate as Certificate & { verificationSignature?: string }).verificationSignature ?? "")}`;
+              const verificationUrl = `${window.location.origin}/verify/${certificate.cert_id}?sig=${encodeURIComponent(certificate.sha256_hash ?? "")}`;
 
               return (
                 <div
-                  key={certificate.certificateId}
+                  key={certificate.cert_id}
                   className="rounded-xl border border-[#E0E0E0] bg-white p-6 shadow-sm"
                 >
                   <div className="flex justify-center">
                     <QRCodeCanvas
-                      id={`qr-${certificate.certificateId}`}
+                      id={`qr-${certificate.cert_id}`}
                       value={verificationUrl}
                       size={180}
                       level="H"
@@ -57,22 +57,22 @@ export default function QRCodes({ userId }: { userId: string }) {
                   <div className="mt-6 space-y-2">
                     <p className="text-sm">
                       <span className="font-semibold">Certificate ID:</span>{" "}
-                      {certificate.certificateId}
+                      {certificate.certificate_no}
                     </p>
 
                     <p className="text-sm">
                       <span className="font-semibold">Instrument:</span>{" "}
-                      {certificate.instrumentCategory ?? "N/A"}
+                      {certificate.instrument?.category?.category_name ?? "N/A"}
                     </p>
 
                     <p className="text-sm">
                       <span className="font-semibold">Serial Number:</span>{" "}
-                      {certificate.instrumentSerialNumber ?? "N/A"}
+                      {certificate.instrument?.serial_number ?? "N/A"}
                     </p>
 
                     <p className="text-sm text-gray-500">
-                      {certificate.issueDate
-                        ? new Date(certificate.issueDate).toLocaleString()
+                      {certificate.issue_date
+                        ? new Date(certificate.issue_date).toLocaleString()
                         : ""}
                     </p>
                   </div>
@@ -88,11 +88,11 @@ export default function QRCodes({ userId }: { userId: string }) {
                     </a>
                     <button
                       onClick={() => {
-                        const canvas = document.getElementById(`qr-${certificate.certificateId}`) as HTMLCanvasElement;
+                        const canvas = document.getElementById(`qr-${certificate.cert_id}`) as HTMLCanvasElement;
                         if (canvas) {
                           const url = canvas.toDataURL("image/png");
                           const link = document.createElement("a");
-                          link.download = `Certificate-QR-${certificate.certificateId.substring(0, 8)}.png`;
+                          link.download = `Certificate-QR-${certificate.cert_id.substring(0, 8)}.png`;
                           link.href = url;
                           link.click();
                         }

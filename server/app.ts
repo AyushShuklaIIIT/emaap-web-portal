@@ -2,8 +2,7 @@ import "dotenv/config";
 import express from "express";
 import crypto from "node:crypto";
 import cors from "cors";
-import { PrismaClient } from "./generated/prisma";
-import type { Certificate } from "../client/hooks/useCertificates";
+
 import { createServer as createHttpServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
 

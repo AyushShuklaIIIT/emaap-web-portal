@@ -56,19 +56,6 @@ export interface FeeRuleSeed {
   maximum_fee?: number;
 }
 
-export interface VerificationCertificateApp {
-  app_id: string;
-  application_no: string;
-  app_type: "INITIAL" | "RE_VERIFICATION";
-  submission_timestamp: Date;
-  workflow_status: "SUBMITTED" | "ALLOCATED" | "CERTIFIED" | "REJECTED";
-  instrument_id: string;
-  business_id: string;
-  assigned_officer_id?: string;
-  assigned_gatc_id?: string;
-  cert_id?: string;
-}
-
 export interface VerificationAppSeedData {
   application_no: string;
   app_type: "INITIAL" | "RE_VERIFICATION";
@@ -79,17 +66,58 @@ export interface VerificationAppSeedData {
   assigned_gatc_code?: string;
 }
 
-export interface VerificationAppData {
-  app_id: string;
-  application_no: string;
-  app_type: "INITIAL" | "RE_VERIFICATION";
-  submission_timestamp: Date;
-  workflow_status: "SUBMITTED" | "ALLOCATED" | "CERTIFIED" | "REJECTED";
-  instrument_id: string;
-  business_id: string;
-  assigned_officer_id?: string;
-  assigned_gatc_id?: string;
-}
+export type VerificationAppData = Prisma.VerificationAppGetPayload<{
+  include: {
+    receipts: true;
+    inspections: true;
+    instrument: true;
+    business: true;
+    assigned_officer: true;
+    assigned_gatc: true;
+  };
+}>;
+
+export type DashboardApplicationData = Prisma.VerificationAppGetPayload<{
+  include: {
+    instrument: {
+      include: {
+        category: true;
+        technical_specs: true;
+        business: {
+          include: {
+            state: true;
+            user: true;
+          };
+        };
+        certificates: true;
+      };
+    };
+    business: {
+      include: {
+        state: true;
+        user: true;
+      };
+    };
+    assigned_officer: true;
+    assigned_gatc: {
+      include: {
+        principal_officer: true;
+      };
+    };
+    receipts: true;
+    inspections: {
+      include: {
+        inspector: true;
+        certificate: {
+          include: {
+            instrument: true;
+          };
+        };
+        seals: true;
+      };
+    };
+  };
+}>;
 
 export interface VerificationForm {
   applicationId: string;

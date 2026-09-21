@@ -6,6 +6,14 @@ export const getAllVerificationsByBusinessId = async (
 ): Promise<VerificationAppData[]> => {
   const applications = await prisma.verificationApp.findMany({
     where: { business_id: businessId },
+    include: {
+      receipts: true,
+      inspections: true,
+      instrument: true,
+      business: true,
+      assigned_officer: true,
+      assigned_gatc: true,
+    },
   });
 
   return applications;
@@ -24,16 +32,13 @@ export const postVerificationAppByBusinessId = async (
       instrument_id: instrumentId,
       business_id: businessId,
     },
-    select: {
-      app_id: true,
-      application_no: true,
-      app_type: true,
-      submission_timestamp: true,
-      workflow_status: true,
-      instrument_id: true,
-      business_id: true,
-      assigned_officer_id: true,
-      assigned_gatc_id: true,
+    include: {
+      receipts: true,
+      inspections: true,
+      instrument: true,
+      business: true,
+      assigned_officer: true,
+      assigned_gatc: true,
     },
   });
 
@@ -52,16 +57,13 @@ export const findActiveVerificationAppByInstrumentId = async (
         in: ["SUBMITTED", "ALLOCATED"],
       },
     },
-    select: {
-      app_id: true,
-      application_no: true,
-      app_type: true,
-      submission_timestamp: true,
-      workflow_status: true,
-      instrument_id: true,
-      business_id: true,
-      assigned_officer_id: true,
-      assigned_gatc_id: true,
+    include: {
+      receipts: true,
+      inspections: true,
+      instrument: true,
+      business: true,
+      assigned_officer: true,
+      assigned_gatc: true,
     },
   });
 

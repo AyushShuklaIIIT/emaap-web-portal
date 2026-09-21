@@ -19,7 +19,11 @@ export const getPaymentDashboardService = async (
 
   const business = await findBusinessByUserId(userId);
   if (!business) {
-    return [];
+    return {
+      total_paid_ytd: 0,
+      pending_payments: [],
+      recent_transactions: [],
+    };
   }
 
   const receipts = await getPaymentReceiptsByBusinessId(business.business_id);

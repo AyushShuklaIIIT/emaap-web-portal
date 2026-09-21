@@ -16,6 +16,7 @@ const registrationSchema = z.object({
   role: z.enum([
     "STAKEHOLDER",
     "ADMIN",
+    "INSPECTOR",
     "GATC_OPERATOR",
   ]),
   category: z
@@ -39,12 +40,6 @@ const registrationSchema = z.object({
 
 const allowedMimeTypes = new Set(["application/pdf", "image/jpeg", "image/png"]);
 const maxFileSize = 5 * 1024 * 1024;
-
-const roleMap = {
-  STAKEHOLDER: "BUSINESS",
-  ADMIN: "ADMIN",
-  GATC_OPERATOR: "GATC_PRINCIPAL",
-} as const;
 
 function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
@@ -133,7 +128,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     });
   }
   if (
-    ["ADMIN", "GATC_OPERATOR"].includes(input.role) &&
+    ["ADMIN", "INSPECTOR", "GATC_OPERATOR"].includes(input.role) &&
     !input.employeeId
   ) {
     return res.status(400).json({
@@ -185,7 +180,6 @@ export const registerUser: RequestHandler = async (req, res) => {
               name: input.fullName,
               fullName: input.fullName,
               passwordHash,
-              role: roleMap[input.role],
               registrationRole: input.role,
               category: input.category,
               businessName: input.businessName,
@@ -250,7 +244,6 @@ export const registerUser: RequestHandler = async (req, res) => {
             email: input.email,
             mobile: input.mobile,
             passwordHash,
-            role: roleMap[input.role],
             registrationRole: input.role,
             category: input.category,
             businessName: input.businessName,

@@ -25,9 +25,9 @@ export const requireAdmin: RequestHandler = async (req, res, next) => {
     const { prisma } = await import("../lib/prisma");
     const admin = await prisma.user.findUnique({
       where: { user_id: adminUserId },
-      select: { role: true, isActive: true },
+      select: { registrationRole: true, isActive: true },
     });
-    if (!admin || admin.role !== "ADMIN" || !admin.isActive) {
+    if (!admin || admin.registrationRole !== "ADMIN" || !admin.isActive) {
       return res.status(403).json({ success: false, error: "Admin access required" });
     }
     res.locals.adminUserId = adminUserId;

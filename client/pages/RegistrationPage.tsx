@@ -16,7 +16,8 @@ import type { GstinBusinessData } from "@/components/registration/GstinVerificat
 type Role =
   | "STAKEHOLDER"
   | "ADMIN"
-  | "GATC_OPERATOR";
+  | "LMO_GATC";
+type StaffRole = "INSPECTOR" | "GATC_OPERATOR";
 
 interface RegistrationFormData extends RoleFormValues {
   fullName: string;
@@ -68,7 +69,7 @@ const roles: Array<{ value: Role; label: string; description: string }> = [
     description: "Super or regional administration access",
   },
   {
-    value: "GATC_OPERATOR",
+    value: "LMO_GATC",
     label: "LMO / GATC",
     description: "Legal Metrology Officer or Government Approved Test Centre operations",
   },
@@ -102,6 +103,7 @@ export default function RegistrationPage() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [staffRole, setStaffRole] = useState<StaffRole | null>(null);
   const [formData, setFormData] = useState(initialFormData);
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -116,6 +118,8 @@ export default function RegistrationPage() {
     () => roles.find((role) => role.value === selectedRole)?.label,
     [selectedRole],
   );
+  const resolvedRole: SupportedRegistrationRole | null =
+    selectedRole === "LMO_GATC" ? staffRole : selectedRole;
 
   const updateField = (field: keyof RegistrationFormData, value: string) => {
     setRegistrationError(undefined);
@@ -160,7 +164,7 @@ export default function RegistrationPage() {
           formData.password.length <= 128 &&
           (selectedRole === "STAKEHOLDER"
             ? formData.businessName.trim().length >= 2 && Boolean(formData.category)
-            : formData.employeeId.trim().length >= 1),
+            : Boolean(resolvedRole) && formData.employeeId.trim().length >= 1),
       );
     }
 
@@ -171,12 +175,12 @@ export default function RegistrationPage() {
   };
 
   const submitRegistration = async () => {
-    if (!selectedRole) return;
+    if (!resolvedRole) return;
     setIsSubmitting(true);
     setRegistrationError(undefined);
     try {
       const payload = new FormData();
-      payload.append("role", selectedRole);
+      payload.append("role", resolvedRole);
       Object.entries(formData).forEach(([key, value]) => {
         if (!["otpSessionId", "mobileOtp", "emailOtp"].includes(key) && value) {
           payload.append(key, value);
@@ -288,7 +292,10 @@ export default function RegistrationPage() {
                       <button
                         key={role.value}
                         type="button"
-                        onClick={() => setSelectedRole(role.value)}
+                        onClick={() => {
+                          setSelectedRole(role.value);
+                          if (role.value !== "LMO_GATC") setStaffRole(null);
+                        }}
                         className={`rounded-xl border p-4 text-left transition ${
                           selectedRole === role.value
                             ? "border-primary bg-primary/5 ring-2 ring-primary/20"
@@ -311,7 +318,22 @@ export default function RegistrationPage() {
                       Registering as {selectedRoleLabel ?? "a new user"}.
                     </p>
                   </div>
-                  <RoleFormRenderer role={selectedRole as SupportedRegistrationRole} section="demographic" values={formData} files={uploadedFiles} onChange={updateField} onFileSelected={handleFileSelected} onGstinVerified={handleGstinVerified} />
+                  {selectedRole === "LMO_GATC" && (
+                    <div className="max-w-md space-y-2">
+                      <label htmlFor="staff-registration-role" className="text-sm font-medium">Registration type</label>
+                      <select
+                        id="staff-registration-role"
+                        className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
+                        value={staffRole ?? ""}
+                        onChange={(event) => setStaffRole((event.target.value || null) as StaffRole | null)}
+                      >
+                        <option value="">Select LMO or GATC</option>
+                        <option value="INSPECTOR">LMO</option>
+                        <option value="GATC_OPERATOR">GATC</option>
+                      </select>
+                    </div>
+                  )}
+                  {resolvedRole && <RoleFormRenderer role={resolvedRole} section="demographic" values={formData} files={uploadedFiles} onChange={updateField} onFileSelected={handleFileSelected} onGstinVerified={handleGstinVerified} />}
                   {registrationError && (
                     <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" role="alert">
                       {registrationError}
@@ -320,7 +342,7 @@ export default function RegistrationPage() {
                 </section>
               )}
 
-              {currentStep === 2 && selectedRole && (
+              {currentStep === 2 && selectedRole && resolvedRole && (
                 <section className="space-y-5">
                   <div>
                     <h2 className="text-xl font-semibold">Identity verification</h2>
@@ -328,7 +350,7 @@ export default function RegistrationPage() {
                       Add identity details and supporting documents for review.
                     </p>
                   </div>
-                  <RoleFormRenderer role={selectedRole as SupportedRegistrationRole} section="identity" values={formData} files={uploadedFiles} onChange={updateField} onFileSelected={handleFileSelected} onGstinVerified={handleGstinVerified} />
+                  <RoleFormRenderer role={resolvedRole} section="identity" values={formData} files={uploadedFiles} onChange={updateField} onFileSelected={handleFileSelected} onGstinVerified={handleGstinVerified} />
                   {registrationError && (
                     <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" role="alert">
                       {registrationError}

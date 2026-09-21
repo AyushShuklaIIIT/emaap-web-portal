@@ -268,7 +268,7 @@ export const authorizeGatc = async (data: CreateGatcData) => {
     throw new Error("Principal officer not found");
   }
 
-  if (principalOfficer.role !== "GATC_PRINCIPAL") {
+  if (principalOfficer.registrationRole !== "GATC_OPERATOR") {
     throw new Error("Selected user is not a GATC principal officer");
   }
 

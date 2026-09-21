@@ -45,7 +45,6 @@ export const findBusinessByUserId = async (
     email: user.email,
     mobile: user.mobile ?? "",
     registrationRole: user.registrationRole as any,
-    role: user.role as "BUSINESS",
     state_code: state_id,
   };
 };
@@ -79,7 +78,6 @@ export const findGatcByUserId = async (
     email: user.email,
     mobile: user.mobile ?? "",
     registrationRole: user.registrationRole as any,
-    role: user.role as "GATC_PRINCIPAL",
   };
 };
 

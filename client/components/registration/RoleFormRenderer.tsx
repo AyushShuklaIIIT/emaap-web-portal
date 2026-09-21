@@ -11,6 +11,7 @@ import {
 export type SupportedRegistrationRole =
   | "STAKEHOLDER"
   | "ADMIN"
+  | "INSPECTOR"
   | "GATC_OPERATOR";
 
 export interface RoleFormValues {

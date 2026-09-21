@@ -13,7 +13,6 @@ export interface User {
   fullName: string;
   email: string;
   mobile: string;
-  role: "BUSINESS" | "LMO" | "GATC_PRINCIPAL" | "ADMIN";
   registrationRole:
     "STAKEHOLDER" | "INSPECTOR" | "ADMIN" | "LEGAL_OFFICER" | "GATC_OPERATOR";
   password?: string;
@@ -23,7 +22,6 @@ export interface User {
 }
 
 export interface GatcUser extends User {
-  role: "GATC_PRINCIPAL";
   centre_code: string;
   approval_cert_no: string;
   ind_mark_code: string;
@@ -36,7 +34,6 @@ export interface GatcUser extends User {
 }
 
 export interface BusinessUser extends User {
-  role: "BUSINESS";
   registration_number: string;
   trade_name: string;
   entity_type: "MANUFACTURER" | "DEALER" | "USER";

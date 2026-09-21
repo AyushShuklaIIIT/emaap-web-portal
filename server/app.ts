@@ -290,7 +290,7 @@ export function createServer() {
 
       if (inspectorId) {
         lmo = await prisma.user.findFirst({
-          where: { user_id: inspectorId, role: "LMO" },
+          where: { user_id: inspectorId, registrationRole: "INSPECTOR" },
         });
       }
 
@@ -298,16 +298,14 @@ export function createServer() {
         console.warn(
           "Unauthorized attempt: Missing or Invalid inspectorId. Using Fallback LMO for development.",
         );
-        lmo = await prisma.user.findFirst({ where: { role: "LMO" } });
+        lmo = await prisma.user.findFirst({ where: { registrationRole: "INSPECTOR" } });
         if (!lmo) {
-          // Create dummy LMO if no LMOs exist
           lmo = await prisma.user.create({
             data: {
               name: "System Fallback LMO",
               fullName: "System Fallback LMO",
               email: `lmo_fallback_${Date.now()}@emaap.gov.in`,
               mobile: `${Date.now()}`.substring(0, 10),
-              role: "LMO",
               registrationRole: "INSPECTOR",
               jurisdiction_district: "Any",
               jurisdiction_state: "Any",

@@ -42,9 +42,9 @@ const loginSchema = z.object({
 });
 
 const roleMap = {
-  business: "BUSINESS",
+  business: "STAKEHOLDER",
   admin: "ADMIN",
-  gatc: "GATC_PRINCIPAL",
+  gatc: "GATC_OPERATOR",
 } as const;
 
 function getJwtSecret(): string {
@@ -62,7 +62,7 @@ authRouter.post("/login", async (req, res) => {
   try {
     const { prisma } = await import("../lib/prisma");
     const user = await prisma.user.findFirst({
-      where: { mobile: parsed.data.mobile, role: roleMap[parsed.data.role] },
+      where: { mobile: parsed.data.mobile, registrationRole: roleMap[parsed.data.role] },
       select: {
         user_id: true,
         passwordHash: true,
@@ -132,7 +132,7 @@ authRouter.post("/login/lmo", async (req, res) => {
     const { prisma } = await import("../lib/prisma");
     
     const user = await prisma.user.findFirst({
-      where: { employeeId: parsed.data.employeeId, role: "LMO" },
+      where: { employeeId: parsed.data.employeeId, registrationRole: "INSPECTOR" },
       select: {
         user_id: true,
         passwordHash: true,
@@ -170,7 +170,7 @@ authRouter.post("/login/lmo", async (req, res) => {
       success: true,
       data: {
         token: jwt.sign(
-          { sub: user.user_id, role: "LMO" },
+          { sub: user.user_id, registrationRole: "INSPECTOR" },
           getJwtSecret(),
           { expiresIn: "8h" },
         ),
@@ -180,7 +180,7 @@ authRouter.post("/login/lmo", async (req, res) => {
         mobile: user.mobile,
         jurisdictionState: user.jurisdiction_state,
         jurisdictionDistrict: user.jurisdiction_district,
-        role: "lmo",
+        registrationRole: "INSPECTOR",
         fingerprintRegistered: user.fingerprint_registered,
       },
     });
@@ -227,14 +227,14 @@ authRouter.get("/lmo/:userId/fingerprint-status", async (req, res) => {
     const { prisma } = await import("../lib/prisma");
     const user = await prisma.user.findUnique({
       where: { user_id: userId },
-      select: { fingerprint_registered: true, role: true },
+      select: { fingerprint_registered: true, registrationRole: true },
     });
     
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
     
-    if (user.role !== "LMO") {
+    if (user.registrationRole !== "INSPECTOR") {
       return res.status(403).json({ success: false, error: "User is not an LMO" });
     }
 
@@ -254,14 +254,14 @@ authRouter.post("/lmo/:userId/register-fingerprint", async (req, res) => {
     const { prisma } = await import("../lib/prisma");
     const user = await prisma.user.findUnique({
       where: { user_id: userId },
-      select: { fingerprint_registered: true, role: true },
+      select: { fingerprint_registered: true, registrationRole: true },
     });
     
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
     
-    if (user.role !== "LMO") {
+    if (user.registrationRole !== "INSPECTOR") {
       return res.status(403).json({ success: false, error: "User is not an LMO" });
     }
 

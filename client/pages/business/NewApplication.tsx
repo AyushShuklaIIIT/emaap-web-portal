@@ -4,7 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileText, CheckCircle2, ChevronDown, Check, Loader2 } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  CheckCircle2,
+  ChevronDown,
+  Check,
+  Loader2,
+} from "lucide-react";
 import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
 import { backendUrl } from "@/lib/backend-url.ts";
@@ -31,7 +38,11 @@ interface VerificationForm {
   long: number;
 }
 
-const steps = ["Instrument Details", "Location & Documents", "Review & Payment"];
+const steps = [
+  "Instrument Details",
+  "Location & Documents",
+  "Review & Payment",
+];
 
 function FormField({
   label,
@@ -148,12 +159,14 @@ export default function NewApplication() {
   const [metric, setMetric] = useState("");
   const [address, setAddress] = useState("");
   const [pincode, setPincode] = useState<number | null>(null);
-  const [manufacturerInvoice, setManufacturerInvoice] = useState<File | null>(null);
+  const [manufacturerInvoice, setManufacturerInvoice] = useState<File | null>(
+    null,
+  );
   const [state, setState] = useState("MH");
   const [coordinates, setCoordinates] = useState("");
   const [prevCertificate, setPrevCertificate] = useState<File | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("upi");
-  
+
   const [connected, setConnected] = useState(false);
   const [socketId, setSocketId] = useState<string | undefined>();
   const [certificateData, setCertificateData] = useState<any>(null);
@@ -220,7 +233,8 @@ export default function NewApplication() {
             Instrument Details
           </h2>
           <p className="mt-1 text-sm text-[#5C5C70]">
-            Provide the details exactly as they appear on the manufacturer's documentation.
+            Provide the details exactly as they appear on the manufacturer's
+            documentation.
           </p>
         </div>
 
@@ -254,7 +268,7 @@ export default function NewApplication() {
                     <option key={subcategory} value={subcategory}>
                       {subcategory}
                     </option>
-                  )
+                  ),
                 )}
               </select>
             )}
@@ -337,7 +351,7 @@ export default function NewApplication() {
         (error) => {
           console.error(error);
           alert("Unable to get your location.");
-        }
+        },
       );
     };
 
@@ -354,7 +368,8 @@ export default function NewApplication() {
             Location & Documents
           </h2>
           <p className="mt-1 text-sm text-[#5C5C70]">
-            Provide the physical installation address and upload all required compliance documents.
+            Provide the physical installation address and upload all required
+            compliance documents.
           </p>
         </div>
 
@@ -389,7 +404,9 @@ export default function NewApplication() {
               placeholder="e.g. 400051"
               className={fieldClassName}
               onChange={(e) =>
-                setPincode(e.target.value === "" ? null : Number(e.target.value))
+                setPincode(
+                  e.target.value === "" ? null : Number(e.target.value),
+                )
               }
             />
           </FormField>
@@ -416,7 +433,9 @@ export default function NewApplication() {
             <Input
               type="file"
               className={`${fieldClassName} py-2`}
-              onChange={(e) => setManufacturerInvoice(e.target.files?.[0] ?? null)}
+              onChange={(e) =>
+                setManufacturerInvoice(e.target.files?.[0] ?? null)
+              }
             />
             {manufacturerInvoice && (
               <p className="mt-2 text-sm text-gray-600">
@@ -470,7 +489,8 @@ export default function NewApplication() {
             Review & Payment
           </h2>
           <p className="mt-1 text-sm text-[#5C5C70]">
-            Review your statutory verification fee and select a dummy payment method to complete the application.
+            Review your statutory verification fee and select a dummy payment
+            method to complete the application.
           </p>
         </div>
 
@@ -501,7 +521,9 @@ export default function NewApplication() {
 
           {/* Right Column: Payment Options */}
           <div>
-            <h3 className="mb-4 font-bold text-[#1A1A2E]">Select Payment Method</h3>
+            <h3 className="mb-4 font-bold text-[#1A1A2E]">
+              Select Payment Method
+            </h3>
             <div className="flex flex-col gap-3">
               <Label
                 className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
@@ -535,7 +557,9 @@ export default function NewApplication() {
                   onChange={(e) => setPaymentMethod(e.target.value)}
                   className="h-4 w-4 text-[#0B3D91]"
                 />
-                <span className="font-medium">Corporate Net Banking / NEFT</span>
+                <span className="font-medium">
+                  Corporate Net Banking / NEFT
+                </span>
               </Label>
               <Label
                 className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
@@ -591,7 +615,10 @@ export default function NewApplication() {
   const submitApplication = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const applicationId = crypto.randomUUID();
+    const applicationId =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 15)}`;
 
     const [latitude, longitude] = coordinates
       .split(",")
@@ -614,7 +641,10 @@ export default function NewApplication() {
 
     setIsSubmitting(true);
 
-    const payload: VerificationForm & { userId?: string, businessName?: string } = {
+    const payload: VerificationForm & {
+      userId?: string;
+      businessName?: string;
+    } = {
       applicationId,
       instrumentCategory: selectedCategory,
       instrumentSubCategory,
@@ -636,9 +666,12 @@ export default function NewApplication() {
       setIsSubmitting(false);
       return;
     }
-    
+
     payload.userId = currentUser.userId;
-    payload.businessName = currentUser.businessName || currentUser.fullName || "Default Business Name";
+    payload.businessName =
+      currentUser.businessName ||
+      currentUser.fullName ||
+      "Default Business Name";
 
     console.log(`Sent Data`, payload);
 
@@ -717,7 +750,8 @@ export default function NewApplication() {
             Application Submitted
           </h1>
           <p className="mx-auto max-w-xl text-[#5C5C70]">
-            Your verification application has been submitted successfully. Please wait for a response from the LMO officer.
+            Your verification application has been submitted successfully.
+            Please wait for a response from the LMO officer.
           </p>
 
           <Button
@@ -759,7 +793,8 @@ export default function NewApplication() {
             Verification Complete
           </h1>
           <p className="mb-8 text-[#5C5C70]">
-            Digital Certificate generated securely via Legal Metrology Authority.
+            Digital Certificate generated securely via Legal Metrology
+            Authority.
           </p>
 
           <div className="mb-8 grid grid-cols-1 gap-5 rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-4 text-left sm:grid-cols-2 sm:gap-8 sm:p-6">
@@ -809,7 +844,8 @@ export default function NewApplication() {
               marginSize={4}
             />
             <p className="mt-4 max-w-sm text-sm text-[#5C5C70]">
-              Judges: Please scan this QR code with your smartphone camera to view the live geo-tagged seal evidence.
+              Judges: Please scan this QR code with your smartphone camera to
+              view the live geo-tagged seal evidence.
             </p>
           </div>
 

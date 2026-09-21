@@ -1,22 +1,10 @@
 import { api } from "@/lib/api";
+import type { DashboardApplicationData } from "../../../server/types";
 
 export interface BusinessDashboard {
   active_instruments: number;
   expires_in: number;
   pending: number;
-}
-
-export interface VerificationCertificateApp {
-  app_id: string;
-  application_no: string;
-  app_type: "INITIAL" | "RE_VERIFICATION";
-  submission_timestamp: string;
-  workflow_status: "SUBMITTED" | "ALLOCATED" | "CERTIFIED" | "REJECTED";
-  instrument_id: string;
-  business_id: string;
-  assigned_officer_id: string | null;
-  assigned_gatc_id: string | null;
-  cert_id: string | null;
 }
 
 export const getBusinessDashboard = async (
@@ -32,9 +20,7 @@ export const getBusinessDashboard = async (
   return dashboard;
 };
 
-export const getApplicationsDashboard = async (
-  userId: string,
-): Promise<VerificationCertificateApp[]> => {
+export const getApplicationsDashboard = async (userId: string): Promise<DashboardApplicationData[]> => {
   const response = await api.get(`/dashboard/${userId}/applications`);
   const applications = response.data?.data;
 

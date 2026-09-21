@@ -131,7 +131,9 @@ export default function BusinessDashboard({ userId }: { userId: string }) {
                     {application.application_no}
                   </TableCell>
 
-                  <TableCell>{application.instrument_id}</TableCell>
+                  <TableCell>
+                    {application.instrument.category.category_name}
+                  </TableCell>
 
                   <TableCell className="text-muted-foreground">
                     {new Date(

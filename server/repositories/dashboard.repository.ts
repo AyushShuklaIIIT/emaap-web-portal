@@ -1,9 +1,4 @@
-import {
-  BusinessUser,
-  GatcUser,
-  User,
-  VerificationCertificateApp,
-} from "../types";
+import { BusinessUser, GatcUser, User, DashboardApplicationData } from "../types";
 import { prisma } from "../lib/prisma";
 
 export const findUserByUserId = async (
@@ -46,8 +41,11 @@ export const findBusinessByUserId = async (
   return {
     ...rest,
     name: user.name,
+    fullName: user.fullName ?? user.name,
     email: user.email,
-    role: user.role,
+    mobile: user.mobile ?? "",
+    registrationRole: user.registrationRole as any,
+    role: user.role as "BUSINESS",
     state_code: state_id,
   };
 };
@@ -72,10 +70,17 @@ export const findGatcByUserId = async (
     },
   });
 
-  if (gatc) {
-    return { ...gatc, name: user.name, email: user.email, role: user.role };
-  }
-  return null;
+  if (!gatc || !user) return null;
+
+  return {
+    ...gatc,
+    name: user.name,
+    fullName: user.fullName ?? user.name,
+    email: user.email,
+    mobile: user.mobile ?? "",
+    registrationRole: user.registrationRole as any,
+    role: user.role as "GATC_PRINCIPAL",
+  };
 };
 
 export const getDashboardDetails = async (
@@ -130,58 +135,69 @@ export const getDashboardDetails = async (
   };
 };
 
-export const getApplicationsByUserId = async (
-  userId: string,
-): Promise<VerificationCertificateApp[]> => {
+export const getApplicationsByUserId = async (userId: string): Promise<DashboardApplicationData[]> => {
   const business = await findBusinessByUserId(userId);
-  if (!business) return [];
+
+  if (!business) {
+    return [];
+  }
 
   const applications = await prisma.verificationApp.findMany({
-    where: { business_id: business.business_id },
-    select: {
-      app_id: true,
-      application_no: true,
-      app_type: true,
-      submission_timestamp: true,
-      workflow_status: true,
-      instrument_id: true,
-      business_id: true,
-      assigned_officer_id: true,
-      assigned_gatc_id: true,
-    },
-  });
-
-  const verifiedApplications = applications.filter(
-    (e) => e.workflow_status === "CERTIFIED",
-  );
-
-  const inspections = await prisma.inspectionRecord.findMany({
     where: {
-      app_id: {
-        in: verifiedApplications.map((e) => e.app_id),
-      },
+      business_id: business.business_id,
     },
-    select: {
-      app_id: true,
-      certificate: {
-        select: {
-          cert_id: true,
+
+    include: {
+      instrument: {
+        include: {
+          category: true,
+          technical_specs: true,
+          business: {
+            include: {
+              state: true,
+              user: true,
+            },
+          },
+          certificates: true,
+        },
+      },
+
+      business: {
+        include: {
+          state: true,
+          user: true,
+        },
+      },
+
+      assigned_officer: true,
+
+      assigned_gatc: {
+        include: {
+          principal_officer: true,
+        },
+      },
+
+      receipts: true,
+
+      inspections: {
+        include: {
+          inspector: true,
+
+          certificate: {
+            include: {
+              instrument: true,
+            },
+          },
+
+          seals: true,
         },
       },
     },
+
+    orderBy: {
+      submission_timestamp: "desc",
+    },
   });
 
-  return applications.map((application) => {
-    const inspection = inspections.find(
-      (inspection) => inspection.app_id === application.app_id,
-    );
-
-    return {
-      ...application,
-      digital_certificate_id:
-        application.workflow_status === "CERTIFIED"
-          ? (inspection?.certificate?.cert_id ?? null)
-          : null,
-    };
-  });
+  return applications;
 };

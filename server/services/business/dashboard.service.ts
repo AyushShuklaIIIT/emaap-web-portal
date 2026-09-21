@@ -1,11 +1,11 @@
 import { AppError } from "../../errors/AppError";
+import { DashboardApplicationData } from "../../types";
 import {
   findUserByUserId,
   findBusinessByUserId,
   getDashboardDetails,
   getApplicationsByUserId,
 } from "../../repositories/dashboard.repository";
-import { VerificationCertificateApp } from "../../types";
 
 export const getBusinessDashboardService = async (
   userId: string,
@@ -22,9 +22,7 @@ export const getBusinessDashboardService = async (
   return details;
 };
 
-export const getApplicationsDashboardService = async (
-  userId: string,
-): Promise<VerificationCertificateApp[]> => {
+export const getApplicationsDashboardService = async (userId: string): Promise<DashboardApplicationData[]> => {
   const user = await findUserByUserId(userId);
   if (!user) throw new AppError(404, "User Not Found");
 

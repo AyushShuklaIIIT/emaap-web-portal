@@ -106,9 +106,12 @@ nswsRouter.post("/webhook", async (req, res) => {
         user = await tx.user.create({
           data: {
             name: businessName,
+            fullName: businessName,
             email,
             mobile,
             role: "BUSINESS",
+            registrationRole: "STAKEHOLDER",
+            passwordHash: "sso-nsws-no-password",
             jurisdiction_state: stateCode,
             jurisdiction_district: district,
             isActive: true, // Pre-verified via NSWS

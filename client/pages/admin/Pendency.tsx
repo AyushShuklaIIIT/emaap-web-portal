@@ -219,16 +219,26 @@ export default function Pendency() {
     });
   };
 
-  const handleApproveRoute = (appId: string) => {
+  const handleApproveRoute = (appId: string, gatcId: string) => {
     setRouteError(null);
 
-    approveRouteMutation.mutate(appId, {
-      onError: (error) => {
-        setRouteError(
-          getMutationErrorMessage(error, "Failed to approve route."),
-        );
+    approveRouteMutation.mutate(
+      {
+        appId,
+        gatcId,
       },
-    });
+      {
+        onSuccess: () => {
+          setSelectedAppIds((current) => current.filter((id) => id !== appId));
+        },
+
+        onError: (error) => {
+          setRouteError(
+            getMutationErrorMessage(error, "Failed to approve route."),
+          );
+        },
+      },
+    );
   };
 
   const handlePreviousPage = () => {
@@ -515,67 +525,77 @@ export default function Pendency() {
                           </TableCell>
 
                           <TableCell className="py-5 align-top">
-                            {item.suggestion.type === "CALCULATING" ? (
-                              <div className="flex items-center gap-2 text-sm text-[#8A8A98]">
-                                <LoaderCircle className="h-4 w-4 animate-spin" />
-
-                                <span>{item.suggestion.message}</span>
+                            {item.suggestions.length > 0 ? (
+                              <div className="rounded-md bg-[#E3F2FD] px-3 py-2.5 text-xs font-medium leading-5 text-[#0B3D91]">
+                                <p>
+                                  {item.suggestions.length} eligible GATC
+                                  {item.suggestions.length === 1
+                                    ? ""
+                                    : "s"}{" "}
+                                  found in the jurisdiction state.
+                                </p>
+                                <p className="mt-1 text-[11px] text-[#3564A3]">
+                                  Nearest: {item.suggestions[0].centre_code} at{" "}
+                                  {item.suggestions[0].distance_km} km
+                                </p>
                               </div>
                             ) : (
-                              <div className="rounded-md bg-[#E3F2FD] px-3 py-2.5 text-xs font-medium leading-5 text-[#0B3D91]">
-                                <p>{item.suggestion.message}</p>
-
-                                {item.suggestion.distance_km !== null && (
-                                  <p className="mt-1 text-[11px] text-[#3564A3]">
-                                    Distance: {item.suggestion.distance_km} km
-                                  </p>
-                                )}
+                              <div className="rounded-md bg-[#FFF7ED] px-3 py-2.5 text-xs font-medium leading-5 text-[#9A3412]">
+                                No eligible GATC is available in the
+                                jurisdiction state.
                               </div>
                             )}
                           </TableCell>
 
-                          <TableCell className="pr-5 py-5 align-top">
-                            {item.action === "APPROVE_ROUTE" ? (
-                              <Button
-                                type="button"
-                                disabled={isAnyMutationPending}
-                                onClick={() => handleApproveRoute(item.app_id)}
-                                className="h-9 whitespace-nowrap rounded-lg bg-[#FF6F00] px-3 text-xs font-bold text-white shadow-none hover:bg-[#E66000]"
-                              >
-                                {approveRouteMutation.isPending ? (
-                                  <>
-                                    <LoaderCircle className="mr-2 h-3.5 w-3.5 animate-spin" />
-                                    Approving...
-                                  </>
-                                ) : (
-                                  "Approve Route"
-                                )}
-                              </Button>
-                            ) : item.action === "MANUAL_OVERRIDE" ? (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                disabled={isAnyMutationPending}
-                                onClick={() => openManualOverride(item.app_id)}
-                                className="h-9 whitespace-nowrap px-2 text-xs font-semibold text-[#0B3D91] hover:bg-primary/5 hover:text-[#0B3D91]"
-                              >
-                                Manual Override
-                              </Button>
+                          <TableCell className="py-5 align-top">
+                            {item.suggestions.length === 0 ? (
+                              <div className="rounded-md bg-[#FFF7ED] px-3 py-2.5 text-xs font-medium leading-5 text-[#9A3412]">
+                                <p>
+                                  No eligible GATC is currently available within
+                                  the jurisdiction state.
+                                </p>
+                              </div>
                             ) : (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                disabled
-                                className="h-9 whitespace-nowrap px-2 text-xs font-semibold text-[#9A9AA3]"
-                              >
-                                Wait
-                              </Button>
-                            )}
+                              <div className="space-y-2.5">
+                                {item.suggestions.map((gatc, index) => (
+                                  <div
+                                    key={gatc.gatc_id}
+                                    className="flex items-center justify-between gap-3 rounded-md border border-[#D9E7F7] bg-[#F4F9FF] px-3 py-2.5"
+                                  >
+                                    <div className="min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#0B3D91] text-[10px] font-bold text-white">
+                                          {index + 1}
+                                        </span>
 
-                            {item.current_assignment.name && (
-                              <p className="mt-2 text-[11px] text-[#5C5C70]">
-                                Current: {item.current_assignment.name}
-                              </p>
+                                        <p className="truncate text-xs font-bold text-[#0B3D91]">
+                                          {gatc.centre_code}
+                                        </p>
+                                      </div>
+
+                                      <p className="mt-1 pl-7 text-[11px] text-[#3564A3]">
+                                        {gatc.distance_km} km away
+                                      </p>
+                                    </div>
+
+                                    <Button
+                                      type="button"
+                                      disabled={isAnyMutationPending}
+                                      onClick={() =>
+                                        handleApproveRoute(
+                                          item.app_id,
+                                          gatc.gatc_id,
+                                        )
+                                      }
+                                      className="h-8 shrink-0 whitespace-nowrap rounded-lg bg-[#FF6F00] px-2.5 text-[11px] font-bold text-white shadow-none hover:bg-[#E66000]"
+                                    >
+                                      {approveRouteMutation.isPending
+                                        ? "Approving..."
+                                        : "Approve Route"}
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </TableCell>
                         </TableRow>

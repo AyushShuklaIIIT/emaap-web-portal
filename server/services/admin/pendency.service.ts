@@ -1,7 +1,6 @@
 import { AppError } from "../../errors/AppError";
 import {
   getEligibleGatcs,
-  getAllEligibleGatcs,
   getPendencyApplicationById,
   getPendencyApplications,
   countPendencyApplications,
@@ -22,39 +21,45 @@ interface PendencyQueueInput {
   limit: number;
 }
 
+interface GatcRouteSuggestion {
+  gatc_id: string;
+  centre_code: string;
+  distance_km: number;
+}
+
 interface AdminPendencyItem {
   app_id: string;
   application_no: string;
   submission_timestamp: string;
   days_pending: number;
+
   business: {
     name: string;
     location: string;
     state_code: string;
   };
+
   instrument: {
     category: string;
     category_code: string;
     serial_number: string;
     model_no: string;
   };
+
   sla: {
     status: "BREACHED" | "WITHIN_SLA";
     label: string;
     days_pending: number;
     note: string | null;
   };
+
   current_assignment: {
     type: "LMO" | "GATC" | null;
     name: string | null;
   };
-  suggestion: {
-    type: "GATC" | "LMO" | "CALCULATING" | "NONE";
-    target_id: string | null;
-    target_name: string | null;
-    distance_km: number | null;
-    message: string;
-  };
+
+  suggestions: GatcRouteSuggestion[];
+
   action: "APPROVE_ROUTE" | "MANUAL_OVERRIDE" | "WAIT";
 }
 
@@ -99,63 +104,59 @@ const calculateDistanceKm = (
 
 const round = (value: number) => Math.round(value * 100) / 100;
 
-const findNearestGatc = async (
+const findNearestGatcs = async (
   categoryCode: string,
   categoryName: string,
   stateCode: string,
   instrumentLat: number,
   instrumentLong: number,
 ) => {
-  let gatcs = await getEligibleGatcs(categoryCode, stateCode, categoryName);
+  const gatcs = await getEligibleGatcs(categoryCode, stateCode, categoryName);
 
   if (gatcs.length === 0) {
-    gatcs = await getAllEligibleGatcs(categoryCode, categoryName);
+    return [];
   }
 
-  if (gatcs.length === 0) {
-    return null;
-  }
+  return gatcs
+    .map((gatc) => {
+      const distance = calculateDistanceKm(
+        instrumentLat,
+        instrumentLong,
+        gatc.lat,
+        gatc.long,
+      );
 
-  let nearest = gatcs[0];
+      return {
+        gatc_id: gatc.gatc_id,
+        centre_code: gatc.centre_code,
+        distance_km: round(distance),
+      };
+    })
+    .sort((a, b) => a.distance_km - b.distance_km)
+    .slice(0, 5);
+};
 
-  let nearestDistance = calculateDistanceKm(
-    instrumentLat,
-    instrumentLong,
-    nearest.lat,
-    nearest.long,
-  );
-
-  for (let index = 1; index < gatcs.length; index++) {
-    const gatc = gatcs[index];
-
-    const distance = calculateDistanceKm(
-      instrumentLat,
-      instrumentLong,
-      gatc.lat,
-      gatc.long,
-    );
-
-    if (distance < nearestDistance) {
-      nearest = gatc;
-      nearestDistance = distance;
-    }
-  }
-
-  return {
-    gatc_id: nearest.gatc_id,
-    centre_code: nearest.centre_code,
-    distance_km: round(nearestDistance),
+type PendencyApplicationLocation = {
+  instrument: {
+    category: {
+      category_code: string;
+      category_name: string;
+    };
+    lat: number;
+    long: number;
+  };
+  business: {
+    state: {
+      state_code: string;
+    };
   };
 };
 
-const buildSuggestion = async (
-  application: NonNullable<
-    Awaited<ReturnType<typeof getPendencyApplicationById>>
-  >,
-) => {
+const buildSuggestions = async (application: PendencyApplicationLocation) => {
   const instrument = application.instrument;
   const businessState = application.business.state;
-  const nearestGatc = await findNearestGatc(
+
+  const nearestGatcs = await findNearestGatcs(
     instrument.category.category_code,
     instrument.category.category_name,
     businessState.state_code,
@@ -163,24 +164,7 @@ const buildSuggestion = async (
     instrument.long,
   );
 
-  if (!nearestGatc) {
-    return {
-      type: "CALCULATING" as const,
-      target_id: null,
-      target_name: null,
-      distance_km: null,
-      message:
-        "No eligible active GATC is currently available for this instrument category.",
-    };
-  }
-
-  return {
-    type: "GATC" as const,
-    target_id: nearestGatc.gatc_id,
-    target_name: nearestGatc.centre_code,
-    distance_km: nearestGatc.distance_km,
-    message: `Re-routing to ${nearestGatc.centre_code}. Distance: ${nearestGatc.distance_km} km.`,
-  };
+  return nearestGatcs;
 };
 
 export const getPendencyQueueService = async ({
@@ -215,7 +199,7 @@ export const getPendencyQueueService = async ({
   for (const application of applications) {
     const daysPending = getDaysPending(application.submission_timestamp);
     const sla = getSlaStatus(daysPending);
-    const suggestion = await buildSuggestion(application);
+    const suggestions = await buildSuggestions(application);
     let currentAssignment: AdminPendencyItem["current_assignment"] = {
       type: null,
       name: null,
@@ -233,38 +217,39 @@ export const getPendencyQueueService = async ({
       };
     }
 
-    let action: "APPROVE_ROUTE" | "MANUAL_OVERRIDE" | "WAIT";
-
-    if (suggestion.type === "GATC") {
-      action = "APPROVE_ROUTE";
-    } else {
-      action = "WAIT";
-    }
-
+    const action: "APPROVE_ROUTE" | "MANUAL_OVERRIDE" | "WAIT" =
+      suggestions.length > 0 ? "APPROVE_ROUTE" : "WAIT";
     items.push({
       app_id: application.app_id,
       application_no: application.application_no,
       submission_timestamp: application.submission_timestamp.toISOString(),
+
       days_pending: daysPending,
+
       business: {
         name: application.business.trade_name,
         location: application.business.geo_address,
         state_code: application.business.state.state_code,
       },
+
       instrument: {
         category: application.instrument.category.category_name,
         category_code: application.instrument.category.category_code,
         serial_number: application.instrument.serial_number,
         model_no: application.instrument.model_no,
       },
+
       sla: {
         status: sla.status,
         label: sla.label,
         days_pending: daysPending,
         note: sla.note,
       },
+
       current_assignment: currentAssignment,
-      suggestion,
+
+      suggestions,
+
       action,
     });
   }
@@ -289,7 +274,10 @@ export const getPendencyQueueService = async ({
   };
 };
 
-export const approvePendencyRouteService = async (appId: string) => {
+export const approvePendencyRouteService = async (
+  appId: string,
+  gatcId: string,
+) => {
   const application = await getPendencyApplicationById(appId);
 
   if (!application) {
@@ -300,13 +288,32 @@ export const approvePendencyRouteService = async (appId: string) => {
     throw new AppError(400, "Only pending applications can be routed");
   }
 
-  const suggestion = await buildSuggestion(application);
+  const gatc = await getActiveGatcById(gatcId);
 
-  if (suggestion.type !== "GATC" || !suggestion.target_id) {
-    throw new AppError(400, "No eligible GATC route is available");
+  if (!gatc) {
+    throw new AppError(404, "Active GATC not found");
   }
 
-  const updated = await assignApplication(appId, "GATC", suggestion.target_id);
+  const categoryCode = application.instrument.category.category_code;
+
+  const stateCode = application.business.state.state_code;
+
+  const eligibleGatcs = await getEligibleGatcs(
+    categoryCode,
+    stateCode,
+    application.instrument.category.category_name,
+  );
+
+  const isEligible = eligibleGatcs.some((item) => item.gatc_id === gatcId);
+
+  if (!isEligible) {
+    throw new AppError(
+      400,
+      "Selected GATC is not eligible for this application",
+    );
+  }
+
+  const updated = await assignApplication(appId, "GATC", gatcId);
 
   return {
     app_id: updated.app_id,
@@ -342,8 +349,9 @@ export const manualOverridePendencyRouteService = async (
     }
 
     const categoryCode = application.instrument.category.category_code;
-    const eligibleGatcs = await getAllEligibleGatcs(
+    const eligibleGatcs = await getEligibleGatcs(
       categoryCode,
+      application.business.state.state_code,
       application.instrument.category.category_name,
     );
 
@@ -392,7 +400,22 @@ export const bulkApprovePendencyRoutesService = async (appIds: string[]) => {
 
   for (const appId of appIds) {
     try {
-      const result = await approvePendencyRouteService(appId);
+      const application = await getPendencyApplicationById(appId);
+
+      if (!application) {
+        throw new AppError(404, "Application not found");
+      }
+
+      const suggestions = await buildSuggestions(application);
+
+      if (suggestions.length === 0) {
+        throw new AppError(400, "No eligible GATC route is available");
+      }
+
+      const result = await approvePendencyRouteService(
+        appId,
+        suggestions[0].gatc_id,
+      );
 
       results.push({
         app_id: result.app_id,

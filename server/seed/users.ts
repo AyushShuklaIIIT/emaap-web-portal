@@ -42,25 +42,31 @@ export const gatcUsersData: GatcUser[] = [
     role: "GATC_PRINCIPAL",
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "New Delhi",
-    jurisdiction_state: "Delhi",
+    jurisdiction_state: "DL",
     password: "memento",
     passwordHash: generateHash("memento"),
+
     centre_code: "GATC-DL-001",
     approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/07/2024/001",
     ind_mark_code: "IND/24/01",
+
     valid_from: new Date("2024-01-01T00:00:00Z"),
     valid_to: new Date("2029-01-01T00:00:00Z"),
+
     status: "ACTIVE",
+
     approved_categories: [
-      "WATER_METERS",
-      "CLINICAL_THERMOMETERS",
+      "WATER_METER",
+      "CLINICAL_THERMOMETER",
       "FABRIC_PLASTIC_WOVEN_STEEL_TAPES",
       "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV",
       "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV",
     ],
+
     lat: 28.6139,
     long: 77.209,
   },
+
   {
     name: "David Lynch",
     fullName: "David Lynch",
@@ -69,23 +75,440 @@ export const gatcUsersData: GatcUser[] = [
     role: "GATC_PRINCIPAL",
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Mumbai Suburban",
-    jurisdiction_state: "Maharashtra",
+    jurisdiction_state: "MH",
     password: "bluevelvet",
     passwordHash: generateHash("bluevelvet"),
+
     centre_code: "GATC-MH-002",
     approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/002",
     ind_mark_code: "IND/25/02",
+
     valid_from: new Date("2025-06-01T00:00:00Z"),
     valid_to: new Date("2030-05-31T00:00:00Z"),
+
     status: "ACTIVE",
+
     approved_categories: [
       "BEAM_SCALES_CLASS_A_B",
       "BEAM_SCALES_CLASS_C_D",
       "AUTOMATIC_WEIGHING_INSTRUMENTS",
       "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
     ],
+
     lat: 19.076,
     long: 72.8777,
+  },
+
+  {
+    name: "Satyajit Ray",
+    fullName: "Satyajit Ray",
+    email: "principal@pune-metrology.gov.in",
+    mobile: "9000000008",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Pune",
+    jurisdiction_state: "MH",
+    password: "charulata",
+    passwordHash: generateHash("charulata"),
+
+    centre_code: "GATC-MH-003",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/003",
+    ind_mark_code: "IND/25/03",
+
+    valid_from: new Date("2025-03-01T00:00:00Z"),
+    valid_to: new Date("2030-02-28T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "WATER_METER",
+      "CLINICAL_THERMOMETER",
+      "BEAM_SCALES_CLASS_A_B",
+      "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
+    ],
+
+    lat: 18.5204,
+    long: 73.8567,
+  },
+
+  {
+    name: "Agnès Varda",
+    fullName: "Agnès Varda",
+    email: "principal@nagpur-metrology.gov.in",
+    mobile: "9000000009",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Nagpur",
+    jurisdiction_state: "MH",
+    password: "cleo",
+    passwordHash: generateHash("cleo"),
+
+    centre_code: "GATC-MH-004",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/004",
+    ind_mark_code: "IND/25/04",
+
+    valid_from: new Date("2025-04-01T00:00:00Z"),
+    valid_to: new Date("2030-03-31T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "WATER_METER",
+      "AUTOMATIC_WEIGHING_INSTRUMENTS",
+      "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV",
+      "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV",
+    ],
+
+    lat: 21.1458,
+    long: 79.0882,
+  },
+
+  {
+    name: "Federico Fellini",
+    fullName: "Federico Fellini",
+    email: "principal@nashik-metrology.gov.in",
+    mobile: "9000000010",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Nashik",
+    jurisdiction_state: "MH",
+    password: "amarcord",
+    passwordHash: generateHash("amarcord"),
+
+    centre_code: "GATC-MH-005",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/005",
+    ind_mark_code: "IND/25/05",
+
+    valid_from: new Date("2025-05-01T00:00:00Z"),
+    valid_to: new Date("2030-04-30T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "FABRIC_PLASTIC_WOVEN_STEEL_TAPES",
+      "WATER_METER",
+      "BEAM_SCALES_CLASS_C_D",
+      "CLINICAL_THERMOMETER",
+    ],
+
+    lat: 20.0059,
+    long: 73.791,
+  },
+
+  {
+    name: "Wong Kar-wai",
+    fullName: "Wong Kar-wai",
+    email: "principal@aurangabad-metrology.gov.in",
+    mobile: "9000000011",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Aurangabad",
+    jurisdiction_state: "MH",
+    password: "chungking",
+    passwordHash: generateHash("chungking"),
+
+    centre_code: "GATC-MH-006",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/006",
+    ind_mark_code: "IND/25/06",
+
+    valid_from: new Date("2025-06-15T00:00:00Z"),
+    valid_to: new Date("2030-06-14T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "WATER_METER",
+      "AUTOMATIC_WEIGHING_INSTRUMENTS",
+      "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
+      "BEAM_SCALES_CLASS_A_B",
+    ],
+
+    lat: 19.8762,
+    long: 75.3433,
+  },
+
+  {
+    name: "Claire Denis",
+    fullName: "Claire Denis",
+    email: "principal@kolhapur-metrology.gov.in",
+    mobile: "9000000012",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Kolhapur",
+    jurisdiction_state: "MH",
+    password: "beau",
+    passwordHash: generateHash("beau"),
+
+    centre_code: "GATC-MH-007",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/007",
+    ind_mark_code: "IND/25/07",
+
+    valid_from: new Date("2025-07-01T00:00:00Z"),
+    valid_to: new Date("2030-06-30T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "BEAM_SCALES_CLASS_A_B",
+      "BEAM_SCALES_CLASS_C_D",
+      "CLINICAL_THERMOMETER",
+      "WATER_METER",
+    ],
+
+    lat: 16.705,
+    long: 74.2433,
+  },
+
+  {
+    name: "Hayao Miyazaki",
+    fullName: "Hayao Miyazaki",
+    email: "principal@thane-metrology.gov.in",
+    mobile: "9000000013",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Thane",
+    jurisdiction_state: "MH",
+    password: "totoro",
+    passwordHash: generateHash("totoro"),
+
+    centre_code: "GATC-MH-008",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/008",
+    ind_mark_code: "IND/25/08",
+
+    valid_from: new Date("2025-08-01T00:00:00Z"),
+    valid_to: new Date("2030-07-31T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "WATER_METER",
+      "FABRIC_PLASTIC_WOVEN_STEEL_TAPES",
+      "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV",
+      "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV",
+    ],
+
+    lat: 19.2183,
+    long: 72.9781,
+  },
+
+  {
+    name: "Park Chan-wook",
+    fullName: "Park Chan-wook",
+    email: "principal@solapur-metrology.gov.in",
+    mobile: "9000000014",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Solapur",
+    jurisdiction_state: "MH",
+    password: "oldboy",
+    passwordHash: generateHash("oldboy"),
+
+    centre_code: "GATC-MH-009",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/009",
+    ind_mark_code: "IND/25/09",
+
+    valid_from: new Date("2025-09-01T00:00:00Z"),
+    valid_to: new Date("2030-08-31T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "AUTOMATIC_WEIGHING_INSTRUMENTS",
+      "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
+      "BEAM_SCALES_CLASS_C_D",
+    ],
+
+    lat: 17.6599,
+    long: 75.9064,
+  },
+
+  {
+    name: "Akira Kurosawa",
+    fullName: "Akira Kurosawa",
+    email: "principal@kanpur-metrology.gov.in",
+    mobile: "9000000015",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Kanpur",
+    jurisdiction_state: "UP",
+    password: "rashomon",
+    passwordHash: generateHash("rashomon"),
+
+    centre_code: "GATC-UP-010",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/09/2025/010",
+    ind_mark_code: "IND/25/10",
+
+    valid_from: new Date("2025-02-01T00:00:00Z"),
+    valid_to: new Date("2030-01-31T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "WATER_METER",
+      "AUTOMATIC_WEIGHING_INSTRUMENTS",
+      "BEAM_SCALES_CLASS_C_D",
+      "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
+    ],
+
+    lat: 26.4499,
+    long: 80.3319,
+  },
+
+  {
+    name: "Martin Scorsese",
+    fullName: "Martin Scorsese",
+    email: "principal@lucknow-metrology.gov.in",
+    mobile: "9000000016",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Lucknow",
+    jurisdiction_state: "UP",
+    password: "taxidriver",
+    passwordHash: generateHash("taxidriver"),
+
+    centre_code: "GATC-UP-011",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/09/2025/011",
+    ind_mark_code: "IND/25/11",
+
+    valid_from: new Date("2025-03-01T00:00:00Z"),
+    valid_to: new Date("2030-02-28T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "CLINICAL_THERMOMETER",
+      "WATER_METER",
+      "FABRIC_PLASTIC_WOVEN_STEEL_TAPES",
+    ],
+
+    lat: 26.8467,
+    long: 80.9462,
+  },
+
+  {
+    name: "Bong Joon-ho",
+    fullName: "Bong Joon-ho",
+    email: "principal@bhopal-metrology.gov.in",
+    mobile: "9000000017",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Bhopal",
+    jurisdiction_state: "MP",
+    password: "parasite",
+    passwordHash: generateHash("parasite"),
+
+    centre_code: "GATC-MP-012",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/23/2025/012",
+    ind_mark_code: "IND/25/12",
+
+    valid_from: new Date("2025-04-01T00:00:00Z"),
+    valid_to: new Date("2030-03-31T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "WATER_METER",
+      "BEAM_SCALES_CLASS_A_B",
+      "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
+      "CLINICAL_THERMOMETER",
+    ],
+
+    lat: 23.2599,
+    long: 77.4126,
+  },
+
+  {
+    name: "Paul Thomas Anderson",
+    fullName: "Paul Thomas Anderson",
+    email: "principal@jaipur-metrology.gov.in",
+    mobile: "9000000018",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Jaipur",
+    jurisdiction_state: "RJ",
+    password: "magnolia",
+    passwordHash: generateHash("magnolia"),
+
+    centre_code: "GATC-RJ-013",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/08/2025/013",
+    ind_mark_code: "IND/25/13",
+
+    valid_from: new Date("2025-05-01T00:00:00Z"),
+    valid_to: new Date("2030-04-30T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "AUTOMATIC_WEIGHING_INSTRUMENTS",
+      "BEAM_SCALES_CLASS_C_D",
+      "WATER_METER",
+    ],
+
+    lat: 26.9124,
+    long: 75.7873,
+  },
+
+  {
+    name: "Denis Villeneuve",
+    fullName: "Denis Villeneuve",
+    email: "principal@ahmedabad-metrology.gov.in",
+    mobile: "9000000019",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Ahmedabad",
+    jurisdiction_state: "GJ",
+    password: "arrival",
+    passwordHash: generateHash("arrival"),
+
+    centre_code: "GATC-GJ-014",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/24/2025/014",
+    ind_mark_code: "IND/25/14",
+
+    valid_from: new Date("2025-06-01T00:00:00Z"),
+    valid_to: new Date("2030-05-31T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "WATER_METER",
+      "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV",
+      "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV",
+    ],
+
+    lat: 23.0225,
+    long: 72.5714,
+  },
+
+  {
+    name: "David Fincher",
+    fullName: "David Fincher",
+    email: "principal@bangalore-metrology.gov.in",
+    mobile: "9000000020",
+    role: "GATC_PRINCIPAL",
+    registrationRole: "GATC_OPERATOR",
+    jurisdiction_district: "Bangalore Urban",
+    jurisdiction_state: "KA",
+    password: "se7en",
+    passwordHash: generateHash("se7en"),
+
+    centre_code: "GATC-KA-015",
+    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/29/2025/015",
+    ind_mark_code: "IND/25/15",
+
+    valid_from: new Date("2025-07-01T00:00:00Z"),
+    valid_to: new Date("2030-06-30T00:00:00Z"),
+
+    status: "ACTIVE",
+
+    approved_categories: [
+      "AUTOMATIC_WEIGHING_INSTRUMENTS",
+      "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
+      "CLINICAL_THERMOMETER",
+      "WATER_METER",
+    ],
+
+    lat: 12.9716,
+    long: 77.5946,
   },
 ];
 

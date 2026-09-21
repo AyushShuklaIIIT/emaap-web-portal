@@ -150,30 +150,30 @@ export const countBreachedApplications = async (
 
 export const getEligibleGatcs = async (
   categoryCode: string,
-  stateCode?: string,
-  categoryName?: string,
+  stateCode: string,
+  categoryName: string,
 ) => {
-  const stateFilter =
-    stateCode && stateCode !== "ALL"
-      ? {
-          principal_officer: {
-            jurisdiction_state: stateCode,
-          },
-        }
-      : {};
+  const now = new Date();
 
-  return prisma.gatcCentre.findMany({
+  const gatcs = await prisma.gatcCentre.findMany({
     where: {
-      status: GatcStatus.ACTIVE,
+      status: "ACTIVE",
 
-      OR: [
-        { approved_categories: { has: categoryCode } },
-        ...(categoryName
-          ? [{ approved_categories: { has: categoryName } }]
-          : []),
-      ],
+      valid_from: {
+        lte: now,
+      },
 
-      ...stateFilter,
+      valid_to: {
+        gte: now,
+      },
+
+      approved_categories: {
+        has: categoryCode,
+      },
+
+      principal_officer: {
+        jurisdiction_state: stateCode,
+      },
     },
 
     select: {
@@ -182,9 +182,18 @@ export const getEligibleGatcs = async (
       lat: true,
       long: true,
       approved_categories: true,
-      status: true,
+
+      principal_officer: {
+        select: {
+          user_id: true,
+          name: true,
+          jurisdiction_state: true,
+        },
+      },
     },
   });
+
+  return gatcs;
 };
 
 export const getAllEligibleGatcs = async (

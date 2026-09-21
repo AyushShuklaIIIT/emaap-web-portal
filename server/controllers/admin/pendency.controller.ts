@@ -83,11 +83,17 @@ export const approvePendencyRoute = async (req: Request, res: Response) => {
       });
     }
 
-    const data = await approvePendencyRouteService(appId);
+    const { gatcId } = req.body;
+
+    if (!gatcId) {
+      throw new AppError(400, "gatcId is required");
+    }
+
+    const result = await approvePendencyRouteService(appId, gatcId);
 
     return res.status(200).json({
       success: true,
-      data,
+      data: result,
       message: "Route approved successfully",
     });
   } catch (error) {

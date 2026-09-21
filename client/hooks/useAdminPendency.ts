@@ -28,7 +28,8 @@ export const useApprovePendencyRoute = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (appId: string) => approvePendencyRoute(appId),
+    mutationFn: ({ appId, gatcId }: { appId: string; gatcId: string }) =>
+      approvePendencyRoute(appId, gatcId),
 
     onSuccess: () => {
       queryClient.invalidateQueries({

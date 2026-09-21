@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-type RoleFilter = "ALL" | "STAKEHOLDER" | "ADMIN" | "GATC_OPERATOR";
+type RoleFilter = "ALL" | "STAKEHOLDER" | "ADMIN" | "INSPECTOR" | "GATC_OPERATOR";
 
 interface RegistrationDocument {
   id: string;
@@ -45,7 +45,8 @@ interface QueueResponse {
 const roleLabels: Record<Exclude<RoleFilter, "ALL">, string> = {
   STAKEHOLDER: "Stakeholder",
   ADMIN: "Admin", 
-  GATC_OPERATOR: "LMO / GATC",
+  INSPECTOR: "LMO",
+  GATC_OPERATOR: "GATC",
 };
 
 export function AdminApprovalPanel() {
@@ -130,7 +131,8 @@ export function AdminApprovalPanel() {
             <option value="ALL">All supported roles</option>
             <option value="STAKEHOLDER">Stakeholder</option>
             <option value="ADMIN">Admin</option>
-            <option value="GATC_OPERATOR">LMO / GATC</option>
+            <option value="INSPECTOR">LMO</option>
+            <option value="GATC_OPERATOR">GATC</option>
           </select>
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />

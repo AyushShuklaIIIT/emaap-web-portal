@@ -28,7 +28,7 @@ nswsRouter.post("/sso", async (req, res) => {
     // Note: In production, the token signature & issuer (SAML/OAuth) should be validated here against NSWS public keys
     
     const user = await prisma.user.findFirst({
-      where: { email: parsed.data.email, role: "BUSINESS" },
+      where: { email: parsed.data.email, registrationRole: "STAKEHOLDER" },
     });
 
     if (!user) {
@@ -109,7 +109,6 @@ nswsRouter.post("/webhook", async (req, res) => {
             fullName: businessName,
             email,
             mobile,
-            role: "BUSINESS",
             registrationRole: "STAKEHOLDER",
             passwordHash: "sso-nsws-no-password",
             jurisdiction_state: stateCode,

@@ -117,7 +117,6 @@ async function seed() {
     const {
       name,
       email,
-      role,
       jurisdiction_district,
       jurisdiction_state,
       fullName,
@@ -129,7 +128,6 @@ async function seed() {
     const baseUser = {
       name,
       email,
-      role,
       jurisdiction_district,
       jurisdiction_state,
       fullName,
@@ -143,7 +141,7 @@ async function seed() {
 
     let createdUser;
 
-    if (role === "BUSINESS") {
+    if (registrationRole === "STAKEHOLDER") {
       const bu = u as any;
       const bp = {
         registration_number: bu.registration_number,
@@ -188,7 +186,7 @@ async function seed() {
           state_id: state.state_id,
         },
       });
-    } else if (role === "GATC_PRINCIPAL") {
+    } else if (registrationRole === "GATC_OPERATOR") {
       const gu = u as any;
       const gc = {
         centre_code: gu.centre_code,

@@ -16,6 +16,7 @@ import type { GstinBusinessData } from "@/components/registration/GstinVerificat
 type Role =
   | "STAKEHOLDER"
   | "ADMIN"
+  | "INSPECTOR"
   | "GATC_OPERATOR";
 
 interface RegistrationFormData extends RoleFormValues {
@@ -66,11 +67,6 @@ const roles: Array<{ value: Role; label: string; description: string }> = [
     value: "ADMIN",
     label: "Administrator",
     description: "Super or regional administration access",
-  },
-  {
-    value: "GATC_OPERATOR",
-    label: "LMO / GATC",
-    description: "Legal Metrology Officer or Government Approved Test Centre operations",
   },
 ];
 
@@ -282,6 +278,19 @@ export default function RegistrationPage() {
                     <p className="mt-1 text-sm text-[#5C5C70]">
                       Your role determines the information required in later steps.
                     </p>
+                  </div>
+                  <div className="max-w-md space-y-2">
+                    <label htmlFor="staff-registration-role" className="text-sm font-medium">LMO / GATC registration type</label>
+                    <select
+                      id="staff-registration-role"
+                      className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
+                      value={selectedRole === "INSPECTOR" || selectedRole === "GATC_OPERATOR" ? selectedRole : ""}
+                      onChange={(event) => setSelectedRole((event.target.value || null) as Role | null)}
+                    >
+                      <option value="">Select LMO or GATC</option>
+                      <option value="INSPECTOR">LMO</option>
+                      <option value="GATC_OPERATOR">GATC</option>
+                    </select>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {roles.map((role) => (

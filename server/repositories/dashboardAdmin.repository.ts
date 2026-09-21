@@ -4,7 +4,7 @@ import {
   GatcStatus,
   PaymentStatus,
   TestVerdict,
-  UserRole,
+  RoleType,
   WorkflowStatus,
 } from "../generated/prisma/enums";
 
@@ -36,7 +36,7 @@ export const getActiveUnitCounts = async () => {
 
     prisma.user.count({
       where: {
-        role: UserRole.LMO,
+        registrationRole: RoleType.INSPECTOR,
       },
     }),
   ]);

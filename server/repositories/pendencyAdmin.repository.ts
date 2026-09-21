@@ -2,7 +2,7 @@ import { prisma } from "../lib/prisma";
 
 import {
   GatcStatus,
-  UserRole,
+  RoleType,
   WorkflowStatus,
 } from "../generated/prisma/enums";
 
@@ -235,7 +235,7 @@ export const getLmoById = async (lmoId: string) => {
   return prisma.user.findFirst({
     where: {
       user_id: lmoId,
-      role: UserRole.LMO,
+      registrationRole: RoleType.INSPECTOR,
     },
 
     select: {

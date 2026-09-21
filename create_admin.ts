@@ -7,7 +7,6 @@ async function addAdmin() {
       fullName: "Directorate Admin Central",
       email: "admin.central@emaap.gov.in",
       mobile: "9999999999",
-      role: "ADMIN",
       registrationRole: "ADMIN",
       jurisdiction_district: "Central",
       jurisdiction_state: "Central",

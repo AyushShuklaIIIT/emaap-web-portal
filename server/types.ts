@@ -8,13 +8,20 @@ export interface State {
 export interface User {
   user_id?: string;
   name: string;
+  fullName: string;
   email: string;
+  mobile: string;
   role: "BUSINESS" | "LMO" | "GATC_PRINCIPAL" | "ADMIN";
+  registrationRole:
+    "STAKEHOLDER" | "INSPECTOR" | "ADMIN" | "LEGAL_OFFICER" | "GATC_OPERATOR";
+  password?: string;
+  passwordHash?: string;
   jurisdiction_district?: string;
   jurisdiction_state?: string;
 }
 
 export interface GatcUser extends User {
+  role: "GATC_PRINCIPAL";
   centre_code: string;
   approval_cert_no: string;
   ind_mark_code: string;
@@ -27,6 +34,7 @@ export interface GatcUser extends User {
 }
 
 export interface BusinessUser extends User {
+  role: "BUSINESS";
   registration_number: string;
   trade_name: string;
   entity_type: "MANUFACTURER" | "DEALER" | "USER";
@@ -77,7 +85,6 @@ export interface VerificationAppData {
   app_type: "INITIAL" | "RE_VERIFICATION";
   submission_timestamp: Date;
   workflow_status: "SUBMITTED" | "ALLOCATED" | "CERTIFIED" | "REJECTED";
-
   instrument_id: string;
   business_id: string;
   assigned_officer_id?: string;
@@ -142,6 +149,7 @@ export interface InstrumentCategory {
   oiml_standard_ref: string;
   verification_cycle_months: number;
 }
+
 export interface InspectionData {
   inspection_date: Date;
   time_taken_minutes: number;
@@ -149,7 +157,6 @@ export interface InspectionData {
   test_verdict: "PASS" | "FAIL";
   geo_latitude: number;
   geo_longitude: number;
-
   application_no: string;
   inspector_email: string;
 }
@@ -162,35 +169,28 @@ export interface DigitalCertificateData {
   sha256_hash: string;
   dynamic_qr_url: string;
   rejection_reason: string | null;
-
   application_no: string;
 }
 
 export interface PaymentData {
   receipt_id: string;
   receipt_no: string;
-
   transaction_id: string | null;
   transaction_date: Date | null;
   payment_method: "UPI" | "NET_BANKING" | "NEFT_RTGS" | null;
-
   due_date: Date | null;
-
   statutory_fee: number;
   carriage_charges: number;
   adjusting_charges: number;
   total_amount: number;
   govt_share: number;
   gatc_share: number;
-
   payment_status: "PENDING" | "SUCCESS" | "FAILED";
-
   app_id: string;
 }
 
 export interface PaymentDashboardData {
   total_paid_ytd: number;
-
   pending_payments: {
     receipt_id: string;
     receipt_no: string;
@@ -200,7 +200,6 @@ export interface PaymentDashboardData {
     statutory_fee: number;
     total_amount: number;
   }[];
-
   recent_transactions: {
     receipt_id: string;
     transaction_id: string | null;

@@ -142,6 +142,7 @@ model User {
   emailVerified             Boolean                   @default(false)
   mobileVerified            Boolean                   @default(false)
   isActive                  Boolean                   @default(false)
+  fingerprint_registered    Boolean                   @default(false)
   updatedAt                 DateTime                  @updatedAt
   registration_applications RegistrationApplication[] @relation("RegistrationApplicant")
   reviewed_applications     RegistrationApplication[] @relation("RegistrationReviewer")

@@ -117,6 +117,79 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
+const lmoLoginSchema = z.object({
+  employeeId: z.string().min(1, "Employee ID is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+authRouter.post("/login/lmo", async (req, res) => {
+  const parsed = lmoLoginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ success: false, error: "Enter a valid Employee ID and password" });
+  }
+
+  try {
+    const { prisma } = await import("../lib/prisma");
+    
+    const user = await prisma.user.findFirst({
+      where: { employeeId: parsed.data.employeeId, role: "LMO" },
+      select: {
+        user_id: true,
+        passwordHash: true,
+        isActive: true,
+        email: true,
+        fullName: true,
+        name: true,
+        mobile: true,
+        jurisdiction_state: true,
+        jurisdiction_district: true,
+        fingerprint_registered: true,
+      },
+    });
+
+    if (!user?.passwordHash) {
+      return res.status(401).json({ success: false, error: "Invalid Employee ID or password" });
+    }
+    if (!user.isActive) {
+      return res.status(403).json({ success: false, error: "Your account is awaiting administrator approval" });
+    }
+
+    const [salt, expectedHex] = user.passwordHash.split(":");
+    if (!salt || !expectedHex) {
+      return res.status(401).json({ success: false, error: "Invalid Employee ID or password" });
+    }
+    
+    const derived = await scrypt(parsed.data.password, salt, 64) as Buffer;
+    const valid = timingSafeEqual(Buffer.from(derived), Buffer.from(expectedHex, "hex"));
+    
+    if (!valid) {
+      return res.status(401).json({ success: false, error: "Invalid Employee ID or password" });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        token: jwt.sign(
+          { sub: user.user_id, role: "LMO" },
+          getJwtSecret(),
+          { expiresIn: "8h" },
+        ),
+        userId: user.user_id,
+        email: user.email,
+        fullName: user.fullName ?? user.name,
+        mobile: user.mobile,
+        jurisdictionState: user.jurisdiction_state,
+        jurisdictionDistrict: user.jurisdiction_district,
+        role: "lmo",
+        fingerprintRegistered: user.fingerprint_registered,
+      },
+    });
+  } catch (error) {
+    console.error("LMO Login request failed", error);
+    return res.status(502).json({ success: false, error: "Unable to complete login" });
+  }
+});
+
 authRouter.post("/send-otp", async (req, res) => {
   const parsed = dispatchSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid OTP dispatch request" });
@@ -145,5 +218,68 @@ authRouter.post("/verify-otp", async (req, res) => {
     return res.status(200).json(await verifyOtp(parsed.data));
   } catch (error) {
     return sendError(res, error);
+  }
+});
+
+authRouter.get("/lmo/:userId/fingerprint-status", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { prisma } = await import("../lib/prisma");
+    const user = await prisma.user.findUnique({
+      where: { user_id: userId },
+      select: { fingerprint_registered: true, role: true },
+    });
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+    
+    if (user.role !== "LMO") {
+      return res.status(403).json({ success: false, error: "User is not an LMO" });
+    }
+
+    return res.json({
+      success: true,
+      fingerprintRegistered: user.fingerprint_registered,
+    });
+  } catch (error) {
+    console.error("Failed to check fingerprint status", error);
+    return res.status(500).json({ success: false, error: "Database error" });
+  }
+});
+
+authRouter.post("/lmo/:userId/register-fingerprint", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { prisma } = await import("../lib/prisma");
+    const user = await prisma.user.findUnique({
+      where: { user_id: userId },
+      select: { fingerprint_registered: true, role: true },
+    });
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+    
+    if (user.role !== "LMO") {
+      return res.status(403).json({ success: false, error: "User is not an LMO" });
+    }
+
+    if (user.fingerprint_registered) {
+      return res.status(400).json({ success: false, error: "Fingerprint is already registered" });
+    }
+
+    await prisma.user.update({
+      where: { user_id: userId },
+      data: { fingerprint_registered: true },
+    });
+
+    return res.json({
+      success: true,
+      message: "Fingerprint registered successfully",
+    });
+  } catch (error) {
+    console.error("Failed to register fingerprint", error);
+    return res.status(500).json({ success: false, error: "Database error" });
   }
 });

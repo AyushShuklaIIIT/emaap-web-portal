@@ -1,4 +1,6 @@
 import { Prisma } from "./generated/prisma/client";
+import { GatcStatus } from "./generated/prisma/enums";
+import { VerificationAppGetPayload } from "./generated/prisma/models";
 
 export interface State {
   state_code: string;
@@ -66,7 +68,7 @@ export interface VerificationAppSeedData {
   assigned_gatc_code?: string;
 }
 
-export type VerificationAppData = Prisma.VerificationAppGetPayload<{
+export type VerificationAppData = VerificationAppGetPayload<{
   include: {
     receipts: true;
     inspections: true;
@@ -77,7 +79,7 @@ export type VerificationAppData = Prisma.VerificationAppGetPayload<{
   };
 }>;
 
-export type DashboardApplicationData = Prisma.VerificationAppGetPayload<{
+export type DashboardApplicationData = VerificationAppGetPayload<{
   include: {
     instrument: {
       include: {
@@ -239,4 +241,120 @@ export interface PaymentDashboardData {
     total_amount: number;
     payment_status: "PENDING" | "SUCCESS" | "FAILED";
   }[];
+}
+
+export interface GatcListQuery {
+  search?: string;
+  status?: GatcStatus;
+  page?: number;
+  limit?: number;
+}
+
+export interface CreateGatcData {
+  centre_code: string;
+  approval_cert_no: string;
+  ind_mark_code: string;
+  valid_from: Date;
+  valid_to: Date;
+  approved_categories: string[];
+  lat: number;
+  long: number;
+  principal_officer_id: string;
+}
+
+export interface UpdateGatcStatusData {
+  status: GatcStatus;
+}
+
+export interface RenewGatcData {
+  valid_from: Date;
+  valid_to: Date;
+  approval_cert_no?: string;
+  ind_mark_code?: string;
+  approved_categories?: string[];
+}
+
+export interface GatcRevenue {
+  total: number;
+  govt_share: number;
+  gatc_share: number;
+}
+
+export interface GatcListItem {
+  gatc_id: string;
+  centre_code: string;
+  lab_name: string;
+  approval_cert_no: string;
+  ind_mark_code: string;
+
+  status: GatcStatus;
+
+  valid_from: Date;
+  valid_to: Date;
+
+  approved_categories: string[];
+
+  principal_officer: {
+    user_id: string;
+    name: string;
+    email: string;
+    mobile: string;
+  };
+
+  revenue: GatcRevenue;
+}
+
+export interface GatcListResponse {
+  data: GatcListItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface GatcDashboardResponse {
+  totalActiveGatcs: number;
+  totalGatcs: number;
+
+  statesCovered: number;
+  unionTerritoriesCovered: number;
+
+  revenueYtd: GatcRevenue;
+
+  pendingLabRenewals: number;
+}
+
+export interface GatcProfile {
+  gatc_id: string;
+  centre_code: string;
+  approval_cert_no: string;
+  ind_mark_code: string;
+
+  valid_from: Date;
+  valid_to: Date;
+  status: GatcStatus;
+
+  approved_categories: string[];
+
+  lat: number;
+  long: number;
+
+  principal_officer: {
+    user_id: string;
+    name: string;
+    email: string;
+    mobile: string;
+    employeeId: string | null;
+  };
+
+  applications: number;
+  successfulPayments: number;
+
+  revenue: GatcRevenue;
+
+  inspections: number;
+  passedInspections: number;
+  failedInspections: number;
 }

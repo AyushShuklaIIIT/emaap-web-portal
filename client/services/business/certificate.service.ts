@@ -10,6 +10,7 @@ export interface CertificateApiResponse {
   rejection_reason: string | null;
   inspection_id: string;
   instrument_id: string;
+  verificationSignature?: string;
 
   instrument: {
     serial_number: string;

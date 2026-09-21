@@ -44,7 +44,7 @@ interface QueueResponse {
 
 const roleLabels: Record<Exclude<RoleFilter, "ALL">, string> = {
   STAKEHOLDER: "Stakeholder",
-  ADMIN: "Admin",
+  ADMIN: "Admin", 
   GATC_OPERATOR: "LMO / GATC",
 };
 

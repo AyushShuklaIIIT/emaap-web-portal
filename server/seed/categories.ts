@@ -7,6 +7,20 @@ export const categories = [
     verification_cycle_months: 12,
   },
   {
+    category_code: "FLOW_METERS",
+    category_name: "Flow Meters",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+  {
+    category_code: "COUNTER_MACHINE",
+    category_name: "Counter Machine",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+  {
     category_code: "CARAT_WEIGHTS",
     category_name: "Carat Weights",
     accuracy_class: "CLASS_I",

@@ -1,11 +1,8 @@
 import { prisma } from "../lib/prisma";
-
-import { BusinessUser, GatcUser } from "../types";
-
 import { states } from "./states.js";
 import { categories } from "./categories.js";
 import { stateFees } from "./feeRules.js";
-import { allMockUsers } from "./users.js";
+// import { allMockUsers } from "./users.js";
 import { AccuracyClass } from "../generated/prisma/enums.js";
 
 async function seed() {
@@ -107,122 +104,122 @@ async function seed() {
 
   console.log("Begin Seeding Users");
 
-  for (const u of allMockUsers) {
-    const {
-      name,
-      email,
-      role,
-      jurisdiction_district,
-      jurisdiction_state,
-      fullName,
-      mobile,
-      registrationRole,
-      passwordHash,
-    } = u;
+  // for (const u of allMockUsers) {
+  //   const {
+  //     name,
+  //     email,
+  //     role,
+  //     jurisdiction_district,
+  //     jurisdiction_state,
+  //     fullName,
+  //     mobile,
+  //     registrationRole,
+  //     passwordHash,
+  //   } = u;
 
-    const baseUser = {
-      name,
-      email,
-      role,
-      jurisdiction_district,
-      jurisdiction_state,
-      fullName,
-      mobile,
-      registrationRole,
-      passwordHash,
-      isActive: true,
-      emailVerified: true,
-      mobileVerified: true,
-    };
+  //   const baseUser = {
+  //     name,
+  //     email,
+  //     role,
+  //     jurisdiction_district,
+  //     jurisdiction_state,
+  //     fullName,
+  //     mobile,
+  //     registrationRole,
+  //     passwordHash,
+  //     isActive: true,
+  //     emailVerified: true,
+  //     mobileVerified: true,
+  //   };
 
-    let createdUser;
+  //   let createdUser;
 
-    if (role === "BUSINESS") {
-      const bu = u as any;
-      const bp = {
-        registration_number: bu.registration_number,
-        trade_name: bu.trade_name,
-        entity_type: bu.entity_type,
-        geo_address: bu.geo_address,
-      };
+  //   if (role === "BUSINESS") {
+  //     const bu = u as any;
+  //     const bp = {
+  //       registration_number: bu.registration_number,
+  //       trade_name: bu.trade_name,
+  //       entity_type: bu.entity_type,
+  //       geo_address: bu.geo_address,
+  //     };
 
-      const state = await prisma.state.findUnique({
-        where: { state_code: bu.state_code },
-      });
+  //     const state = await prisma.state.findUnique({
+  //       where: { state_code: bu.state_code },
+  //     });
 
-      if (!state) {
-        console.warn(
-          `Skipping business profile creation for ${email} due to missing state_code: ${bu.state_code}`,
-        );
-        createdUser = await prisma.user.upsert({
-          where: { email },
-          update: baseUser,
-          create: baseUser,
-        });
-        continue;
-      }
+  //     if (!state) {
+  //       console.warn(
+  //         `Skipping business profile creation for ${email} due to missing state_code: ${bu.state_code}`,
+  //       );
+  //       createdUser = await prisma.user.upsert({
+  //         where: { email },
+  //         update: baseUser,
+  //         create: baseUser,
+  //       });
+  //       continue;
+  //     }
 
-      createdUser = await prisma.user.upsert({
-        where: { email },
-        update: baseUser,
-        create: baseUser,
-      });
+  //     createdUser = await prisma.user.upsert({
+  //       where: { email },
+  //       update: baseUser,
+  //       create: baseUser,
+  //     });
 
-      await prisma.businessProfile.upsert({
-        where: { user_id: createdUser.user_id },
-        update: {
-          ...bp,
-          registration_number: bu.registration_number,
-          state_id: state.state_id,
-        },
-        create: {
-          ...bp,
-          registration_number: bu.registration_number,
-          user_id: createdUser.user_id,
-          state_id: state.state_id,
-        },
-      });
-    } else if (role === "GATC_PRINCIPAL") {
-      const gu = u as any;
-      const gc = {
-        centre_code: gu.centre_code,
-        approval_cert_no: gu.approval_cert_no,
-        ind_mark_code: gu.ind_mark_code,
-        valid_from: gu.valid_from,
-        valid_to: gu.valid_to,
-        status: gu.status,
-        approved_categories: gu.approved_categories,
-        lat: gu.lat,
-        long: gu.long,
-      };
+  //     await prisma.businessProfile.upsert({
+  //       where: { user_id: createdUser.user_id },
+  //       update: {
+  //         ...bp,
+  //         registration_number: bu.registration_number,
+  //         state_id: state.state_id,
+  //       },
+  //       create: {
+  //         ...bp,
+  //         registration_number: bu.registration_number,
+  //         user_id: createdUser.user_id,
+  //         state_id: state.state_id,
+  //       },
+  //     });
+  //   } else if (role === "GATC_PRINCIPAL") {
+  //     const gu = u as any;
+  //     const gc = {
+  //       centre_code: gu.centre_code,
+  //       approval_cert_no: gu.approval_cert_no,
+  //       ind_mark_code: gu.ind_mark_code,
+  //       valid_from: gu.valid_from,
+  //       valid_to: gu.valid_to,
+  //       status: gu.status,
+  //       approved_categories: gu.approved_categories,
+  //       lat: gu.lat,
+  //       long: gu.long,
+  //     };
 
-      createdUser = await prisma.user.upsert({
-        where: { email },
-        update: baseUser,
-        create: baseUser,
-      });
+  //     createdUser = await prisma.user.upsert({
+  //       where: { email },
+  //       update: baseUser,
+  //       create: baseUser,
+  //     });
 
-      await prisma.gatcCentre.upsert({
-        where: { principal_officer_id: createdUser.user_id },
-        update: {
-          ...gc,
-          centre_code: gu.centre_code,
-        },
-        create: {
-          ...gc,
-          centre_code: gu.centre_code,
-          principal_officer_id: createdUser.user_id,
-        },
-      });
-    } else {
-      createdUser = await prisma.user.upsert({
-        where: { email },
-        update: baseUser,
-        create: baseUser,
-      });
-    }
-    console.log(`Seeded user: ${email}`);
-  }
+  //     await prisma.gatcCentre.upsert({
+  //       where: { principal_officer_id: createdUser.user_id },
+  //       update: {
+  //         ...gc,
+  //         centre_code: gu.centre_code,
+  //       },
+  //       create: {
+  //         ...gc,
+  //         centre_code: gu.centre_code,
+  //         principal_officer_id: createdUser.user_id,
+  //       },
+  //     });
+  //   } else {
+  //     createdUser = await prisma.user.upsert({
+  //       where: { email },
+  //       update: baseUser,
+  //       create: baseUser,
+  //     });
+  //   }
+  //   console.log(`Seeded user: ${email}`);
+  // }
 
   console.log("Constant Data Seeding completed");
 }

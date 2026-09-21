@@ -37,7 +37,7 @@ export default function QRCodes({ userId }: { userId: string }) {
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {certificates.map((certificate) => {
-              const verificationUrl = `${window.location.origin}/verify/${certificate.cert_id}?sig=${encodeURIComponent(certificate.sha256_hash ?? "")}`;
+              const verificationUrl = `${window.location.origin}/verify/${certificate.certificate_no}?sig=${encodeURIComponent(certificate.verificationSignature ?? "")}`;
 
               return (
                 <div

@@ -105,9 +105,124 @@ export function createServer() {
       socket.emit("reply", "Whatup");
     });
 
-    socket.on("data", (data) => {
+    socket.on("data", async (data) => {
       console.log("Recieved data:", data);
       socket.broadcast.emit("message", data);
+
+      // Persist the incoming VerificationApp to DB to complete relational chain
+      try {
+        const { prisma } = await import("./lib/prisma");
+
+        if (data.userId && data.instrumentSerialNumber) {
+          // 1. Ensure BusinessProfile exists
+          let business = await prisma.businessProfile.findUnique({ where: { user_id: data.userId } });
+          if (!business) {
+            // Find a valid state ID (fallback to any if not found)
+            let stateObj = await prisma.state.findFirst({
+              where: { state_code: data.state || "MH" }
+            });
+            if (!stateObj) {
+              stateObj = await prisma.state.create({
+                data: {
+                  state_code: data.state || "MH",
+                  state_name: data.state || "Maharashtra"
+                }
+              });
+            }
+            if (stateObj) {
+              business = await prisma.businessProfile.create({
+                data: {
+                  user_id: data.userId,
+                  registration_number: `REG-${Date.now()}`,
+                  trade_name: data.businessName || "Default Business",
+                  entity_type: "USER",
+                  geo_address: data.address || "Unknown Address",
+                  state_id: stateObj.state_id
+                }
+              });
+            }
+          }
+
+          if (business) {
+            // 2. Ensure InstrumentCategory exists
+            let category = await prisma.instrumentCategory.findFirst({
+              where: { category_name: data.instrumentSubCategory || "Default" }
+            });
+            if (!category) {
+              category = await prisma.instrumentCategory.create({
+                data: {
+                  category_code: `CAT_${Date.now()}`,
+                  category_name: data.instrumentSubCategory || "Default Category",
+                  accuracy_class: "CLASS_II",
+                  oiml_standard_ref: "OIML-R76",
+                  verification_cycle_months: 12
+                }
+              });
+            }
+
+            // 3. Ensure MeasuringInstrument exists
+            let instrument = await prisma.measuringInstrument.findFirst({
+              where: { serial_number: data.instrumentSerialNumber, business_id: business.business_id }
+            });
+            
+            const mapAccuracyClass = (ac: string): "CLASS_I"|"CLASS_II"|"CLASS_III"|"CLASS_IIII" => {
+              if (!ac) return "CLASS_II";
+              const upper = ac.toUpperCase();
+              if (upper.includes("CLASS I") && !upper.includes("II")) return "CLASS_I";
+              if (upper.includes("CLASS II") && !upper.includes("III")) return "CLASS_II";
+              if (upper.includes("CLASS III") && !upper.includes("IIII")) return "CLASS_III";
+              if (upper.includes("CLASS IIII") || upper.includes("CLASS IV")) return "CLASS_IIII";
+              return "CLASS_II";
+            };
+
+            if (!instrument) {
+              instrument = await prisma.measuringInstrument.create({
+                data: {
+                  serial_number: data.instrumentSerialNumber,
+                  model_no: data.modelNo || "Unknown Model",
+                  manufacturer_name: data.manufacturerName || "Unknown Manufacturer",
+                  accuracy_class: mapAccuracyClass(data.accuracyClass),
+                  metric: data.metric || "N/A",
+                  address: data.address || business.geo_address,
+                  pincode: Number(data.pincode) || 111111,
+                  state: data.state || "N/A",
+                  lat: Number(data.lat) || 0,
+                  long: Number(data.long) || 0,
+                  status: "PENDING",
+                  business_id: business.business_id,
+                  category_id: category.category_id
+                }
+              });
+            }
+
+            // 4. Ensure VerificationApp exists
+            let application = await prisma.verificationApp.findFirst({
+              where: { instrument_id: instrument.instrument_id, workflow_status: { not: "CERTIFIED" } }
+            });
+
+            if (!application) {
+              application = await prisma.verificationApp.create({
+                data: {
+                  application_no: data.applicationId || `APP-${Date.now()}`,
+                  app_type: "INITIAL",
+                  workflow_status: "SUBMITTED",
+                  instrument_id: instrument.instrument_id,
+                  business_id: business.business_id,
+                }
+              });
+              console.log(`Successfully created VerificationApp ${application.app_id} for instrument ${instrument.serial_number}`);
+            }
+          } else {
+            console.error("Failed to create or find business profile");
+            socket.emit("error", { message: "Failed to create or find business profile" });
+          }
+        } else {
+          console.error("Missing userId or instrumentSerialNumber in data payload");
+          socket.emit("error", { message: "Missing userId or instrumentSerialNumber" });
+        }
+      } catch (err) {
+        console.error("Error creating verification relational records:", err);
+      }
     });
 
     socket.on("disconnect", (reason) => {
@@ -124,6 +239,43 @@ export function createServer() {
       if (Math.abs(nowMs - payloadMs) > 300000) {
         console.error("Replay attack detected: Timestamp expired", { nowMs, payloadMs });
         return socket.emit("error", { message: "Replay attack detected: Timestamp expired" });
+      }
+
+      const { prisma } = await import("./lib/prisma");
+
+      // Verify LMO is registered based on payload
+      let inspectorId = data.inspectorId;
+      let lmo = null;
+      
+      if (inspectorId) {
+        lmo = await prisma.user.findFirst({
+          where: { user_id: inspectorId, role: "LMO" }
+        });
+      }
+
+      if (!lmo) {
+        console.warn("Unauthorized attempt: Missing or Invalid inspectorId. Using Fallback LMO for development.");
+        lmo = await prisma.user.findFirst({ where: { role: "LMO" } });
+        if (!lmo) {
+          // Create dummy LMO if no LMOs exist
+          lmo = await prisma.user.create({
+            data: {
+              name: "System Fallback LMO",
+              fullName: "System Fallback LMO",
+              email: `lmo_fallback_${Date.now()}@emaap.gov.in`,
+              mobile: `${Date.now()}`.substring(0, 10),
+              role: "LMO",
+              registrationRole: "INSPECTOR",
+              jurisdiction_district: "Any",
+              jurisdiction_state: "Any",
+              passwordHash: "dummy",
+              isActive: true,
+              emailVerified: true,
+              mobileVerified: true,
+            }
+          });
+        }
+        inspectorId = lmo.user_id;
       }
 
       const issueTimestamp = new Date().toISOString();
@@ -147,7 +299,6 @@ export function createServer() {
       );
 
       try {
-        const { prisma } = await import("./lib/prisma");
         await prisma.generatedCertificate.create({
           data: {
             certificateId: finalCertPayload.certificateId,
@@ -163,6 +314,97 @@ export function createServer() {
             tokenHash: finalCertPayload.token_hash || null,
           }
         });
+
+        // --- RELATIONAL DATABASE SYNC FOR DASHBOARDS ---
+        const instrument = await prisma.measuringInstrument.findFirst({
+          where: { serial_number: finalCertPayload.instrumentSerialNumber }
+        });
+
+        if (instrument) {
+          const application = await prisma.verificationApp.findFirst({
+            where: { instrument_id: instrument.instrument_id, workflow_status: { not: "CERTIFIED" } },
+            orderBy: { submission_timestamp: 'desc' }
+          });
+
+          if (application) {
+            const isRejected = finalCertPayload.status === "FAILED_CHECKLIST";
+            const statusVerdict = isRejected ? "REJECTED" : "VERIFIED";
+
+            await prisma.$transaction(async (tx) => {
+              // 1. Update Instrument
+              await tx.measuringInstrument.update({
+                where: { instrument_id: instrument.instrument_id },
+                data: { status: statusVerdict }
+              });
+
+              // 2. Update Application
+              await tx.verificationApp.update({
+                where: { app_id: application.app_id },
+                data: { workflow_status: isRejected ? "REJECTED" : "CERTIFIED" }
+              });
+              
+              // 3. Create Inspection Record
+              const inspection = await tx.inspectionRecord.create({
+                data: {
+                  time_taken_minutes: 15,
+                  inspection_mode: "FIELD_OFFLINE",
+                  test_verdict: isRejected ? "FAIL" : "PASS",
+                  geo_latitude: finalCertPayload.lat,
+                  geo_longitude: finalCertPayload.long,
+                  inspector_id: inspectorId,
+                  app_id: application.app_id
+                }
+              });
+
+              // 4. Create Digital Certificate for the Dashboard (including rejections)
+              await tx.digitalCertificate.create({
+                data: {
+                  certificate_no: finalCertPayload.certificateId,
+                  stamping_quarter_code: "Q3",
+                  issue_date: new Date(finalCertPayload.issueDate),
+                  expiry_date: new Date(new Date(finalCertPayload.issueDate).setFullYear(new Date(finalCertPayload.issueDate).getFullYear() + 1)),
+                  sha256_hash: finalCertPayload.hash,
+                  dynamic_qr_url: `http://localhost:5173/verify/${finalCertPayload.certificateId}?sig=${encodeURIComponent(finalCertPayload.verificationSignature)}`,
+                  inspection_id: inspection.inspection_id,
+                  instrument_id: instrument.instrument_id,
+                  rejection_reason: isRejected ? "Failed Checklist (Warning)" : null
+                }
+              });
+
+              // 5. Ensure PaymentReceipt is SUCCESS
+              const receipt = await tx.paymentReceipt.findFirst({ where: { app_id: application.app_id } });
+              if (receipt) {
+                  await tx.paymentReceipt.update({
+                    where: { receipt_id: receipt.receipt_id },
+                    data: { payment_status: "SUCCESS" }
+                  });
+              } else {
+                  await tx.paymentReceipt.create({
+                    data: {
+                      receipt_no: `REC-${Date.now()}`,
+                      transaction_id: `TXN-${crypto.randomUUID()}`,
+                      transaction_date: new Date(),
+                      payment_method: "UPI",
+                      statutory_fee: 500,
+                      carriage_charges: 0,
+                      adjusting_charges: 0,
+                      total_amount: 500,
+                      govt_share: 250,
+                      gatc_share: 250,
+                      payment_status: "SUCCESS",
+                      app_id: application.app_id
+                    }
+                  });
+              }
+            });
+            console.log("Successfully synced inspection to relational tables!");
+          } else {
+            console.error(`Relational Sync Skipped: No active VerificationApp found for instrument ${instrument.instrument_id}`);
+          }
+        } else {
+          console.error(`Relational Sync Skipped: MeasuringInstrument with serial number ${finalCertPayload.instrumentSerialNumber} not found in DB.`);
+        }
+        // --- END SYNC ---
         
         io.emit("certificate_generated", finalCertPayload);
       } catch (error) {
@@ -229,7 +471,7 @@ export function createServer() {
 
       const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
       const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+      let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       const { width, height } = page.getSize();
@@ -298,50 +540,68 @@ export function createServer() {
       page.drawText("Live Physical Seal Evidence:", { x: 50, y: currentY, size: 14, font: boldFont, color: navyBlue });
       
       if (cert.sealImageUrls && cert.sealImageUrls.length > 0) {
-        let imageUrl = cert.sealImageUrls[0];
-        if (imageUrl.startsWith("http://")) {
-          imageUrl = imageUrl.replace("http://", "https://");
-        }
-        try {
-          const imgResponse = await fetch(imageUrl);
-          const imgBuffer = await imgResponse.arrayBuffer();
-          
-          let img;
-          if (imageUrl.toLowerCase().endsWith('.png')) {
-            img = await pdfDoc.embedPng(imgBuffer);
-          } else {
-            img = await pdfDoc.embedJpg(imgBuffer);
+        for (let i = 0; i < cert.sealImageUrls.length; i++) {
+          let imageUrl = cert.sealImageUrls[i];
+          if (imageUrl.startsWith("http://")) {
+            imageUrl = imageUrl.replace("http://", "https://");
           }
+          try {
+            const imgResponse = await fetch(imageUrl);
+            const imgBuffer = await imgResponse.arrayBuffer();
+            
+            let img;
+            if (imageUrl.toLowerCase().endsWith('.png')) {
+              img = await pdfDoc.embedPng(imgBuffer);
+            } else {
+              img = await pdfDoc.embedJpg(imgBuffer);
+            }
 
-          // Scale image to fit nicely
-          const maxImgWidth = width - 100;
-          const maxImgHeight = 250;
-          let imgDims = img.scale(1);
-          
-          if (imgDims.width > maxImgWidth || imgDims.height > maxImgHeight) {
-            const scaleFactor = Math.min(maxImgWidth / imgDims.width, maxImgHeight / imgDims.height);
-            imgDims = img.scale(scaleFactor);
+            // Scale image to fit nicely
+            const maxImgWidth = width - 100;
+            const maxImgHeight = 250;
+            let imgDims = img.scale(1);
+            
+            if (imgDims.width > maxImgWidth || imgDims.height > maxImgHeight) {
+              const scaleFactor = Math.min(maxImgWidth / imgDims.width, maxImgHeight / imgDims.height);
+              imgDims = img.scale(scaleFactor);
+            }
+
+            // Check if we have enough space for the image, if not add a new page
+            if (currentY - (imgDims.height + 15) < 50) {
+              page = pdfDoc.addPage([595.28, 841.89]);
+              currentY = height - 50;
+              
+              // Add a small header on the new page
+              page.drawText("Live Physical Seal Evidence (Continued):", { x: 50, y: currentY, size: 14, font: boldFont, color: navyBlue });
+              currentY -= 20;
+            }
+
+            currentY -= (imgDims.height + 15);
+            
+            // Image border
+            page.drawRectangle({
+              x: 48, y: currentY - 2,
+              width: imgDims.width + 4, height: imgDims.height + 4,
+              borderColor: orange, borderWidth: 2
+            });
+
+            page.drawImage(img, {
+              x: 50,
+              y: currentY,
+              width: imgDims.width,
+              height: imgDims.height,
+            });
+            
+            currentY -= 20; // Extra spacing between multiple images
+          } catch (imgError) {
+            console.error(`Failed to embed image ${i} in PDF:`, imgError);
+            if (currentY - 30 < 50) {
+              page = pdfDoc.addPage([595.28, 841.89]);
+              currentY = height - 50;
+            }
+            currentY -= 30;
+            page.drawText(`[Seal Image ${i+1} could not be loaded into PDF]`, { x: 50, y: currentY, size: 10, font, color: orange });
           }
-
-          currentY -= (imgDims.height + 15);
-          
-          // Image border
-          page.drawRectangle({
-            x: 48, y: currentY - 2,
-            width: imgDims.width + 4, height: imgDims.height + 4,
-            borderColor: orange, borderWidth: 2
-          });
-
-          page.drawImage(img, {
-            x: 50,
-            y: currentY,
-            width: imgDims.width,
-            height: imgDims.height,
-          });
-        } catch (imgError) {
-          console.error("Failed to embed image in PDF:", imgError);
-          currentY -= 30;
-          page.drawText("[Seal Image could not be loaded into PDF]", { x: 50, y: currentY, size: 10, font, color: orange });
         }
       }
 

@@ -23,7 +23,7 @@ export interface Instrument {
   business_id: string;
   category_id: string;
 
-  status: "VERIFIED" | "REJECTED" | "EXPIRED";
+  status: "PENDING" | "VERIFIED" | "REJECTED" | "EXPIRED";
 
   category: InstrumentCategory;
   certificates: Certificate[];

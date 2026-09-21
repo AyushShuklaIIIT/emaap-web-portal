@@ -39,6 +39,7 @@ enum AccuracyClass {
 }
 
 enum InstrumentStatus {
+  PENDING
   VERIFIED
   REJECTED
   EXPIRED

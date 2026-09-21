@@ -1,7 +1,8 @@
 import { prisma } from "../lib/prisma";
+import { createCertificateSignature } from "../services/qr-payload.service";
 
 export const getCertificatesByBusinessId = async (businessId: string) => {
-  return prisma.digitalCertificate.findMany({
+  const certs = await prisma.digitalCertificate.findMany({
     where: {
       instrument: {
         business_id: businessId,
@@ -20,4 +21,9 @@ export const getCertificatesByBusinessId = async (businessId: string) => {
       issue_date: "desc",
     },
   });
+
+  return certs.map((cert) => ({
+    ...cert,
+    verificationSignature: createCertificateSignature(cert.certificate_no, cert.sha256_hash),
+  }));
 };

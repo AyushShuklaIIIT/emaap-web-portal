@@ -8,6 +8,7 @@ import { Upload, FileText, CheckCircle2, ChevronDown, Check, Loader2 } from "luc
 import { io } from "socket.io-client";
 import { QRCodeCanvas } from "qrcode.react";
 import { backendUrl } from "@/lib/backend-url.ts";
+import { getCurrentUser } from "@/lib/current-user";
 
 const socket = io(backendUrl, {
   autoConnect: false,
@@ -40,10 +41,10 @@ function FormField({
   readonly children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <Label className="text-sm font-bold text-[#5C5C70]">{label}</Label>
+    <label className="flex flex-col gap-2">
+      <span className="text-sm font-bold text-[#5C5C70]">{label}</span>
       {children}
-    </div>
+    </label>
   );
 }
 
@@ -183,6 +184,10 @@ export default function NewApplication() {
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("connect_error", onConnectError);
+    socket.on("error", (err) => {
+      console.error("Socket error from server:", err);
+      alert(`Server error: ${err.message || "An error occurred"}`);
+    });
     socket.on("certificate_generated", (data) => {
       console.log("BOOM! Certificate received from LMO:", data);
       setCertificateData(data);
@@ -195,6 +200,7 @@ export default function NewApplication() {
       socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onConnectError);
       socket.off("reply", onReply);
+      socket.off("error");
       socket.off("certificate_generated");
       socket.disconnect();
     };
@@ -608,7 +614,7 @@ export default function NewApplication() {
 
     setIsSubmitting(true);
 
-    const payload: VerificationForm = {
+    const payload: VerificationForm & { userId?: string, businessName?: string } = {
       applicationId,
       instrumentCategory: selectedCategory,
       instrumentSubCategory,
@@ -623,6 +629,16 @@ export default function NewApplication() {
       lat: latitude,
       long: longitude,
     };
+
+    const currentUser = getCurrentUser();
+    if (!currentUser?.userId) {
+      alert("Error: User not found in localStorage. Please log in again.");
+      setIsSubmitting(false);
+      return;
+    }
+    
+    payload.userId = currentUser.userId;
+    payload.businessName = currentUser.businessName || currentUser.fullName || "Default Business Name";
 
     console.log(`Sent Data`, payload);
 
@@ -716,7 +732,7 @@ export default function NewApplication() {
   }
 
   if (certificateData) {
-    const verificationUrl = `${backendUrl}/verify/${certificateData.certificateId}?sig=${encodeURIComponent(certificateData.verificationSignature ?? "")}`;
+    const verificationUrl = `${window.location.origin}/verify/${certificateData.certificateId}?sig=${encodeURIComponent(certificateData.verificationSignature ?? "")}`;
 
     return (
       <DashboardLayout role="business">

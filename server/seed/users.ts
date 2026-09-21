@@ -100,7 +100,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Satyajit Ray",
     email: "principal@pune-metrology.gov.in",
     mobile: "9000000008",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Pune",
     jurisdiction_state: "MH",
@@ -132,7 +132,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Agnès Varda",
     email: "principal@nagpur-metrology.gov.in",
     mobile: "9000000009",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Nagpur",
     jurisdiction_state: "MH",
@@ -164,7 +164,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Federico Fellini",
     email: "principal@nashik-metrology.gov.in",
     mobile: "9000000010",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Nashik",
     jurisdiction_state: "MH",
@@ -196,7 +196,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Wong Kar-wai",
     email: "principal@aurangabad-metrology.gov.in",
     mobile: "9000000011",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Aurangabad",
     jurisdiction_state: "MH",
@@ -228,7 +228,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Claire Denis",
     email: "principal@kolhapur-metrology.gov.in",
     mobile: "9000000012",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Kolhapur",
     jurisdiction_state: "MH",
@@ -260,7 +260,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Hayao Miyazaki",
     email: "principal@thane-metrology.gov.in",
     mobile: "9000000013",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Thane",
     jurisdiction_state: "MH",
@@ -292,7 +292,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Park Chan-wook",
     email: "principal@solapur-metrology.gov.in",
     mobile: "9000000014",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Solapur",
     jurisdiction_state: "MH",
@@ -323,7 +323,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Akira Kurosawa",
     email: "principal@kanpur-metrology.gov.in",
     mobile: "9000000015",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Kanpur",
     jurisdiction_state: "UP",
@@ -355,7 +355,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Martin Scorsese",
     email: "principal@lucknow-metrology.gov.in",
     mobile: "9000000016",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Lucknow",
     jurisdiction_state: "UP",
@@ -386,7 +386,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Bong Joon-ho",
     email: "principal@bhopal-metrology.gov.in",
     mobile: "9000000017",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Bhopal",
     jurisdiction_state: "MP",
@@ -418,7 +418,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Paul Thomas Anderson",
     email: "principal@jaipur-metrology.gov.in",
     mobile: "9000000018",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Jaipur",
     jurisdiction_state: "RJ",
@@ -449,7 +449,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Denis Villeneuve",
     email: "principal@ahmedabad-metrology.gov.in",
     mobile: "9000000019",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Ahmedabad",
     jurisdiction_state: "GJ",
@@ -480,7 +480,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "David Fincher",
     email: "principal@bangalore-metrology.gov.in",
     mobile: "9000000020",
-    role: "GATC_PRINCIPAL",
+
     registrationRole: "GATC_OPERATOR",
     jurisdiction_district: "Bangalore Urban",
     jurisdiction_state: "KA",

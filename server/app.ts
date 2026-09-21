@@ -14,6 +14,9 @@ import { router as paymentRouter } from "./routes/business/payment.routes";
 import { router as verificationAppRouter } from "./routes/business/verificationApp.routes";
 import { router as certificateRouter } from "./routes/business/certificate.routes";
 import { router as gatewayRouter } from "./routes/gateway.routes";
+import { router as adminPendencyRouter } from "./routes/admin/pendency.routes";
+import { router as adminFinancialRouter } from "./routes/admin/financial.routes";
+import { router as adminGatcRouter } from "./routes/admin/gatc.routes";
 import { aadhaarRouter } from "./routes/aadhaar.routes";
 import { authRouter } from "./routes/auth.routes";
 import { registrationRouter } from "./routes/registration.routes";
@@ -47,20 +50,28 @@ export function createServer() {
   const allowedOrigins = process.env.FRONTEND_URL?.split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
-  
+
   // Dynamically allow the requesting origin during local network testing to prevent CORS issues on mobile/LAN
-  const corsOrigin = function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+  const corsOrigin = function (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void,
+  ) {
     if (!origin) return callback(null, true);
-    
+
     // Always allow localhost and local network IPs for testing
-    if (origin.includes("localhost") || origin.includes("192.168.") || origin.includes("10.0.") || origin.includes("172.")) {
+    if (
+      origin.includes("localhost") ||
+      origin.includes("192.168.") ||
+      origin.includes("10.0.") ||
+      origin.includes("172.")
+    ) {
       return callback(null, true);
     }
-    
+
     if (allowedOrigins && allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    
+
     callback(null, false);
   };
 
@@ -82,6 +93,9 @@ export function createServer() {
 
   app.use("/api/dashboard", dashboardRouter);
   app.use("/api/admin", adminDashboardRouter);
+  app.use("/api/admin/pendency", adminPendencyRouter);
+  app.use("/api/admin/financial", adminFinancialRouter);
+  app.use("/api/admin/gatcs", adminGatcRouter);
   app.use("/api/instrument", instrumentRouter);
   app.use("/api/payment", paymentRouter);
   app.use("/api/verification", verificationAppRouter);
@@ -94,8 +108,6 @@ export function createServer() {
   app.use("/api/v1/auth", registrationRouter);
   app.use("/api/v1/admin", adminReviewRouter);
   app.use("/api/v1/nsws", nswsRouter);
-
-
 
   io.on("connection", (socket) => {
     console.log(`socket connected:${socket.id}`);
@@ -115,18 +127,20 @@ export function createServer() {
 
         if (data.userId && data.instrumentSerialNumber) {
           // 1. Ensure BusinessProfile exists
-          let business = await prisma.businessProfile.findUnique({ where: { user_id: data.userId } });
+          let business = await prisma.businessProfile.findUnique({
+            where: { user_id: data.userId },
+          });
           if (!business) {
             // Find a valid state ID (fallback to any if not found)
             let stateObj = await prisma.state.findFirst({
-              where: { state_code: data.state || "MH" }
+              where: { state_code: data.state || "MH" },
             });
             if (!stateObj) {
               stateObj = await prisma.state.create({
                 data: {
                   state_code: data.state || "MH",
-                  state_name: data.state || "Maharashtra"
-                }
+                  state_name: data.state || "Maharashtra",
+                },
               });
             }
             if (stateObj) {
@@ -137,8 +151,8 @@ export function createServer() {
                   trade_name: data.businessName || "Default Business",
                   entity_type: "USER",
                   geo_address: data.address || "Unknown Address",
-                  state_id: stateObj.state_id
-                }
+                  state_id: stateObj.state_id,
+                },
               });
             }
           }
@@ -146,32 +160,42 @@ export function createServer() {
           if (business) {
             // 2. Ensure InstrumentCategory exists
             let category = await prisma.instrumentCategory.findFirst({
-              where: { category_name: data.instrumentSubCategory || "Default" }
+              where: { category_name: data.instrumentSubCategory || "Default" },
             });
             if (!category) {
               category = await prisma.instrumentCategory.create({
                 data: {
                   category_code: `CAT_${Date.now()}`,
-                  category_name: data.instrumentSubCategory || "Default Category",
+                  category_name:
+                    data.instrumentSubCategory || "Default Category",
                   accuracy_class: "CLASS_II",
                   oiml_standard_ref: "OIML-R76",
-                  verification_cycle_months: 12
-                }
+                  verification_cycle_months: 12,
+                },
               });
             }
 
             // 3. Ensure MeasuringInstrument exists
             let instrument = await prisma.measuringInstrument.findFirst({
-              where: { serial_number: data.instrumentSerialNumber, business_id: business.business_id }
+              where: {
+                serial_number: data.instrumentSerialNumber,
+                business_id: business.business_id,
+              },
             });
-            
-            const mapAccuracyClass = (ac: string): "CLASS_I"|"CLASS_II"|"CLASS_III"|"CLASS_IIII" => {
+
+            const mapAccuracyClass = (
+              ac: string,
+            ): "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII" => {
               if (!ac) return "CLASS_II";
               const upper = ac.toUpperCase();
-              if (upper.includes("CLASS I") && !upper.includes("II")) return "CLASS_I";
-              if (upper.includes("CLASS II") && !upper.includes("III")) return "CLASS_II";
-              if (upper.includes("CLASS III") && !upper.includes("IIII")) return "CLASS_III";
-              if (upper.includes("CLASS IIII") || upper.includes("CLASS IV")) return "CLASS_IIII";
+              if (upper.includes("CLASS I") && !upper.includes("II"))
+                return "CLASS_I";
+              if (upper.includes("CLASS II") && !upper.includes("III"))
+                return "CLASS_II";
+              if (upper.includes("CLASS III") && !upper.includes("IIII"))
+                return "CLASS_III";
+              if (upper.includes("CLASS IIII") || upper.includes("CLASS IV"))
+                return "CLASS_IIII";
               return "CLASS_II";
             };
 
@@ -180,7 +204,8 @@ export function createServer() {
                 data: {
                   serial_number: data.instrumentSerialNumber,
                   model_no: data.modelNo || "Unknown Model",
-                  manufacturer_name: data.manufacturerName || "Unknown Manufacturer",
+                  manufacturer_name:
+                    data.manufacturerName || "Unknown Manufacturer",
                   accuracy_class: mapAccuracyClass(data.accuracyClass),
                   metric: data.metric || "N/A",
                   address: data.address || business.geo_address,
@@ -190,14 +215,17 @@ export function createServer() {
                   long: Number(data.long) || 0,
                   status: "PENDING",
                   business_id: business.business_id,
-                  category_id: category.category_id
-                }
+                  category_id: category.category_id,
+                },
               });
             }
 
             // 4. Ensure VerificationApp exists
             let application = await prisma.verificationApp.findFirst({
-              where: { instrument_id: instrument.instrument_id, workflow_status: { not: "CERTIFIED" } }
+              where: {
+                instrument_id: instrument.instrument_id,
+                workflow_status: { not: "CERTIFIED" },
+              },
             });
 
             if (!application) {
@@ -208,17 +236,25 @@ export function createServer() {
                   workflow_status: "SUBMITTED",
                   instrument_id: instrument.instrument_id,
                   business_id: business.business_id,
-                }
+                },
               });
-              console.log(`Successfully created VerificationApp ${application.app_id} for instrument ${instrument.serial_number}`);
+              console.log(
+                `Successfully created VerificationApp ${application.app_id} for instrument ${instrument.serial_number}`,
+              );
             }
           } else {
             console.error("Failed to create or find business profile");
-            socket.emit("error", { message: "Failed to create or find business profile" });
+            socket.emit("error", {
+              message: "Failed to create or find business profile",
+            });
           }
         } else {
-          console.error("Missing userId or instrumentSerialNumber in data payload");
-          socket.emit("error", { message: "Missing userId or instrumentSerialNumber" });
+          console.error(
+            "Missing userId or instrumentSerialNumber in data payload",
+          );
+          socket.emit("error", {
+            message: "Missing userId or instrumentSerialNumber",
+          });
         }
       } catch (err) {
         console.error("Error creating verification relational records:", err);
@@ -231,14 +267,19 @@ export function createServer() {
 
     socket.on("inspection_approved", async (data) => {
       console.log("Tanishq ne approve kar diya hai! Payload:", data);
-      
+
       // Anti-replay attack check (300 seconds threshold)
       const nowMs = Date.now();
-      const payloadMs = data.timeStamp ? (data.timeStamp / 1000) : nowMs; // convert microseconds to milliseconds
-      
+      const payloadMs = data.timeStamp ? data.timeStamp / 1000 : nowMs; // convert microseconds to milliseconds
+
       if (Math.abs(nowMs - payloadMs) > 300000) {
-        console.error("Replay attack detected: Timestamp expired", { nowMs, payloadMs });
-        return socket.emit("error", { message: "Replay attack detected: Timestamp expired" });
+        console.error("Replay attack detected: Timestamp expired", {
+          nowMs,
+          payloadMs,
+        });
+        return socket.emit("error", {
+          message: "Replay attack detected: Timestamp expired",
+        });
       }
 
       const { prisma } = await import("./lib/prisma");
@@ -246,15 +287,17 @@ export function createServer() {
       // Verify LMO is registered based on payload
       let inspectorId = data.inspectorId;
       let lmo = null;
-      
+
       if (inspectorId) {
         lmo = await prisma.user.findFirst({
-          where: { user_id: inspectorId, role: "LMO" }
+          where: { user_id: inspectorId, role: "LMO" },
         });
       }
 
       if (!lmo) {
-        console.warn("Unauthorized attempt: Missing or Invalid inspectorId. Using Fallback LMO for development.");
+        console.warn(
+          "Unauthorized attempt: Missing or Invalid inspectorId. Using Fallback LMO for development.",
+        );
         lmo = await prisma.user.findFirst({ where: { role: "LMO" } });
         if (!lmo) {
           // Create dummy LMO if no LMOs exist
@@ -272,7 +315,7 @@ export function createServer() {
               isActive: true,
               emailVerified: true,
               mobileVerified: true,
-            }
+            },
           });
         }
         inspectorId = lmo.user_id;
@@ -312,18 +355,21 @@ export function createServer() {
             verificationSignature: finalCertPayload.verificationSignature,
             status: finalCertPayload.status || "APPROVED_CHECKLIST",
             tokenHash: finalCertPayload.token_hash || null,
-          }
+          },
         });
 
         // --- RELATIONAL DATABASE SYNC FOR DASHBOARDS ---
         const instrument = await prisma.measuringInstrument.findFirst({
-          where: { serial_number: finalCertPayload.instrumentSerialNumber }
+          where: { serial_number: finalCertPayload.instrumentSerialNumber },
         });
 
         if (instrument) {
           const application = await prisma.verificationApp.findFirst({
-            where: { instrument_id: instrument.instrument_id, workflow_status: { not: "CERTIFIED" } },
-            orderBy: { submission_timestamp: 'desc' }
+            where: {
+              instrument_id: instrument.instrument_id,
+              workflow_status: { not: "CERTIFIED" },
+            },
+            orderBy: { submission_timestamp: "desc" },
           });
 
           if (application) {
@@ -334,15 +380,17 @@ export function createServer() {
               // 1. Update Instrument
               await tx.measuringInstrument.update({
                 where: { instrument_id: instrument.instrument_id },
-                data: { status: statusVerdict }
+                data: { status: statusVerdict },
               });
 
               // 2. Update Application
               await tx.verificationApp.update({
                 where: { app_id: application.app_id },
-                data: { workflow_status: isRejected ? "REJECTED" : "CERTIFIED" }
+                data: {
+                  workflow_status: isRejected ? "REJECTED" : "CERTIFIED",
+                },
               });
-              
+
               // 3. Create Inspection Record
               const inspection = await tx.inspectionRecord.create({
                 data: {
@@ -352,8 +400,8 @@ export function createServer() {
                   geo_latitude: finalCertPayload.lat,
                   geo_longitude: finalCertPayload.long,
                   inspector_id: inspectorId,
-                  app_id: application.app_id
-                }
+                  app_id: application.app_id,
+                },
               });
 
               // 4. Create Digital Certificate for the Dashboard (including rejections)
@@ -362,50 +410,62 @@ export function createServer() {
                   certificate_no: finalCertPayload.certificateId,
                   stamping_quarter_code: "Q3",
                   issue_date: new Date(finalCertPayload.issueDate),
-                  expiry_date: new Date(new Date(finalCertPayload.issueDate).setFullYear(new Date(finalCertPayload.issueDate).getFullYear() + 1)),
+                  expiry_date: new Date(
+                    new Date(finalCertPayload.issueDate).setFullYear(
+                      new Date(finalCertPayload.issueDate).getFullYear() + 1,
+                    ),
+                  ),
                   sha256_hash: finalCertPayload.hash,
                   dynamic_qr_url: `http://localhost:5173/verify/${finalCertPayload.certificateId}?sig=${encodeURIComponent(finalCertPayload.verificationSignature)}`,
                   inspection_id: inspection.inspection_id,
                   instrument_id: instrument.instrument_id,
-                  rejection_reason: isRejected ? "Failed Checklist (Warning)" : null
-                }
+                  rejection_reason: isRejected
+                    ? "Failed Checklist (Warning)"
+                    : null,
+                },
               });
 
               // 5. Ensure PaymentReceipt is SUCCESS
-              const receipt = await tx.paymentReceipt.findFirst({ where: { app_id: application.app_id } });
+              const receipt = await tx.paymentReceipt.findFirst({
+                where: { app_id: application.app_id },
+              });
               if (receipt) {
-                  await tx.paymentReceipt.update({
-                    where: { receipt_id: receipt.receipt_id },
-                    data: { payment_status: "SUCCESS" }
-                  });
+                await tx.paymentReceipt.update({
+                  where: { receipt_id: receipt.receipt_id },
+                  data: { payment_status: "SUCCESS" },
+                });
               } else {
-                  await tx.paymentReceipt.create({
-                    data: {
-                      receipt_no: `REC-${Date.now()}`,
-                      transaction_id: `TXN-${crypto.randomUUID()}`,
-                      transaction_date: new Date(),
-                      payment_method: "UPI",
-                      statutory_fee: 500,
-                      carriage_charges: 0,
-                      adjusting_charges: 0,
-                      total_amount: 500,
-                      govt_share: 250,
-                      gatc_share: 250,
-                      payment_status: "SUCCESS",
-                      app_id: application.app_id
-                    }
-                  });
+                await tx.paymentReceipt.create({
+                  data: {
+                    receipt_no: `REC-${Date.now()}`,
+                    transaction_id: `TXN-${crypto.randomUUID()}`,
+                    transaction_date: new Date(),
+                    payment_method: "UPI",
+                    statutory_fee: 500,
+                    carriage_charges: 0,
+                    adjusting_charges: 0,
+                    total_amount: 500,
+                    govt_share: 250,
+                    gatc_share: 250,
+                    payment_status: "SUCCESS",
+                    app_id: application.app_id,
+                  },
+                });
               }
             });
             console.log("Successfully synced inspection to relational tables!");
           } else {
-            console.error(`Relational Sync Skipped: No active VerificationApp found for instrument ${instrument.instrument_id}`);
+            console.error(
+              `Relational Sync Skipped: No active VerificationApp found for instrument ${instrument.instrument_id}`,
+            );
           }
         } else {
-          console.error(`Relational Sync Skipped: MeasuringInstrument with serial number ${finalCertPayload.instrumentSerialNumber} not found in DB.`);
+          console.error(
+            `Relational Sync Skipped: MeasuringInstrument with serial number ${finalCertPayload.instrumentSerialNumber} not found in DB.`,
+          );
         }
         // --- END SYNC ---
-        
+
         io.emit("certificate_generated", finalCertPayload);
       } catch (error) {
         console.error("Failed to save certificate to database:", error);
@@ -417,7 +477,6 @@ export function createServer() {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
   });
-
 
   app.get("/api/verify/:certificateId", async (req, res) => {
     const { certificateId } = req.params;
@@ -433,7 +492,10 @@ export function createServer() {
       !signature ||
       !verifyCertificateSignature(latestCertificate.hash, signature)
     ) {
-      return res.status(403).json({ success: false, error: "Invalid or missing certificate signature." });
+      return res.status(403).json({
+        success: false,
+        error: "Invalid or missing certificate signature.",
+      });
     }
 
     console.log("Accepted certificate data: ", latestCertificate);
@@ -444,7 +506,7 @@ export function createServer() {
     try {
       const { prisma } = await import("./lib/prisma");
       const certificatesList = await prisma.generatedCertificate.findMany({
-        orderBy: { issueDate: 'desc' }
+        orderBy: { issueDate: "desc" },
       });
       res.json(certificatesList);
     } catch (error) {
@@ -466,7 +528,9 @@ export function createServer() {
       }
 
       if (cert.status === "FAILED_CHECKLIST") {
-        return res.status(403).json({ error: "Cannot download rejected certificate." });
+        return res
+          .status(403)
+          .json({ error: "Cannot download rejected certificate." });
       }
 
       const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
@@ -477,11 +541,11 @@ export function createServer() {
       const { width, height } = page.getSize();
 
       // Official Colors
-      const navyBlue = rgb(11/255, 61/255, 145/255);
-      const orange = rgb(249/255, 115/255, 22/255);
-      const saffron = rgb(255/255, 153/255, 51/255);
+      const navyBlue = rgb(11 / 255, 61 / 255, 145 / 255);
+      const orange = rgb(249 / 255, 115 / 255, 22 / 255);
+      const saffron = rgb(255 / 255, 153 / 255, 51 / 255);
       const white = rgb(1, 1, 1);
-      const indiaGreen = rgb(19/255, 136/255, 8/255);
+      const indiaGreen = rgb(19 / 255, 136 / 255, 8 / 255);
       const gray = rgb(0.5, 0.5, 0.5);
       const lightGray = rgb(0.97, 0.97, 0.97);
       const borderGray = rgb(0.9, 0.9, 0.9);
@@ -489,56 +553,205 @@ export function createServer() {
 
       // 1. Tricolor Banner at top
       const bannerHeight = 6;
-      page.drawRectangle({ x: 0, y: height - bannerHeight, width, height: bannerHeight, color: saffron });
-      page.drawRectangle({ x: 0, y: height - bannerHeight * 2, width, height: bannerHeight, color: white });
-      page.drawRectangle({ x: 0, y: height - bannerHeight * 3, width, height: bannerHeight, color: indiaGreen });
+      page.drawRectangle({
+        x: 0,
+        y: height - bannerHeight,
+        width,
+        height: bannerHeight,
+        color: saffron,
+      });
+      page.drawRectangle({
+        x: 0,
+        y: height - bannerHeight * 2,
+        width,
+        height: bannerHeight,
+        color: white,
+      });
+      page.drawRectangle({
+        x: 0,
+        y: height - bannerHeight * 3,
+        width,
+        height: bannerHeight,
+        color: indiaGreen,
+      });
 
       // 2. Govt Header
-      page.drawText("GOVERNMENT OF INDIA", { x: width / 2 - 60, y: height - 50, size: 10, font: boldFont, color: gray });
-      page.drawText("DEPARTMENT OF CONSUMER AFFAIRS", { x: width / 2 - 105, y: height - 65, size: 10, font: boldFont, color: gray });
+      page.drawText("GOVERNMENT OF INDIA", {
+        x: width / 2 - 60,
+        y: height - 50,
+        size: 10,
+        font: boldFont,
+        color: gray,
+      });
+      page.drawText("DEPARTMENT OF CONSUMER AFFAIRS", {
+        x: width / 2 - 105,
+        y: height - 65,
+        size: 10,
+        font: boldFont,
+        color: gray,
+      });
 
       // 3. Title Section
-      page.drawText("VERIFIED LEGAL METROLOGY", { x: 50, y: height - 120, size: 22, font: boldFont, color: navyBlue });
-      page.drawText("OFFICIAL VERIFICATION CERTIFICATE", { x: 50, y: height - 140, size: 11, font: boldFont, color: orange });
-      
+      page.drawText("VERIFIED LEGAL METROLOGY", {
+        x: 50,
+        y: height - 120,
+        size: 22,
+        font: boldFont,
+        color: navyBlue,
+      });
+      page.drawText("OFFICIAL VERIFICATION CERTIFICATE", {
+        x: 50,
+        y: height - 140,
+        size: 11,
+        font: boldFont,
+        color: orange,
+      });
+
       // Divider line
-      page.drawLine({ start: { x: 50, y: height - 155 }, end: { x: width - 50, y: height - 155 }, thickness: 1, color: borderGray });
+      page.drawLine({
+        start: { x: 50, y: height - 155 },
+        end: { x: width - 50, y: height - 155 },
+        thickness: 1,
+        color: borderGray,
+      });
 
       // 4. Details Box
       const boxY = height - 280;
-      page.drawRectangle({ x: 50, y: boxY, width: width - 100, height: 110, color: lightGray, borderColor: borderGray, borderWidth: 1 });
-      
-      page.drawText("Instrument Category", { x: 70, y: boxY + 85, size: 9, font: font, color: gray });
-      page.drawText(cert.instrumentCategory || "N/A", { x: 70, y: boxY + 70, size: 14, font: boldFont, color: darkGray });
+      page.drawRectangle({
+        x: 50,
+        y: boxY,
+        width: width - 100,
+        height: 110,
+        color: lightGray,
+        borderColor: borderGray,
+        borderWidth: 1,
+      });
 
-      page.drawText("Serial Number", { x: 300, y: boxY + 85, size: 9, font: font, color: gray });
-      page.drawText(cert.instrumentSerialNumber, { x: 300, y: boxY + 70, size: 14, font: boldFont, color: darkGray });
+      page.drawText("Instrument Category", {
+        x: 70,
+        y: boxY + 85,
+        size: 9,
+        font: font,
+        color: gray,
+      });
+      page.drawText(cert.instrumentCategory || "N/A", {
+        x: 70,
+        y: boxY + 70,
+        size: 14,
+        font: boldFont,
+        color: darkGray,
+      });
 
-      page.drawText("Certificate ID", { x: 70, y: boxY + 35, size: 9, font: font, color: gray });
-      page.drawText(cert.certificateId, { x: 70, y: boxY + 20, size: 11, font: font, color: darkGray });
+      page.drawText("Serial Number", {
+        x: 300,
+        y: boxY + 85,
+        size: 9,
+        font: font,
+        color: gray,
+      });
+      page.drawText(cert.instrumentSerialNumber, {
+        x: 300,
+        y: boxY + 70,
+        size: 14,
+        font: boldFont,
+        color: darkGray,
+      });
 
-      page.drawText("Issue Date", { x: 300, y: boxY + 35, size: 9, font: font, color: gray });
-      page.drawText(new Date(cert.issueDate).toLocaleString(), { x: 300, y: boxY + 20, size: 11, font: boldFont, color: darkGray });
+      page.drawText("Certificate ID", {
+        x: 70,
+        y: boxY + 35,
+        size: 9,
+        font: font,
+        color: gray,
+      });
+      page.drawText(cert.certificateId, {
+        x: 70,
+        y: boxY + 20,
+        size: 11,
+        font: font,
+        color: darkGray,
+      });
+
+      page.drawText("Issue Date", {
+        x: 300,
+        y: boxY + 35,
+        size: 9,
+        font: font,
+        color: gray,
+      });
+      page.drawText(new Date(cert.issueDate).toLocaleString(), {
+        x: 300,
+        y: boxY + 20,
+        size: 11,
+        font: boldFont,
+        color: darkGray,
+      });
 
       // 5. Cryptographic Hashes Section
       let currentY = boxY - 30;
-      page.drawText("CRYPTOGRAPHIC HASH", { x: 50, y: currentY, size: 9, font: boldFont, color: gray });
+      page.drawText("CRYPTOGRAPHIC HASH", {
+        x: 50,
+        y: currentY,
+        size: 9,
+        font: boldFont,
+        color: gray,
+      });
       currentY -= 25;
-      page.drawRectangle({ x: 50, y: currentY, width: width - 100, height: 20, color: white, borderColor: borderGray, borderWidth: 1 });
-      page.drawText(cert.hash, { x: 60, y: currentY + 6, size: 9, font: font, color: navyBlue });
+      page.drawRectangle({
+        x: 50,
+        y: currentY,
+        width: width - 100,
+        height: 20,
+        color: white,
+        borderColor: borderGray,
+        borderWidth: 1,
+      });
+      page.drawText(cert.hash, {
+        x: 60,
+        y: currentY + 6,
+        size: 9,
+        font: font,
+        color: navyBlue,
+      });
 
       if (cert.tokenHash) {
         currentY -= 30;
-        page.drawText("DIGITAL SIGNATURE (TOKEN HASH)", { x: 50, y: currentY, size: 9, font: boldFont, color: gray });
+        page.drawText("DIGITAL SIGNATURE (TOKEN HASH)", {
+          x: 50,
+          y: currentY,
+          size: 9,
+          font: boldFont,
+          color: gray,
+        });
         currentY -= 25;
-        page.drawRectangle({ x: 50, y: currentY, width: width - 100, height: 20, color: white, borderColor: borderGray, borderWidth: 1 });
-        page.drawText(cert.tokenHash, { x: 60, y: currentY + 6, size: 9, font: font, color: navyBlue });
+        page.drawRectangle({
+          x: 50,
+          y: currentY,
+          width: width - 100,
+          height: 20,
+          color: white,
+          borderColor: borderGray,
+          borderWidth: 1,
+        });
+        page.drawText(cert.tokenHash, {
+          x: 60,
+          y: currentY + 6,
+          size: 9,
+          font: font,
+          color: navyBlue,
+        });
       }
 
       // 6. Seal Image
       currentY -= 40;
-      page.drawText("Live Physical Seal Evidence:", { x: 50, y: currentY, size: 14, font: boldFont, color: navyBlue });
-      
+      page.drawText("Live Physical Seal Evidence:", {
+        x: 50,
+        y: currentY,
+        size: 14,
+        font: boldFont,
+        color: navyBlue,
+      });
+
       if (cert.sealImageUrls && cert.sealImageUrls.length > 0) {
         for (let i = 0; i < cert.sealImageUrls.length; i++) {
           let imageUrl = cert.sealImageUrls[i];
@@ -548,9 +761,9 @@ export function createServer() {
           try {
             const imgResponse = await fetch(imageUrl);
             const imgBuffer = await imgResponse.arrayBuffer();
-            
+
             let img;
-            if (imageUrl.toLowerCase().endsWith('.png')) {
+            if (imageUrl.toLowerCase().endsWith(".png")) {
               img = await pdfDoc.embedPng(imgBuffer);
             } else {
               img = await pdfDoc.embedJpg(imgBuffer);
@@ -560,9 +773,12 @@ export function createServer() {
             const maxImgWidth = width - 100;
             const maxImgHeight = 250;
             let imgDims = img.scale(1);
-            
+
             if (imgDims.width > maxImgWidth || imgDims.height > maxImgHeight) {
-              const scaleFactor = Math.min(maxImgWidth / imgDims.width, maxImgHeight / imgDims.height);
+              const scaleFactor = Math.min(
+                maxImgWidth / imgDims.width,
+                maxImgHeight / imgDims.height,
+              );
               imgDims = img.scale(scaleFactor);
             }
 
@@ -570,19 +786,28 @@ export function createServer() {
             if (currentY - (imgDims.height + 15) < 50) {
               page = pdfDoc.addPage([595.28, 841.89]);
               currentY = height - 50;
-              
+
               // Add a small header on the new page
-              page.drawText("Live Physical Seal Evidence (Continued):", { x: 50, y: currentY, size: 14, font: boldFont, color: navyBlue });
+              page.drawText("Live Physical Seal Evidence (Continued):", {
+                x: 50,
+                y: currentY,
+                size: 14,
+                font: boldFont,
+                color: navyBlue,
+              });
               currentY -= 20;
             }
 
-            currentY -= (imgDims.height + 15);
-            
+            currentY -= imgDims.height + 15;
+
             // Image border
             page.drawRectangle({
-              x: 48, y: currentY - 2,
-              width: imgDims.width + 4, height: imgDims.height + 4,
-              borderColor: orange, borderWidth: 2
+              x: 48,
+              y: currentY - 2,
+              width: imgDims.width + 4,
+              height: imgDims.height + 4,
+              borderColor: orange,
+              borderWidth: 2,
             });
 
             page.drawImage(img, {
@@ -591,7 +816,7 @@ export function createServer() {
               width: imgDims.width,
               height: imgDims.height,
             });
-            
+
             currentY -= 20; // Extra spacing between multiple images
           } catch (imgError) {
             console.error(`Failed to embed image ${i} in PDF:`, imgError);
@@ -600,21 +825,34 @@ export function createServer() {
               currentY = height - 50;
             }
             currentY -= 30;
-            page.drawText(`[Seal Image ${i+1} could not be loaded into PDF]`, { x: 50, y: currentY, size: 10, font, color: orange });
+            page.drawText(
+              `[Seal Image ${i + 1} could not be loaded into PDF]`,
+              { x: 50, y: currentY, size: 10, font, color: orange },
+            );
           }
         }
       }
 
       // Footer
       page.drawRectangle({ x: 0, y: 0, width, height: 40, color: navyBlue });
-      page.drawText("This is a cryptographically secured verification record. Any modification invalidates this certificate.", {
-        x: 50, y: 15, size: 9, font: font, color: white
-      });
+      page.drawText(
+        "This is a cryptographically secured verification record. Any modification invalidates this certificate.",
+        {
+          x: 50,
+          y: 15,
+          size: 9,
+          font: font,
+          color: white,
+        },
+      );
 
       const pdfBytes = await pdfDoc.save();
 
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="Certificate-${cert.certificateId.substring(0,8)}.pdf"`);
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="Certificate-${cert.certificateId.substring(0, 8)}.pdf"`,
+      );
       res.send(Buffer.from(pdfBytes));
     } catch (error) {
       console.error("Failed to generate PDF:", error);

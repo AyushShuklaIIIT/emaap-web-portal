@@ -1,8 +1,17 @@
 import { prisma } from "../lib/prisma";
+
+import { BusinessUser, GatcUser } from "../types";
+
 import { states } from "./states.js";
 import { categories } from "./categories.js";
 import { stateFees } from "./feeRules.js";
-// import { allMockUsers } from "./users.js";
+import { allMockUsers } from "./users.js";
+import { measuringInstrumentsData } from "./instruments.js";
+import { verificationAppsData } from "./verificationApp.js";
+import { paymentReceiptsData } from "./payment.js";
+import { inspectionRecordsData } from "./inspection.js";
+import { digitalCertificatesData } from "./certificates.js";
+
 import { AccuracyClass } from "../generated/prisma/enums.js";
 
 async function seed() {
@@ -104,125 +113,311 @@ async function seed() {
 
   console.log("Begin Seeding Users");
 
-  // for (const u of allMockUsers) {
-  //   const {
-  //     name,
-  //     email,
-  //     role,
-  //     jurisdiction_district,
-  //     jurisdiction_state,
-  //     fullName,
-  //     mobile,
-  //     registrationRole,
-  //     passwordHash,
-  //   } = u;
+  for (const u of allMockUsers) {
+    const {
+      name,
+      email,
+      role,
+      jurisdiction_district,
+      jurisdiction_state,
+      fullName,
+      mobile,
+      registrationRole,
+      passwordHash,
+    } = u;
 
-  //   const baseUser = {
-  //     name,
-  //     email,
-  //     role,
-  //     jurisdiction_district,
-  //     jurisdiction_state,
-  //     fullName,
-  //     mobile,
-  //     registrationRole,
-  //     passwordHash,
-  //     isActive: true,
-  //     emailVerified: true,
-  //     mobileVerified: true,
-  //   };
+    const baseUser = {
+      name,
+      email,
+      role,
+      jurisdiction_district,
+      jurisdiction_state,
+      fullName,
+      mobile,
+      registrationRole,
+      passwordHash,
+      isActive: true,
+      emailVerified: true,
+      mobileVerified: true,
+    };
 
-  //   let createdUser;
+    let createdUser;
 
-  //   if (role === "BUSINESS") {
-  //     const bu = u as any;
-  //     const bp = {
-  //       registration_number: bu.registration_number,
-  //       trade_name: bu.trade_name,
-  //       entity_type: bu.entity_type,
-  //       geo_address: bu.geo_address,
-  //     };
+    if (role === "BUSINESS") {
+      const bu = u as any;
+      const bp = {
+        registration_number: bu.registration_number,
+        trade_name: bu.trade_name,
+        entity_type: bu.entity_type,
+        geo_address: bu.geo_address,
+      };
 
-  //     const state = await prisma.state.findUnique({
-  //       where: { state_code: bu.state_code },
-  //     });
+      const state = await prisma.state.findUnique({
+        where: { state_code: bu.state_code },
+      });
 
-  //     if (!state) {
-  //       console.warn(
-  //         `Skipping business profile creation for ${email} due to missing state_code: ${bu.state_code}`,
-  //       );
-  //       createdUser = await prisma.user.upsert({
-  //         where: { email },
-  //         update: baseUser,
-  //         create: baseUser,
-  //       });
-  //       continue;
-  //     }
+      if (!state) {
+        console.warn(
+          `Skipping business profile creation for ${email} due to missing state_code: ${bu.state_code}`,
+        );
+        createdUser = await prisma.user.upsert({
+          where: { email },
+          update: baseUser,
+          create: baseUser,
+        });
+        continue;
+      }
 
-  //     createdUser = await prisma.user.upsert({
-  //       where: { email },
-  //       update: baseUser,
-  //       create: baseUser,
-  //     });
+      createdUser = await prisma.user.upsert({
+        where: { email },
+        update: baseUser,
+        create: baseUser,
+      });
 
-  //     await prisma.businessProfile.upsert({
-  //       where: { user_id: createdUser.user_id },
-  //       update: {
-  //         ...bp,
-  //         registration_number: bu.registration_number,
-  //         state_id: state.state_id,
-  //       },
-  //       create: {
-  //         ...bp,
-  //         registration_number: bu.registration_number,
-  //         user_id: createdUser.user_id,
-  //         state_id: state.state_id,
-  //       },
-  //     });
-  //   } else if (role === "GATC_PRINCIPAL") {
-  //     const gu = u as any;
-  //     const gc = {
-  //       centre_code: gu.centre_code,
-  //       approval_cert_no: gu.approval_cert_no,
-  //       ind_mark_code: gu.ind_mark_code,
-  //       valid_from: gu.valid_from,
-  //       valid_to: gu.valid_to,
-  //       status: gu.status,
-  //       approved_categories: gu.approved_categories,
-  //       lat: gu.lat,
-  //       long: gu.long,
-  //     };
+      await prisma.businessProfile.upsert({
+        where: { user_id: createdUser.user_id },
+        update: {
+          ...bp,
+          registration_number: bu.registration_number,
+          state_id: state.state_id,
+        },
+        create: {
+          ...bp,
+          registration_number: bu.registration_number,
+          user_id: createdUser.user_id,
+          state_id: state.state_id,
+        },
+      });
+    } else if (role === "GATC_PRINCIPAL") {
+      const gu = u as any;
+      const gc = {
+        centre_code: gu.centre_code,
+        approval_cert_no: gu.approval_cert_no,
+        ind_mark_code: gu.ind_mark_code,
+        valid_from: gu.valid_from,
+        valid_to: gu.valid_to,
+        status: gu.status,
+        approved_categories: gu.approved_categories,
+        lat: gu.lat,
+        long: gu.long,
+      };
 
-  //     createdUser = await prisma.user.upsert({
-  //       where: { email },
-  //       update: baseUser,
-  //       create: baseUser,
-  //     });
+      createdUser = await prisma.user.upsert({
+        where: { email },
+        update: baseUser,
+        create: baseUser,
+      });
 
-  //     await prisma.gatcCentre.upsert({
-  //       where: { principal_officer_id: createdUser.user_id },
-  //       update: {
-  //         ...gc,
-  //         centre_code: gu.centre_code,
-  //       },
-  //       create: {
-  //         ...gc,
-  //         centre_code: gu.centre_code,
-  //         principal_officer_id: createdUser.user_id,
-  //       },
-  //     });
-  //   } else {
-  //     createdUser = await prisma.user.upsert({
-  //       where: { email },
-  //       update: baseUser,
-  //       create: baseUser,
-  //     });
-  //   }
-  //   console.log(`Seeded user: ${email}`);
-  // }
+      await prisma.gatcCentre.upsert({
+        where: { principal_officer_id: createdUser.user_id },
+        update: {
+          ...gc,
+          centre_code: gu.centre_code,
+        },
+        create: {
+          ...gc,
+          centre_code: gu.centre_code,
+          principal_officer_id: createdUser.user_id,
+        },
+      });
+    } else {
+      createdUser = await prisma.user.upsert({
+        where: { email },
+        update: baseUser,
+        create: baseUser,
+      });
+    }
+    console.log(`Seeded user: ${email}`);
+  }
+
+
+  console.log("Begin Seeding Instruments");
+  for (const inst of measuringInstrumentsData) {
+    const user = await prisma.user.findUnique({
+      where: { email: inst.business_email },
+      include: { business_profile: true },
+    });
+    const category = await prisma.instrumentCategory.findUnique({
+      where: { category_code: inst.category_code },
+    });
+    
+    if (!user?.business_profile || !category) continue;
+
+    const data = {
+      serial_number: inst.serial_number,
+      model_no: inst.model_no,
+      model_approval_no: inst.model_approval_no,
+      manufacturer_name: inst.manufacturer_name,
+      accuracy_class: inst.accuracy_class as any,
+      metric: inst.metric,
+      capacity_value: inst.capacity_value,
+      capacity_unit: inst.capacity_unit,
+      address: inst.address,
+      pincode: inst.pincode,
+      state: inst.state,
+      lat: inst.lat,
+      long: inst.long,
+      status: inst.status as any,
+      business_id: user.business_profile.business_id,
+      category_id: category.category_id,
+    };
+
+    let existing = await prisma.measuringInstrument.findFirst({
+      where: { serial_number: inst.serial_number }
+    });
+    if (existing) {
+      await prisma.measuringInstrument.update({ where: { instrument_id: existing.instrument_id }, data });
+    } else {
+      await prisma.measuringInstrument.create({ data });
+    }
+  }
+  console.log("Instruments seeded successfully");
+
+  console.log("Begin Seeding Verification Apps");
+  for (const app of verificationAppsData) {
+    const user = await prisma.user.findUnique({ where: { email: app.business_email }, include: { business_profile: true }});
+    const inst = await prisma.measuringInstrument.findFirst({ where: { serial_number: app.instrument_serial_number }});
+    let officer_id = null;
+    let gatc_id = null;
+    
+    if (app.assigned_officer_email) {
+      const officer = await prisma.user.findUnique({ where: { email: app.assigned_officer_email } });
+      officer_id = officer?.user_id;
+    }
+    if (app.assigned_gatc_code) {
+      const gatc = await prisma.gatcCentre.findUnique({ where: { centre_code: app.assigned_gatc_code } });
+      gatc_id = gatc?.gatc_id;
+    }
+
+    if (!user?.business_profile || !inst) continue;
+
+    await prisma.verificationApp.upsert({
+      where: { application_no: app.application_no },
+      update: {
+        app_type: app.app_type as any,
+        workflow_status: app.workflow_status as any,
+        instrument_id: inst.instrument_id,
+        business_id: user.business_profile.business_id,
+        assigned_officer_id: officer_id,
+        assigned_gatc_id: gatc_id,
+      },
+      create: {
+        application_no: app.application_no,
+        app_type: app.app_type as any,
+        workflow_status: app.workflow_status as any,
+        instrument_id: inst.instrument_id,
+        business_id: user.business_profile.business_id,
+        assigned_officer_id: officer_id,
+        assigned_gatc_id: gatc_id,
+      }
+    });
+  }
+  console.log("Verification Apps seeded successfully");
+
+  console.log("Begin Seeding Payments");
+  for (const pay of paymentReceiptsData) {
+    const app = await prisma.verificationApp.findUnique({ where: { application_no: pay.application_no } });
+    if (!app) continue;
+
+    await prisma.paymentReceipt.upsert({
+      where: { receipt_no: pay.receipt_no },
+      update: {
+        transaction_id: pay.transaction_id,
+        transaction_date: pay.transaction_date,
+        payment_method: pay.payment_method as any,
+        due_date: pay.due_date,
+        statutory_fee: pay.statutory_fee,
+        carriage_charges: pay.carriage_charges,
+        adjusting_charges: pay.adjusting_charges,
+        total_amount: pay.total_amount,
+        govt_share: pay.govt_share,
+        gatc_share: pay.gatc_share,
+        payment_status: pay.payment_status as any,
+        app_id: app.app_id,
+      },
+      create: {
+        receipt_no: pay.receipt_no,
+        transaction_id: pay.transaction_id,
+        transaction_date: pay.transaction_date,
+        payment_method: pay.payment_method as any,
+        due_date: pay.due_date,
+        statutory_fee: pay.statutory_fee,
+        carriage_charges: pay.carriage_charges,
+        adjusting_charges: pay.adjusting_charges,
+        total_amount: pay.total_amount,
+        govt_share: pay.govt_share,
+        gatc_share: pay.gatc_share,
+        payment_status: pay.payment_status as any,
+        app_id: app.app_id,
+      }
+    });
+  }
+  console.log("Payments seeded successfully");
+
+  console.log("Begin Seeding Inspections");
+  for (const ins of inspectionRecordsData) {
+    const app = await prisma.verificationApp.findUnique({ where: { application_no: ins.application_no } });
+    const inspector = await prisma.user.findUnique({ where: { email: ins.inspector_email } });
+    if (!app || !inspector) continue;
+    
+    const data = {
+      inspection_date: ins.inspection_date,
+      time_taken_minutes: ins.time_taken_minutes,
+      inspection_mode: ins.inspection_mode as any,
+      test_verdict: ins.test_verdict as any,
+      geo_latitude: ins.geo_latitude,
+      geo_longitude: ins.geo_longitude,
+      inspector_id: inspector.user_id,
+      app_id: app.app_id,
+    };
+
+    let existing = await prisma.inspectionRecord.findFirst({ where: { app_id: app.app_id } });
+    if (existing) {
+      await prisma.inspectionRecord.update({ where: { inspection_id: existing.inspection_id }, data });
+    } else {
+      await prisma.inspectionRecord.create({ data });
+    }
+  }
+  console.log("Inspections seeded successfully");
+
+  console.log("Begin Seeding Certificates");
+  for (const cert of digitalCertificatesData) {
+    const app = await prisma.verificationApp.findUnique({ where: { application_no: cert.application_no } });
+    if (!app) continue;
+    
+    const inspection = await prisma.inspectionRecord.findFirst({ where: { app_id: app.app_id } });
+    if (!inspection) continue;
+
+    await prisma.digitalCertificate.upsert({
+      where: { certificate_no: cert.certificate_no },
+      update: {
+        stamping_quarter_code: cert.stamping_quarter_code,
+        issue_date: cert.issue_date,
+        expiry_date: cert.expiry_date,
+        sha256_hash: cert.sha256_hash,
+        dynamic_qr_url: cert.dynamic_qr_url,
+        rejection_reason: cert.rejection_reason,
+        inspection_id: inspection.inspection_id,
+        instrument_id: app.instrument_id,
+      },
+      create: {
+        certificate_no: cert.certificate_no,
+        stamping_quarter_code: cert.stamping_quarter_code,
+        issue_date: cert.issue_date,
+        expiry_date: cert.expiry_date,
+        sha256_hash: cert.sha256_hash,
+        dynamic_qr_url: cert.dynamic_qr_url,
+        rejection_reason: cert.rejection_reason,
+        inspection_id: inspection.inspection_id,
+        instrument_id: app.instrument_id,
+      }
+    });
+  }
+  console.log("Certificates seeded successfully");
 
   console.log("Constant Data Seeding completed");
 }
+
 
 seed()
   .catch((err) => {

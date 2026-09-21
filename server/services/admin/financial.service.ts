@@ -1,8 +1,11 @@
 import {
+  FinancialTransaction,
+  FinancialReportFilters,
+} from "@/services/admin/financial.service";
+import {
   findFinancialReceipts,
   findFinancialTransactions,
 } from "../../repositories/financial.repository";
-import { FinancialTransaction, FinancialReportFilters } from "../../types";
 
 const roundMoney = (value: number): number => {
   return Math.round((value + Number.EPSILON) * 100) / 100;
@@ -110,7 +113,7 @@ export const getFinancialReport = async (filters: FinancialReportFilters) => {
   ]);
 
   const successfulReceipts = receipts.filter(
-    (receipt) => receipt.payment_status === "SUCCESS"
+    (receipt) => receipt.payment_status === "SUCCESS",
   );
 
   const grossRevenue = successfulReceipts.reduce(
@@ -289,9 +292,7 @@ export const generateFinancialCsv = (transactions: FinancialTransaction[]) => {
   };
 
   const rows = transactions.map((transaction) => [
-    transaction.transactionDate
-      ? transaction.transactionDate.toISOString()
-      : "",
+    transaction.transactionDate ? transaction.transactionDate : "",
 
     transaction.receiptNo,
     transaction.transactionId ?? "",

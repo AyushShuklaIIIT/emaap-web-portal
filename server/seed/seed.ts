@@ -1,17 +1,13 @@
 import { prisma } from "../lib/prisma";
-
-import { BusinessUser, GatcUser } from "../types";
-
 import { states } from "./states.js";
 import { categories } from "./categories.js";
 import { stateFees } from "./feeRules.js";
-import { allMockUsers } from "./users.js";
+import { allMockUsers, lmoOfficers } from "./users.js";
 import { measuringInstrumentsData } from "./instruments.js";
 import { verificationAppsData } from "./verificationApp.js";
 import { paymentReceiptsData } from "./payment.js";
 import { inspectionRecordsData } from "./inspection.js";
 import { digitalCertificatesData } from "./certificates.js";
-
 import { AccuracyClass } from "../generated/prisma/enums.js";
 
 async function seed() {
@@ -143,6 +139,7 @@ async function seed() {
 
     if (registrationRole === "STAKEHOLDER") {
       const bu = u as any;
+
       const bp = {
         registration_number: bu.registration_number,
         trade_name: bu.trade_name,
@@ -151,29 +148,39 @@ async function seed() {
       };
 
       const state = await prisma.state.findUnique({
-        where: { state_code: bu.state_code },
+        where: {
+          state_code: bu.state_code,
+        },
       });
 
       if (!state) {
         console.warn(
           `Skipping business profile creation for ${email} due to missing state_code: ${bu.state_code}`,
         );
+
         createdUser = await prisma.user.upsert({
-          where: { email },
+          where: {
+            email,
+          },
           update: baseUser,
           create: baseUser,
         });
+
         continue;
       }
 
       createdUser = await prisma.user.upsert({
-        where: { email },
+        where: {
+          email,
+        },
         update: baseUser,
         create: baseUser,
       });
 
       await prisma.businessProfile.upsert({
-        where: { user_id: createdUser.user_id },
+        where: {
+          user_id: createdUser.user_id,
+        },
         update: {
           ...bp,
           registration_number: bu.registration_number,
@@ -188,6 +195,7 @@ async function seed() {
       });
     } else if (registrationRole === "GATC_OPERATOR") {
       const gu = u as any;
+
       const gc = {
         centre_code: gu.centre_code,
         approval_cert_no: gu.approval_cert_no,
@@ -201,13 +209,17 @@ async function seed() {
       };
 
       createdUser = await prisma.user.upsert({
-        where: { email },
+        where: {
+          email,
+        },
         update: baseUser,
         create: baseUser,
       });
 
       await prisma.gatcCentre.upsert({
-        where: { principal_officer_id: createdUser.user_id },
+        where: {
+          principal_officer_id: createdUser.user_id,
+        },
         update: {
           ...gc,
           centre_code: gu.centre_code,
@@ -220,26 +232,112 @@ async function seed() {
       });
     } else {
       createdUser = await prisma.user.upsert({
-        where: { email },
+        where: {
+          email,
+        },
         update: baseUser,
         create: baseUser,
       });
     }
+
     console.log(`Seeded user: ${email}`);
   }
 
+  console.log("Users seeded successfully");
+
+  console.log("Begin Seeding LMO Officers");
+
+  for (const officer of lmoOfficers) {
+    const user = await prisma.user.findUnique({
+      where: {
+        email: officer.user_email,
+      },
+    });
+
+    if (!user) {
+      console.warn(
+        `Skipping LMO officer ${officer.employee_code}: user not found: ${officer.user_email}`,
+      );
+      continue;
+    }
+
+    if (user.registrationRole !== "LMO") {
+      console.warn(
+        `Skipping LMO officer ${officer.employee_code}: user ${user.email} does not have role LMO`,
+      );
+      continue;
+    }
+
+    const state = await prisma.state.findUnique({
+      where: {
+        state_code: officer.state_code,
+      },
+    });
+
+    if (!state) {
+      console.warn(
+        `Skipping LMO officer ${officer.employee_code}: state not found: ${officer.state_code}`,
+      );
+      continue;
+    }
+
+    await prisma.lmoOfficer.upsert({
+      where: {
+        user_id: user.user_id,
+      },
+      update: {
+        employee_id: officer.employee_id,
+        employee_code: officer.employee_code,
+        designation: officer.designation,
+        jurisdiction_zone: officer.jurisdiction_zone,
+        assigned_wsl_lab: officer.assigned_wsl_lab,
+        is_nodal_officer: officer.is_nodal_officer,
+        verification_stamp_code: officer.verification_stamp_code,
+        digital_token_id: officer.digital_token_id,
+        state_id: state.state_id,
+      },
+      create: {
+        employee_id: officer.employee_id,
+        user_id: user.user_id,
+        employee_code: officer.employee_code,
+        designation: officer.designation,
+        jurisdiction_zone: officer.jurisdiction_zone,
+        assigned_wsl_lab: officer.assigned_wsl_lab,
+        is_nodal_officer: officer.is_nodal_officer,
+        verification_stamp_code: officer.verification_stamp_code,
+        digital_token_id: officer.digital_token_id,
+        state_id: state.state_id,
+      },
+    });
+
+    console.log(
+      `Seeded LMO officer: ${officer.employee_code} - ${officer.designation}`,
+    );
+  }
+
+  console.log("LMO Officers seeded successfully");
 
   console.log("Begin Seeding Instruments");
+
   for (const inst of measuringInstrumentsData) {
     const user = await prisma.user.findUnique({
-      where: { email: inst.business_email },
-      include: { business_profile: true },
+      where: {
+        email: inst.business_email,
+      },
+      include: {
+        business_profile: true,
+      },
     });
+
     const category = await prisma.instrumentCategory.findUnique({
-      where: { category_code: inst.category_code },
+      where: {
+        category_code: inst.category_code,
+      },
     });
-    
-    if (!user?.business_profile || !category) continue;
+
+    if (!user?.business_profile || !category) {
+      continue;
+    }
 
     const data = {
       serial_number: inst.serial_number,
@@ -260,37 +358,77 @@ async function seed() {
       category_id: category.category_id,
     };
 
-    let existing = await prisma.measuringInstrument.findFirst({
-      where: { serial_number: inst.serial_number }
+    const existing = await prisma.measuringInstrument.findFirst({
+      where: {
+        serial_number: inst.serial_number,
+      },
     });
+
     if (existing) {
-      await prisma.measuringInstrument.update({ where: { instrument_id: existing.instrument_id }, data });
+      await prisma.measuringInstrument.update({
+        where: {
+          instrument_id: existing.instrument_id,
+        },
+        data,
+      });
     } else {
-      await prisma.measuringInstrument.create({ data });
+      await prisma.measuringInstrument.create({
+        data,
+      });
     }
   }
+
   console.log("Instruments seeded successfully");
 
   console.log("Begin Seeding Verification Apps");
+
   for (const app of verificationAppsData) {
-    const user = await prisma.user.findUnique({ where: { email: app.business_email }, include: { business_profile: true }});
-    const inst = await prisma.measuringInstrument.findFirst({ where: { serial_number: app.instrument_serial_number }});
+    const user = await prisma.user.findUnique({
+      where: {
+        email: app.business_email,
+      },
+      include: {
+        business_profile: true,
+      },
+    });
+
+    const inst = await prisma.measuringInstrument.findFirst({
+      where: {
+        serial_number: app.instrument_serial_number,
+      },
+    });
+
     let officer_id = null;
     let gatc_id = null;
-    
+
     if (app.assigned_officer_email) {
-      const officer = await prisma.user.findUnique({ where: { email: app.assigned_officer_email } });
-      officer_id = officer?.user_id;
-    }
-    if (app.assigned_gatc_code) {
-      const gatc = await prisma.gatcCentre.findUnique({ where: { centre_code: app.assigned_gatc_code } });
-      gatc_id = gatc?.gatc_id;
+      const officer = await prisma.user.findUnique({
+        where: {
+          email: app.assigned_officer_email,
+        },
+      });
+
+      officer_id = officer?.user_id ?? null;
     }
 
-    if (!user?.business_profile || !inst) continue;
+    if (app.assigned_gatc_code) {
+      const gatc = await prisma.gatcCentre.findUnique({
+        where: {
+          centre_code: app.assigned_gatc_code,
+        },
+      });
+
+      gatc_id = gatc?.gatc_id ?? null;
+    }
+
+    if (!user?.business_profile || !inst) {
+      continue;
+    }
 
     await prisma.verificationApp.upsert({
-      where: { application_no: app.application_no },
+      where: {
+        application_no: app.application_no,
+      },
       update: {
         app_type: app.app_type as any,
         workflow_status: app.workflow_status as any,
@@ -307,18 +445,29 @@ async function seed() {
         business_id: user.business_profile.business_id,
         assigned_officer_id: officer_id,
         assigned_gatc_id: gatc_id,
-      }
+      },
     });
   }
+
   console.log("Verification Apps seeded successfully");
 
   console.log("Begin Seeding Payments");
+
   for (const pay of paymentReceiptsData) {
-    const app = await prisma.verificationApp.findUnique({ where: { application_no: pay.application_no } });
-    if (!app) continue;
+    const app = await prisma.verificationApp.findUnique({
+      where: {
+        application_no: pay.application_no,
+      },
+    });
+
+    if (!app) {
+      continue;
+    }
 
     await prisma.paymentReceipt.upsert({
-      where: { receipt_no: pay.receipt_no },
+      where: {
+        receipt_no: pay.receipt_no,
+      },
       update: {
         transaction_id: pay.transaction_id,
         transaction_date: pay.transaction_date,
@@ -347,17 +496,31 @@ async function seed() {
         gatc_share: pay.gatc_share,
         payment_status: pay.payment_status as any,
         app_id: app.app_id,
-      }
+      },
     });
   }
+
   console.log("Payments seeded successfully");
 
   console.log("Begin Seeding Inspections");
+
   for (const ins of inspectionRecordsData) {
-    const app = await prisma.verificationApp.findUnique({ where: { application_no: ins.application_no } });
-    const inspector = await prisma.user.findUnique({ where: { email: ins.inspector_email } });
-    if (!app || !inspector) continue;
-    
+    const app = await prisma.verificationApp.findUnique({
+      where: {
+        application_no: ins.application_no,
+      },
+    });
+
+    const inspector = await prisma.user.findUnique({
+      where: {
+        email: ins.inspector_email,
+      },
+    });
+
+    if (!app || !inspector) {
+      continue;
+    }
+
     const data = {
       inspection_date: ins.inspection_date,
       time_taken_minutes: ins.time_taken_minutes,
@@ -369,25 +532,55 @@ async function seed() {
       app_id: app.app_id,
     };
 
-    let existing = await prisma.inspectionRecord.findFirst({ where: { app_id: app.app_id } });
+    const existing = await prisma.inspectionRecord.findFirst({
+      where: {
+        app_id: app.app_id,
+      },
+    });
+
     if (existing) {
-      await prisma.inspectionRecord.update({ where: { inspection_id: existing.inspection_id }, data });
+      await prisma.inspectionRecord.update({
+        where: {
+          inspection_id: existing.inspection_id,
+        },
+        data,
+      });
     } else {
-      await prisma.inspectionRecord.create({ data });
+      await prisma.inspectionRecord.create({
+        data,
+      });
     }
   }
+
   console.log("Inspections seeded successfully");
 
   console.log("Begin Seeding Certificates");
+
   for (const cert of digitalCertificatesData) {
-    const app = await prisma.verificationApp.findUnique({ where: { application_no: cert.application_no } });
-    if (!app) continue;
-    
-    const inspection = await prisma.inspectionRecord.findFirst({ where: { app_id: app.app_id } });
-    if (!inspection) continue;
+    const app = await prisma.verificationApp.findUnique({
+      where: {
+        application_no: cert.application_no,
+      },
+    });
+
+    if (!app) {
+      continue;
+    }
+
+    const inspection = await prisma.inspectionRecord.findFirst({
+      where: {
+        app_id: app.app_id,
+      },
+    });
+
+    if (!inspection) {
+      continue;
+    }
 
     await prisma.digitalCertificate.upsert({
-      where: { certificate_no: cert.certificate_no },
+      where: {
+        certificate_no: cert.certificate_no,
+      },
       update: {
         stamping_quarter_code: cert.stamping_quarter_code,
         issue_date: cert.issue_date,
@@ -408,14 +601,13 @@ async function seed() {
         rejection_reason: cert.rejection_reason,
         inspection_id: inspection.inspection_id,
         instrument_id: app.instrument_id,
-      }
+      },
     });
   }
-  console.log("Certificates seeded successfully");
 
+  console.log("Certificates seeded successfully");
   console.log("Constant Data Seeding completed");
 }
-
 
 seed()
   .catch((err) => {

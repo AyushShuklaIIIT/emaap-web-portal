@@ -19,7 +19,7 @@ export const states: State[] = [
   { state_code: "ML", state_name: "Meghalaya" },
   { state_code: "MZ", state_name: "Mizoram" },
   { state_code: "NL", state_name: "Nagaland" },
-  { state_code: "OD", state_name: "Odisha" },
+  { state_code: "OR", state_name: "Odisha" },
   { state_code: "PB", state_name: "Punjab" },
   { state_code: "RJ", state_name: "Rajasthan" },
   { state_code: "SK", state_name: "Sikkim" },

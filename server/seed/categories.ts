@@ -236,4 +236,11 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
+  {
+    category_code: "LIQUOR_MEASURES",
+    category_name: "Liquor Measures",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
 ];

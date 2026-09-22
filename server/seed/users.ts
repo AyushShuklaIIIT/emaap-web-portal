@@ -1,6 +1,7 @@
 import { scryptSync } from "node:crypto";
 
-import { User, GatcUser, BusinessUser } from "../types";
+import { User, GatcUser, BusinessUser, LmoOfficerSeed } from "../types";
+import { LmoDesignation } from "../generated/prisma/enums";
 
 function generateHash(password: string): string {
   return `mock-salt:${scryptSync(password, "mock-salt", 64).toString("hex")}`;
@@ -515,8 +516,8 @@ export const businessUsersData: BusinessUser[] = [
     email: "kubrick@gmail.com",
     mobile: "9000000005",
     registrationRole: "STAKEHOLDER",
-    jurisdiction_district: "New Delhi",
-    jurisdiction_state: "Delhi",
+    jurisdiction_district: "Bhopal",
+    jurisdiction_state: "Madhya Pradesh",
     password: "2001",
     passwordHash: generateHash("2001"),
     registration_number: "07AAAAA0000A1Z5",
@@ -524,7 +525,7 @@ export const businessUsersData: BusinessUser[] = [
     entity_type: "MANUFACTURER",
     geo_address:
       "Plot 42, Okhla Industrial Area, Phase-III, New Delhi, Delhi 110020",
-    state_code: "DL",
+    state_code: "MP",
   },
   {
     name: "Andrei Tarkovsky",
@@ -561,8 +562,39 @@ export const businessUsersData: BusinessUser[] = [
   },
 ];
 
+export const lmoUsersData: User[] = [
+  {
+    name: "LMO Inspector MP",
+    fullName: "LMO Inspector Madhya Pradesh",
+    email: "inspector.mp@emaap.gov.in",
+    mobile: "9000000021",
+    registrationRole: "LMO",
+    jurisdiction_state: "Madhya Pradesh",
+    jurisdiction_district: "Bhopal",
+    password: "password123",
+    passwordHash: generateHash("password123"),
+  },
+];
+
+export const lmoOfficers: LmoOfficerSeed[] = [
+  {
+    employee_id: "MP-LMO-0001",
+    user_email: "inspector.mp@emaap.gov.in",
+    employee_code: "MP-LMO-001",
+    designation: LmoDesignation.INSPECTOR,
+    cadre: "Legal Metrology",
+    jurisdiction_zone: "Bhopal",
+    assigned_wsl_lab: "Bhopal WSL",
+    is_nodal_officer: false,
+    verification_stamp_code: "MP-INS-001",
+    digital_token_id: "MP-TOKEN-001",
+    state_code: "MP",
+  },
+];
+
 export const allMockUsers: (User | GatcUser | BusinessUser)[] = [
   ...adminUsersData,
   ...gatcUsersData,
   ...businessUsersData,
+  ...lmoUsersData,
 ];

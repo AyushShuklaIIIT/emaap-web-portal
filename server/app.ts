@@ -256,7 +256,7 @@ export function createServer() {
         const officer = await prisma.user.findFirst({
           where: {
             user_id: userId,
-            registrationRole: "INSPECTOR",
+            registrationRole: "LMO",
             isActive: true,
           },
           select: {
@@ -595,7 +595,7 @@ export function createServer() {
           lmo = await prisma.user.findFirst({
             where: {
               user_id: inspectorId,
-              registrationRole: "INSPECTOR",
+              registrationRole: "LMO",
             },
           });
         }
@@ -608,7 +608,7 @@ export function createServer() {
 
           lmo = await prisma.user.findFirst({
             where: {
-              registrationRole: "INSPECTOR",
+              registrationRole: "LMO",
             },
           });
 
@@ -619,7 +619,7 @@ export function createServer() {
                 fullName: "System Fallback LMO",
                 email: `lmo_fallback_${Date.now()}@emaap.gov.in`,
                 mobile: `${Date.now()}`.substring(0, 10),
-                registrationRole: "INSPECTOR",
+                registrationRole: "LMO",
                 jurisdiction_district: "Any",
                 jurisdiction_state: "Any",
                 passwordHash: "dummy",

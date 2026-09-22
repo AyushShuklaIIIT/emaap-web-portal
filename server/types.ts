@@ -3,6 +3,7 @@ import {
   AccuracyClass,
   AppType,
   GatcStatus,
+  LmoDesignation,
   PaymentMethod,
   WorkflowStatus,
 } from "./generated/prisma/enums";
@@ -20,7 +21,7 @@ export interface User {
   email: string;
   mobile: string;
   registrationRole:
-    "STAKEHOLDER" | "INSPECTOR" | "ADMIN" | "LEGAL_OFFICER" | "GATC_OPERATOR";
+    "STAKEHOLDER" | "LMO" | "ADMIN" | "LEGAL_OFFICER" | "GATC_OPERATOR";
   password?: string;
   passwordHash?: string;
   jurisdiction_district?: string;
@@ -451,4 +452,18 @@ export interface CreateVerificationApplicationResponse {
   };
 
   fee: VerificationFeeQuoteResponse;
+}
+
+export interface LmoOfficerSeed {
+  employee_id: string;
+  user_email: string;
+  employee_code: string;
+  designation: LmoDesignation;
+  cadre?: string;
+  jurisdiction_zone?: string;
+  assigned_wsl_lab?: string;
+  is_nodal_officer: boolean;
+  verification_stamp_code?: string;
+  digital_token_id?: string;
+  state_code: string;
 }

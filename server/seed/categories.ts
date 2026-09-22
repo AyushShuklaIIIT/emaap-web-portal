@@ -243,4 +243,25 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
+  {
+    category_code: "BLOOD_PRESSURE_MEASURING_INSTRUMENTS",
+    category_name: "Blood Pressure Measuring Instruments",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+  {
+    category_code: "STORAGE_TANKS_AND_VATS",
+    category_name: "Storage Tanks and Vats",
+    accuracy_class: "CLASS_I",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+  {
+    category_code: "WEIGH_BRIDGE_MOBILE_KIT",
+    category_name: "Verification of Weigh-bridge with mobile kit",
+    accuracy_class: "CLASS_III",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
 ];

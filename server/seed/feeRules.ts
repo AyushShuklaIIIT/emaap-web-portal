@@ -2028,4 +2028,247 @@ const feeRules_MP: FeeRuleSeed[] = [
 ];
 
 
-export const stateFees = [feeRules_MH, feeRules_UP, feeRules_MP];
+
+const feeRules_CH: FeeRuleSeed[] = [
+  { state_code: "CH", category_code: "BULLION_WEIGHTS", min_value: 10, max_value: 10, unit: "kg", fee_amount: 30, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BULLION_WEIGHTS", min_value: 5, max_value: 5, unit: "kg", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BULLION_WEIGHTS", min_value: 1, max_value: 2, unit: "kg", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BULLION_WEIGHTS", min_value: 1, max_value: 500, unit: "g", fee_amount: 15, fee_basis: "PER_PIECE" },
+  
+  { state_code: "CH", category_code: "CARAT_WEIGHTS", min_value: 0.005, max_value: 500, unit: "c", fee_amount: 20, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "CYLINDRICAL_KNOB_WEIGHTS", min_value: 5, max_value: 10, unit: "kg", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "CYLINDRICAL_KNOB_WEIGHTS", min_value: 2, max_value: 2, unit: "kg", fee_amount: 15, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "CYLINDRICAL_KNOB_WEIGHTS", min_value: 1, max_value: 1, unit: "kg", fee_amount: 10, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "CYLINDRICAL_KNOB_WEIGHTS", min_value: 1, max_value: 500, unit: "g", fee_amount: 5, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "SHEET_METAL_WEIGHTS", min_value: 1, max_value: 500, unit: "mg", fee_amount: 5, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 50, max_value: 50, unit: "kg", fee_amount: 25, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 5, max_value: 20, unit: "kg", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 2, max_value: 2, unit: "kg", fee_amount: 15, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 1, max_value: 1, unit: "kg", fee_amount: 10, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 1, max_value: 500, unit: "g", fee_amount: 5, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 100, max_value: 100, unit: "kg", fee_amount: 75, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 200, max_value: 200, unit: "kg", fee_amount: 150, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 500, max_value: 500, unit: "kg", fee_amount: 300, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 1000, max_value: 1000, unit: "kg", fee_amount: 750, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 2000, max_value: 2000, unit: "kg", fee_amount: 1500, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 5000, max_value: 5000, unit: "kg", fee_amount: 3000, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "CAPACITY_MEASURES", min_value: 100, max_value: null, unit: "l", fee_amount: 50, fee_basis: "FIXED", additional_fee: 7, additional_unit: 100, maximum_fee: 5000 },
+  { state_code: "CH", category_code: "CAPACITY_MEASURES", min_value: 50, max_value: 50, unit: "l", fee_amount: 50, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "CAPACITY_MEASURES", min_value: 10, max_value: 20, unit: "l", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "CAPACITY_MEASURES", min_value: 1, max_value: 5, unit: "l", fee_amount: 10, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "CAPACITY_MEASURES", min_value: 1, max_value: 500, unit: "ml", fee_amount: 10, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "NON_FLEXIBLE_LENGTH_MEASURES", min_value: 1, max_value: 2, unit: "m", fee_amount: 10, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_FLEXIBLE_LENGTH_MEASURES", min_value: 0.5, max_value: 0.5, unit: "m", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_FLEXIBLE_LENGTH_MEASURES", condition: "1 m graduated at every cm", unit: "m", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_FLEXIBLE_LENGTH_MEASURES", condition: "0.5 m graduated at every cm", unit: "m", fee_amount: 20, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "FABRIC_PLASTIC_WOVEN_STEEL_TAPES", condition: "Class I", unit: "m", fee_amount: 1, fee_basis: "PER_METRE" },
+  { state_code: "CH", category_code: "FABRIC_PLASTIC_WOVEN_STEEL_TAPES", condition: "Class II", unit: "m", fee_amount: 1, fee_basis: "PER_METRE" },
+  { state_code: "CH", category_code: "FABRIC_PLASTIC_WOVEN_STEEL_TAPES", condition: "Class III", unit: "m", fee_amount: 0.50, fee_basis: "PER_METRE" },
+
+  { state_code: "CH", category_code: "FOLDING_SCALES", min_value: 0.5, max_value: 1, unit: "m", fee_amount: 10, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "SURVEYING_CHAIN", min_value: 20, max_value: 30, unit: "m", fee_amount: 100, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 200, max_value: 200, unit: "kg", fee_amount: 400, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 100, max_value: 100, unit: "kg", fee_amount: 300, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 10, max_value: 50, unit: "kg", fee_amount: 150, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 1, max_value: 5, unit: "kg", fee_amount: 100, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 0, max_value: 0.5, unit: "kg", fee_amount: 60, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 300, max_value: 1000, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 100, max_value: 200, unit: "kg", fee_amount: 100, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 10, max_value: 50, unit: "kg", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 1, max_value: 5, unit: "kg", fee_amount: 15, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 0, max_value: 0.5, unit: "kg", fee_amount: 10, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 400, max_value: 400, unit: "t", fee_amount: 4000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 200, max_value: 300, unit: "t", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 15, max_value: 150, unit: "t", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 10, max_value: 10, unit: "t", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 5, max_value: 5, unit: "t", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 2, max_value: 3, unit: "t", fee_amount: 400, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 500, max_value: 1500, unit: "kg", fee_amount: 300, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 250, max_value: 300, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 30, max_value: 200, unit: "kg", fee_amount: 100, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 20, max_value: 25, unit: "kg", fee_amount: 60, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 2, max_value: 15, unit: "kg", fee_amount: 30, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 0, max_value: 1, unit: "kg", fee_amount: 15, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 400, max_value: 400, unit: "t", fee_amount: 4000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 200, max_value: 300, unit: "t", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 15, max_value: 150, unit: "t", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 5, max_value: 10, unit: "t", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 2, max_value: 3, unit: "t", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 500, max_value: 1500, unit: "kg", fee_amount: 250, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 30, max_value: 300, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 0, max_value: 25, unit: "kg", fee_amount: 100, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 50, max_value: null, unit: "t", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 10, max_value: 50, unit: "t", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 1, max_value: 10, unit: "t", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 50, max_value: 1000, unit: "kg", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 10, max_value: 50, unit: "kg", fee_amount: 250, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 0, max_value: 10, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 100, max_value: null, unit: "t", fee_amount: 4000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 50, max_value: 100, unit: "t", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 10, max_value: 50, unit: "t", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 1, max_value: 10, unit: "t", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 50, max_value: 1000, unit: "kg", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 10, max_value: 50, unit: "kg", fee_amount: 250, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 0, max_value: 10, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "DISPENSING_PUMPS", unit: "unit", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "VOLUMETRIC_TOTALIZING_COUNTER", unit: "unit", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "VOLUMETRIC_OTHER_INSTRUMENTS", min_value: 100, max_value: null, unit: "l", fee_amount: 500, fee_basis: "FIXED", additional_fee: 250, additional_unit: 100 },
+  { state_code: "CH", category_code: "VOLUMETRIC_OTHER_INSTRUMENTS", min_value: 50, max_value: 100, unit: "l", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "VOLUMETRIC_OTHER_INSTRUMENTS", min_value: 20, max_value: 50, unit: "l", fee_amount: 250, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "VOLUMETRIC_OTHER_INSTRUMENTS", min_value: 0, max_value: 20, unit: "l", fee_amount: 200, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "FLOW_METERS", min_value: 0, max_value: 100, unit: "l/min", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "FLOW_METERS", min_value: 100, max_value: 500, unit: "l/min", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "FLOW_METERS", min_value: 500, max_value: null, unit: "l/min", fee_amount: 5000, fee_basis: "PER_PIECE" },
+
+  { state_code: "CH", category_code: "TAXI_AUTO_RICKSHAW_METERS", unit: "unit", fee_amount: 100, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "OTHER_LINEAR_METERS", unit: "m", min_value: 0, max_value: null, fee_amount: 50, fee_basis: "FIXED", additional_fee: 5, additional_unit: 100 }, 
+
+  { state_code: "CH", category_code: "CLINICAL_THERMOMETER", unit: "unit", fee_amount: 0.50, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "WATER_METER", unit: "unit", fee_amount: 25, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "PEG_MEASURE", min_value: 30, max_value: 100, unit: "ml", fee_amount: 50, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "CNG_DISPENSERS", unit: "unit", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "LPG_DISPENSERS", unit: "unit", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "WEIGH_BRIDGE_MOBILE_KIT", unit: "unit", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "COUNTER_MACHINE", min_value: 0, max_value: 10, unit: "kg", fee_amount: 30, fee_basis: "PER_PIECE" },
+  { state_code: "CH", category_code: "COUNTER_MACHINE", min_value: 10, max_value: null, unit: "kg", fee_amount: 50, fee_basis: "PER_PIECE" },
+];
+
+
+
+const feeRules_PB: FeeRuleSeed[] = [
+  { state_code: "PB", category_code: "BULLION_WEIGHTS", min_value: 10, max_value: 10, unit: "kg", fee_amount: 60, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BULLION_WEIGHTS", min_value: 5, max_value: 5, unit: "kg", fee_amount: 40, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BULLION_WEIGHTS", min_value: 1, max_value: 2, unit: "kg", fee_amount: 40, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BULLION_WEIGHTS", min_value: 1, max_value: 500, unit: "g", fee_amount: 30, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BULLION_WEIGHTS", min_value: 1, max_value: 500, unit: "mg", fee_amount: 30, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "CARAT_WEIGHTS", min_value: 0.005, max_value: 500, unit: "c", fee_amount: 40, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "CYLINDRICAL_KNOB_WEIGHTS", min_value: 5, max_value: 10, unit: "kg", fee_amount: 40, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "CYLINDRICAL_KNOB_WEIGHTS", min_value: 2, max_value: 2, unit: "kg", fee_amount: 30, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "CYLINDRICAL_KNOB_WEIGHTS", min_value: 1, max_value: 1, unit: "kg", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "CYLINDRICAL_KNOB_WEIGHTS", min_value: 1, max_value: 500, unit: "g", fee_amount: 10, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "SHEET_METAL_WEIGHTS", min_value: 1, max_value: 500, unit: "mg", fee_amount: 10, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 50, max_value: 50, unit: "kg", fee_amount: 50, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 5, max_value: 20, unit: "kg", fee_amount: 40, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 2, max_value: 2, unit: "kg", fee_amount: 30, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 1, max_value: 1, unit: "kg", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS", min_value: 1, max_value: 500, unit: "g", fee_amount: 10, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 100, max_value: 100, unit: "kg", fee_amount: 75, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 200, max_value: 200, unit: "kg", fee_amount: 150, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 500, max_value: 500, unit: "kg", fee_amount: 300, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 1000, max_value: 1000, unit: "kg", fee_amount: 750, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 2000, max_value: 2000, unit: "kg", fee_amount: 1500, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "HIGH_CAPACITY_WEIGHING_STANDARD_WEIGHTS", min_value: 5000, max_value: 5000, unit: "kg", fee_amount: 3000, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "CAPACITY_MEASURES", min_value: 100, max_value: null, unit: "l", fee_amount: 50, fee_basis: "FIXED", additional_fee: 7, additional_unit: 100, maximum_fee: 5000 },
+  { state_code: "PB", category_code: "CAPACITY_MEASURES", min_value: 50, max_value: 50, unit: "l", fee_amount: 100, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "CAPACITY_MEASURES", min_value: 10, max_value: 20, unit: "l", fee_amount: 40, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "CAPACITY_MEASURES", min_value: 1, max_value: 5, unit: "l", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "CAPACITY_MEASURES", min_value: 1, max_value: 500, unit: "ml", fee_amount: 20, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "NON_FLEXIBLE_LENGTH_MEASURES", min_value: 1, max_value: 2, unit: "m", fee_amount: 20, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_FLEXIBLE_LENGTH_MEASURES", min_value: 0.5, max_value: 0.5, unit: "m", fee_amount: 40, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_FLEXIBLE_LENGTH_MEASURES", condition: "1 m graduated at every cm", unit: "m", fee_amount: 40, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_FLEXIBLE_LENGTH_MEASURES", condition: "0.5 m graduated at every cm", unit: "m", fee_amount: 40, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "FABRIC_PLASTIC_WOVEN_STEEL_TAPES", condition: "Class I", unit: "m", fee_amount: 2, fee_basis: "PER_METRE" },
+  { state_code: "PB", category_code: "FABRIC_PLASTIC_WOVEN_STEEL_TAPES", condition: "Class II", unit: "m", fee_amount: 2, fee_basis: "PER_METRE" },
+  { state_code: "PB", category_code: "FABRIC_PLASTIC_WOVEN_STEEL_TAPES", condition: "Class III", unit: "m", fee_amount: 1, fee_basis: "PER_METRE" },
+
+  { state_code: "PB", category_code: "FOLDING_SCALES", min_value: 0.5, max_value: 1, unit: "m", fee_amount: 20, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "SURVEYING_CHAIN", min_value: 20, max_value: 30, unit: "m", fee_amount: 200, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 200, max_value: 200, unit: "kg", fee_amount: 800, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 100, max_value: 100, unit: "kg", fee_amount: 600, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 10, max_value: 50, unit: "kg", fee_amount: 300, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 1, max_value: 5, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_A_B", min_value: 0, max_value: 0.5, unit: "kg", fee_amount: 120, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 300, max_value: 1000, unit: "kg", fee_amount: 400, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 100, max_value: 200, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 10, max_value: 50, unit: "kg", fee_amount: 40, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 1, max_value: 5, unit: "kg", fee_amount: 30, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "BEAM_SCALES_CLASS_C_D", min_value: 0, max_value: 0.5, unit: "kg", fee_amount: 20, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 400, max_value: 400, unit: "t", fee_amount: 4000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 200, max_value: 300, unit: "t", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 15, max_value: 150, unit: "t", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 10, max_value: 10, unit: "t", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 5, max_value: 5, unit: "t", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 2, max_value: 3, unit: "t", fee_amount: 400, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 500, max_value: 1500, unit: "kg", fee_amount: 300, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 250, max_value: 300, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 30, max_value: 200, unit: "kg", fee_amount: 100, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 20, max_value: 25, unit: "kg", fee_amount: 60, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 1, max_value: 15, unit: "kg", fee_amount: 30, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV", min_value: 0, max_value: 0.5, unit: "kg", fee_amount: 15, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 400, max_value: 400, unit: "t", fee_amount: 4000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 200, max_value: 300, unit: "t", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 15, max_value: 150, unit: "t", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 5, max_value: 10, unit: "t", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 2, max_value: 3, unit: "t", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 500, max_value: 1500, unit: "kg", fee_amount: 250, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 25, max_value: 300, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV", min_value: 0, max_value: 20, unit: "kg", fee_amount: 100, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 50, max_value: null, unit: "t", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 10, max_value: 50, unit: "t", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 1, max_value: 10, unit: "t", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 50, max_value: 1000, unit: "kg", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 10, max_value: 50, unit: "kg", fee_amount: 250, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II", min_value: 0, max_value: 10, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 100, max_value: null, unit: "t", fee_amount: 4000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 50, max_value: 100, unit: "t", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 10, max_value: 50, unit: "t", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 1, max_value: 10, unit: "t", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 50, max_value: 1000, unit: "kg", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 10, max_value: 50, unit: "kg", fee_amount: 250, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS", min_value: 0, max_value: 10, unit: "kg", fee_amount: 200, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "DISPENSING_PUMPS", unit: "unit", fee_amount: 1000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "VOLUMETRIC_TOTALIZING_COUNTER", unit: "unit", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "VOLUMETRIC_OTHER_INSTRUMENTS", min_value: 100, max_value: null, unit: "l", fee_amount: 500, fee_basis: "FIXED", additional_fee: 250, additional_unit: 100 },
+  { state_code: "PB", category_code: "VOLUMETRIC_OTHER_INSTRUMENTS", min_value: 50, max_value: 100, unit: "l", fee_amount: 500, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "VOLUMETRIC_OTHER_INSTRUMENTS", min_value: 20, max_value: 50, unit: "l", fee_amount: 250, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "VOLUMETRIC_OTHER_INSTRUMENTS", min_value: 0, max_value: 20, unit: "l", fee_amount: 200, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "FLOW_METERS", min_value: 0, max_value: 100, unit: "l/min", fee_amount: 2000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "FLOW_METERS", min_value: 100, max_value: 500, unit: "l/min", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "FLOW_METERS", min_value: 500, max_value: null, unit: "l/min", fee_amount: 5000, fee_basis: "PER_PIECE" },
+
+  { state_code: "PB", category_code: "TAXI_AUTO_RICKSHAW_METERS", unit: "unit", fee_amount: 100, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "OTHER_LINEAR_METERS", unit: "m", min_value: 0, max_value: null, fee_amount: 50, fee_basis: "FIXED", additional_fee: 5, additional_unit: 100 }, 
+
+  { state_code: "PB", category_code: "CLINICAL_THERMOMETER", unit: "unit", fee_amount: 1, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "WATER_METER", unit: "unit", fee_amount: 25, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "PEG_MEASURE", min_value: 30, max_value: 100, unit: "ml", fee_amount: 50, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "CNG_DISPENSERS", unit: "unit", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "LPG_DISPENSERS", unit: "unit", fee_amount: 3000, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "COUNTER_MACHINE", min_value: 0, max_value: 10, unit: "kg", fee_amount: 60, fee_basis: "PER_PIECE" },
+  { state_code: "PB", category_code: "COUNTER_MACHINE", min_value: 10, max_value: null, unit: "kg", fee_amount: 100, fee_basis: "PER_PIECE" },
+];
+
+
+export const stateFees = [feeRules_PB, feeRules_CH, feeRules_MH, feeRules_UP, feeRules_MP];

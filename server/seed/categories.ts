@@ -250,4 +250,11 @@ export const categories = [
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
   },
+  {
+    category_code: "WEIGH_BRIDGE_MOBILE_KIT",
+    category_name: "Verification of Weigh-bridge with mobile kit",
+    accuracy_class: "CLASS_III",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
 ];

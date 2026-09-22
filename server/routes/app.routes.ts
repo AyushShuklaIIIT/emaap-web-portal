@@ -8,9 +8,10 @@ export const router = express.Router();
 cloudinary.config();
 
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary,
   params: async (_req, file) => {
     const isPdf = file.mimetype === "application/pdf";
+
     return {
       folder: "emaap/applications",
       allowed_formats: ["pdf", "jpg", "jpeg", "png"],
@@ -21,13 +22,6 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-interface Result {
-  applicationId: string;
-  manufacturerFileUrl: string;
-  prevCertificateFileUrl?: string | null;
-}
-
-// /api
 router.post(
   "/upload",
   upload.fields([
@@ -36,46 +30,63 @@ router.post(
   ]),
   (req, res) => {
     if (!req.files) {
-      console.log("no file uploaded");
+      console.log("[UPLOAD] No file uploaded");
+
       return res.status(400).json({
         success: false,
         message: "No file uploaded",
       });
     }
 
-    const applicationId: string = req.body.applicationId;
-    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const applicationId = String(req.body.applicationId ?? "").trim();
 
-    if (!files?.["manufacturerFile"] || files["manufacturerFile"].length === 0) {
-      console.log("Manufacturer file is required");
+    if (!applicationId) {
+      console.log("[UPLOAD] Application ID is required");
+
+      return res.status(400).json({
+        success: false,
+        message: "Application ID is required",
+      });
+    }
+
+    const files = req.files as {
+      [fieldname: string]: Express.Multer.File[];
+    };
+
+    if (!files["manufacturerFile"] || files["manufacturerFile"].length === 0) {
+      console.log("[UPLOAD] Manufacturer file is required");
+
       return res.status(400).json({
         success: false,
         message: "Manufacturer file is required",
       });
     }
 
-    // With multer-storage-cloudinary, req.file.path holds the Cloudinary URL
     const manufacturerFileUrl = files["manufacturerFile"][0].path;
 
-    let prevCertificateFileUrl = null;
-    if (files["prevCertificateFile"] && files["prevCertificateFile"].length > 0) {
+    let prevCertificateFileUrl: string | null = null;
+
+    if (
+      files["prevCertificateFile"] &&
+      files["prevCertificateFile"].length > 0
+    ) {
       prevCertificateFileUrl = files["prevCertificateFile"][0].path;
     }
 
-    const io = req.app.get("io");
-    const result: Result = {
+    const result = {
       applicationId,
       manufacturerFileUrl,
       prevCertificateFileUrl,
     };
-    if (io) {
-      io.emit("fileUploaded", result);
-      console.log(`Files uploaded for application: `, result);
-    }
 
-    res.json({
+    console.log("[UPLOAD] Files uploaded successfully:", result);
+
+    return res.json({
       success: true,
-      message: "Sent Successful",
+      message: "Files uploaded successfully",
+      applicationId,
+      manufacturerFileUrl,
+      prevCertificateFileUrl,
     });
   },
 );

@@ -1,5 +1,11 @@
 import { Prisma } from "./generated/prisma/client";
-import { GatcStatus } from "./generated/prisma/enums";
+import {
+  AccuracyClass,
+  AppType,
+  GatcStatus,
+  PaymentMethod,
+  WorkflowStatus,
+} from "./generated/prisma/enums";
 import { VerificationAppGetPayload } from "./generated/prisma/models";
 
 export interface State {
@@ -354,4 +360,95 @@ export interface GatcProfile {
   inspections: number;
   passedInspections: number;
   failedInspections: number;
+}
+
+export interface VerificationMetadataResponse {
+  categories: Array<{
+    category_id: string;
+    category_code: string;
+    category_name: string;
+    accuracy_class: AccuracyClass;
+    oiml_standard_ref: string;
+    verification_cycle_months: number;
+  }>;
+
+  states: Array<{
+    state_id: string;
+    state_code: string;
+    state_name: string;
+  }>;
+}
+
+export interface VerificationFeeQuoteInput {
+  user_id: string;
+  category_code: string;
+  state_code: string;
+  metric: string;
+}
+
+export interface VerificationFeeQuoteResponse {
+  statutoryFee: number;
+  additionalFee: number;
+  totalAmount: number;
+  feeBasis: string;
+  condition: string | null;
+  maximumFee: number | null;
+}
+
+export interface CreateVerificationApplicationInput {
+  user_id: string;
+
+  app_type: AppType;
+
+  category_code: string;
+
+  model_no: string;
+  manufacturer_name: string;
+  instrument_serial_number: string;
+
+  metric: string;
+
+  address: string;
+  pincode: number;
+  state_code: string;
+
+  lat: number;
+  long: number;
+
+  payment_method: PaymentMethod;
+}
+
+export interface CreateVerificationApplicationResponse {
+  applicationId: string;
+  applicationNo: string;
+
+  instrumentId: string;
+
+  workflowStatus: WorkflowStatus;
+
+  applicationType: AppType;
+
+  payment: {
+    receiptId: string;
+    receiptNo: string;
+    transactionId: string | null;
+    paymentMethod: PaymentMethod | null;
+    paymentStatus: string;
+    totalAmount: number;
+  };
+
+  category: {
+    categoryId: string;
+    categoryCode: string;
+    categoryName: string;
+    accuracyClass: AccuracyClass;
+  };
+
+  state: {
+    stateId: string;
+    stateCode: string;
+    stateName: string;
+  };
+
+  fee: VerificationFeeQuoteResponse;
 }

@@ -32,21 +32,12 @@ import {
   verifyCertificateSignature,
 } from "./services/qr-payload.service";
 
-/**
- * Normalize serial numbers everywhere so that:
- * "v-123", "V-123", " V-123 "
- * all become:
- * "V-123"
- */
 const normalizeSerialNumber = (value: unknown): string => {
   return String(value ?? "")
     .trim()
     .toUpperCase();
 };
 
-/**
- * Map frontend accuracy class values to Prisma enum values.
- */
 const mapAccuracyClass = (
   ac: unknown,
 ): "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII" => {
@@ -73,12 +64,6 @@ const mapAccuracyClass = (
   return "CLASS_II";
 };
 
-/**
- * Get frontend URL used inside generated QR URLs.
- *
- * FRONTEND_URL can contain comma-separated origins, so use the first one
- * as the public/default frontend URL.
- */
 const getFrontendBaseUrl = (): string => {
   const configuredUrl = process.env.FRONTEND_URL?.split(",")
     .map((origin) => origin.trim())
@@ -91,10 +76,6 @@ const getFrontendBaseUrl = (): string => {
   ).replace(/\/+$/, "");
 };
 
-/**
- * Extract the application identifier from different possible payload
- * naming conventions used by frontend/mobile code.
- */
 const getApplicationIdentifier = (data: any): string => {
   return String(
     data?.applicationId ??
@@ -105,14 +86,6 @@ const getApplicationIdentifier = (data: any): string => {
   ).trim();
 };
 
-/**
- * Resolve timestamp safely.
- *
- * Supports:
- * - milliseconds
- * - microseconds
- * - missing timestamp
- */
 const resolvePayloadTimestampMs = (value: unknown): number => {
   const timestamp = Number(value);
 
@@ -120,8 +93,6 @@ const resolvePayloadTimestampMs = (value: unknown): number => {
     return Date.now();
   }
 
-  // Microseconds are usually around 1e15.
-  // Milliseconds are usually around 1e12.
   if (timestamp > 1e12) {
     return timestamp / 1000;
   }
@@ -129,22 +100,6 @@ const resolvePayloadTimestampMs = (value: unknown): number => {
   return timestamp;
 };
 
-/**
- * Briefly wait for the VerificationApp to appear.
- *
- * This protects against the case where:
- *
- * socket.emit("data")
- *      ↓
- * DB write starts
- *      ↓
- * socket.emit("inspection_approved")
- *      ↓
- * approval query runs before DB write finishes
- *
- * The frontend should still wait for "verification_persisted",
- * but this server-side retry makes the flow more resilient.
- */
 const findApplicationWithRetry = async (
   prisma: any,
   applicationIdentifier: string,
@@ -200,14 +155,15 @@ const findApplicationWithRetry = async (
   return null;
 };
 
+const getOfficerRoom = (officerId: string): string => {
+  return `officer:${officerId}`;
+};
+
 export function createServer() {
   const app = express();
 
   const httpServer = createHttpServer(app);
 
-  /**
-   * CORS
-   */
   const allowedOrigins = process.env.FRONTEND_URL?.split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
@@ -220,7 +176,6 @@ export function createServer() {
       return callback(null, true);
     }
 
-    // Allow localhost and local network IPs during development/mobile testing.
     if (
       origin.includes("localhost") ||
       origin.includes("192.168.") ||
@@ -237,9 +192,6 @@ export function createServer() {
     callback(null, false);
   };
 
-  /**
-   * Socket.IO
-   */
   const io = new SocketIOServer(httpServer, {
     cors: {
       origin: corsOrigin,
@@ -249,93 +201,96 @@ export function createServer() {
 
   app.set("io", io);
 
-  /**
-   * Middleware
-   */
   app.use(correlationIdMiddleware);
-
-  app.use(cors({ origin: corsOrigin }));
-
+  app.use(
+    cors({
+      origin: corsOrigin,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    }),
+  );
   app.use(express.json());
-
   app.use(express.urlencoded({ extended: true }));
 
-  /**
-   * API Routes
-   */
   app.use("/api", uploadRouter);
-
   app.use("/api/dashboard", dashboardRouter);
-
   app.use("/api/admin", adminDashboardRouter);
-
   app.use("/api/admin/pendency", adminPendencyRouter);
-
   app.use("/api/admin/financial", adminFinancialRouter);
-
   app.use("/api/admin/gatcs", adminGatcRouter);
-
   app.use("/api/instrument", instrumentRouter);
-
   app.use("/api/payment", paymentRouter);
-
   app.use("/api/verification", verificationAppRouter);
-
   app.use("/api/certificates", certificateRouter);
-
   app.use("/api/gateway", gatewayRouter);
-
   app.use("/api/v1/gateway/aadhaar", aadhaarRouter);
-
   app.use("/api/v1/gateway/gstn", gstnRouter);
-
   app.use("/api/v1/gateway/pan", panRouter);
-
   app.use("/api/v1/auth", authRouter);
-
   app.use("/api/v1/auth", registrationRouter);
-
   app.use("/api/v1/admin", adminReviewRouter);
-
   app.use("/api/v1/nsws", nswsRouter);
 
-  /**
-   * Socket connections
-   */
   io.on("connection", (socket) => {
     console.log(`Socket connected: ${socket.id}`);
 
-    /**
-     * Basic socket test event
-     */
     socket.on("msg", (data) => {
       console.log(`Received data: ${JSON.stringify(data)}`);
-
       socket.emit("reply", "Whatup");
     });
 
-    /**
-     * Verification submission
-     *
-     * Expected payload should contain at minimum:
-     * {
-     *   userId,
-     *   instrumentSerialNumber,
-     *   applicationId
-     * }
-     *
-     * This creates the relational chain:
-     *
-     * User
-     *   ↓
-     * BusinessProfile
-     *   ↓
-     * InstrumentCategory
-     *   ↓
-     * MeasuringInstrument
-     *   ↓
-     * VerificationApp
-     */
+    socket.on("join_officer_room", async (payload) => {
+      try {
+        const userId = String(payload?.userId ?? "").trim();
+
+        if (!userId) {
+          return socket.emit("officer_room_error", {
+            success: false,
+            message: "Officer userId is required.",
+          });
+        }
+
+        const { prisma } = await import("./lib/prisma");
+
+        const officer = await prisma.user.findFirst({
+          where: {
+            user_id: userId,
+            registrationRole: "INSPECTOR",
+            isActive: true,
+          },
+          select: {
+            user_id: true,
+          },
+        });
+
+        if (!officer) {
+          return socket.emit("officer_room_error", {
+            success: false,
+            message: "Invalid or inactive officer.",
+          });
+        }
+
+        const room = getOfficerRoom(officer.user_id);
+
+        await socket.join(room);
+
+        console.log(`[SOCKET] Officer ${officer.user_id} joined room ${room}`);
+
+        socket.emit("officer_room_joined", {
+          success: true,
+          room,
+        });
+      } catch (error) {
+        console.error("[SOCKET] Failed to join officer room:", error);
+
+        socket.emit("officer_room_error", {
+          success: false,
+          message: "Failed to join officer room.",
+        });
+      }
+    });
+
     socket.on("data", async (data) => {
       console.log("[DATA] Verification submission received:", {
         socketId: socket.id,
@@ -343,9 +298,6 @@ export function createServer() {
         applicationId: getApplicationIdentifier(data),
         instrumentSerialNumber: JSON.stringify(data?.instrumentSerialNumber),
       });
-
-      // Preserve existing broadcast behavior.
-      socket.broadcast.emit("message", data);
 
       try {
         const { prisma } = await import("./lib/prisma");
@@ -358,9 +310,6 @@ export function createServer() {
 
         const applicationIdentifier = getApplicationIdentifier(data);
 
-        /**
-         * Required fields
-         */
         if (!userId || !serialNumber) {
           console.error("[DATA] Missing required fields:", {
             userId,
@@ -375,9 +324,6 @@ export function createServer() {
           });
         }
 
-        /**
-         * 1. Ensure BusinessProfile exists
-         */
         console.log("[DATA] Looking for BusinessProfile:", {
           userId,
         });
@@ -428,9 +374,6 @@ export function createServer() {
           });
         }
 
-        /**
-         * 2. Ensure InstrumentCategory exists
-         */
         console.log("[DATA] Looking for InstrumentCategory:", {
           categoryName: data?.instrumentSubCategory || "Default Category",
         });
@@ -457,9 +400,6 @@ export function createServer() {
           });
         }
 
-        /**
-         * 3. Ensure MeasuringInstrument exists
-         */
         console.log("[DATA] Looking for MeasuringInstrument:", {
           businessId: business.business_id,
           serialNumber,
@@ -478,31 +418,19 @@ export function createServer() {
           instrument = await prisma.measuringInstrument.create({
             data: {
               serial_number: serialNumber,
-
               model_no: data?.modelNo || "Unknown Model",
-
               manufacturer_name:
                 data?.manufacturerName || "Unknown Manufacturer",
-
               accuracy_class: mapAccuracyClass(data?.accuracyClass),
-
               metric: data?.metric || "N/A",
-
               address:
                 data?.address || business.geo_address || "Unknown Address",
-
               pincode: Number(data?.pincode) || 111111,
-
               state: data?.state || "N/A",
-
               lat: Number(data?.lat) || 0,
-
               long: Number(data?.long) || 0,
-
               status: "PENDING",
-
               business_id: business.business_id,
-
               category_id: category.category_id,
             },
           });
@@ -518,12 +446,6 @@ export function createServer() {
           });
         }
 
-        /**
-         * 4. Ensure VerificationApp exists
-         *
-         * Prefer applicationId when supplied.
-         * Otherwise use instrument + non-certified workflow.
-         */
         console.log("[DATA] Looking for VerificationApp:", {
           applicationIdentifier,
           instrumentId: instrument.instrument_id,
@@ -546,7 +468,6 @@ export function createServer() {
           application = await prisma.verificationApp.findFirst({
             where: {
               instrument_id: instrument.instrument_id,
-
               workflow_status: {
                 not: "CERTIFIED",
               },
@@ -561,13 +482,12 @@ export function createServer() {
           application = await prisma.verificationApp.create({
             data: {
               application_no: applicationIdentifier || `APP-${Date.now()}`,
-
-              app_type: "INITIAL",
-
+              app_type:
+                data?.appType === "RE_VERIFICATION"
+                  ? "RE_VERIFICATION"
+                  : "INITIAL",
               workflow_status: "SUBMITTED",
-
               instrument_id: instrument.instrument_id,
-
               business_id: business.business_id,
             },
           });
@@ -585,25 +505,32 @@ export function createServer() {
           });
         }
 
-        /**
-         * IMPORTANT:
-         * Tell the frontend/mobile side that relational persistence
-         * has completed.
-         *
-         * The inspection approval flow should ideally wait for this.
-         */
+        const assignedOfficerId = application.assigned_officer_id;
+
+        if (assignedOfficerId) {
+          const officerRoom = getOfficerRoom(assignedOfficerId);
+
+          io.to(officerRoom).emit("message", {
+            ...data,
+            applicationId: application.application_no,
+            assignedOfficerId,
+          });
+
+          console.log(`[DATA] Application sent to officer room ${officerRoom}`);
+        } else {
+          console.log(
+            `[DATA] No assigned officer for application ${application.application_no}`,
+          );
+        }
+
         socket.emit("verification_persisted", {
           success: true,
-
           applicationId: application.app_id,
-
           applicationNo: application.application_no,
-
           instrumentId: instrument.instrument_id,
-
           serialNumber: instrument.serial_number,
-
           businessId: business.business_id,
+          assignedOfficerId: application.assigned_officer_id,
         });
 
         console.log("[DATA] Relational persistence completed successfully.");
@@ -623,27 +550,16 @@ export function createServer() {
       }
     });
 
-    /**
-     * Disconnect
-     */
     socket.on("disconnect", (reason) => {
       console.log(`Socket disconnected: ${socket.id}`, reason);
     });
 
-    /**
-     * Inspection approval
-     */
     socket.on("inspection_approved", async (data) => {
       console.log("[APPROVAL] Inspection approved payload:", data);
 
       try {
         const { prisma } = await import("./lib/prisma");
 
-        /**
-         * ---------------------------------------------------------
-         * 1. Anti-replay protection
-         * ---------------------------------------------------------
-         */
         const nowMs = Date.now();
 
         const payloadMs =
@@ -663,32 +579,16 @@ export function createServer() {
           });
         }
 
-        /**
-         * ---------------------------------------------------------
-         * 2. Normalize approval payload
-         * ---------------------------------------------------------
-         */
         const serialNumber = normalizeSerialNumber(
           data?.instrumentSerialNumber,
         );
 
         const applicationIdentifier = getApplicationIdentifier(data);
 
-        /**
-         * Support both:
-         *
-         * inspectorId
-         * inspector_id
-         */
         let inspectorId = String(
           data?.inspectorId ?? data?.inspector_id ?? "",
         ).trim();
 
-        /**
-         * ---------------------------------------------------------
-         * 3. Resolve inspector / LMO
-         * ---------------------------------------------------------
-         */
         let lmo = null;
 
         if (inspectorId) {
@@ -700,12 +600,6 @@ export function createServer() {
           });
         }
 
-        /**
-         * Development fallback.
-         *
-         * Your current system already uses this behavior, so it is
-         * preserved here rather than silently changing the auth model.
-         */
         if (!lmo) {
           console.warn(
             "[APPROVAL] Missing or invalid inspectorId. " +
@@ -722,46 +616,23 @@ export function createServer() {
             lmo = await prisma.user.create({
               data: {
                 name: "System Fallback LMO",
-
                 fullName: "System Fallback LMO",
-
                 email: `lmo_fallback_${Date.now()}@emaap.gov.in`,
-
                 mobile: `${Date.now()}`.substring(0, 10),
-
                 registrationRole: "INSPECTOR",
-
                 jurisdiction_district: "Any",
-
                 jurisdiction_state: "Any",
-
                 passwordHash: "dummy",
-
                 isActive: true,
-
                 emailVerified: true,
-
                 mobileVerified: true,
               },
             });
           }
-
-          inspectorId = lmo.user_id;
         }
 
-        /**
-         * ---------------------------------------------------------
-         * 4. Find the application FIRST
-         * ---------------------------------------------------------
-         *
-         * This is the critical fix.
-         *
-         * Before:
-         *   approval -> serial number -> instrument
-         *
-         * Now:
-         *   approval -> application -> instrument
-         */
+        inspectorId = lmo.user_id;
+
         if (!applicationIdentifier && !serialNumber) {
           console.error(
             "[APPROVAL] Missing application identifier and serial number.",
@@ -815,9 +686,6 @@ export function createServer() {
           });
         }
 
-        /**
-         * Protect against duplicate approval events.
-         */
         if (
           application.workflow_status === "CERTIFIED" ||
           application.workflow_status === "REJECTED"
@@ -834,9 +702,6 @@ export function createServer() {
           });
         }
 
-        /**
-         * Ensure the payload serial and DB serial agree.
-         */
         if (
           serialNumber &&
           normalizeSerialNumber(instrument.serial_number) !== serialNumber
@@ -860,19 +725,10 @@ export function createServer() {
           serialNumber: instrument.serial_number,
         });
 
-        /**
-         * ---------------------------------------------------------
-         * 5. Generate certificate payload
-         * ---------------------------------------------------------
-         */
         const issueTimestamp = new Date().toISOString();
-
         const tokenHash = data?.token_hash ?? data?.tokenHash ?? "";
-
         const lat = Number(data?.lat) || 0;
-
         const long = Number(data?.long) || 0;
-
         const instrumentCategory =
           data?.instrumentCategory ?? data?.instrument_category ?? null;
 
@@ -892,8 +748,6 @@ export function createServer() {
           .update(rawDataToHash)
           .digest("hex");
 
-        console.log("[APPROVAL] Generated cryptographic hash:", realHash);
-
         const certificateId = crypto.randomUUID();
 
         const verificationSignature = createCertificateSignature(
@@ -902,13 +756,9 @@ export function createServer() {
         );
 
         const status = data?.status || "APPROVED_CHECKLIST";
-
         const isRejected = status === "FAILED_CHECKLIST";
-
         const workflowStatus = isRejected ? "REJECTED" : "CERTIFIED";
-
         const instrumentStatus = isRejected ? "REJECTED" : "VERIFIED";
-
         const frontendBaseUrl = getFrontendBaseUrl();
 
         const dynamicQrUrl =
@@ -920,162 +770,87 @@ export function createServer() {
 
         expiryDate.setFullYear(expiryDate.getFullYear() + 1);
 
-        /**
-         * The object is emitted to frontend after the transaction commits.
-         */
         const finalCertPayload = {
           ...data,
-
           applicationId: applicationIdentifier || application.application_no,
-
           applicationNo: application.application_no,
-
           certificateId,
-
           issueDate: issueTimestamp,
-
           instrumentSerialNumber: instrument.serial_number,
-
           instrumentCategory,
-
           lat,
-
           long,
-
           sealImageUrls,
-
           hash: realHash,
-
           verificationSignature,
-
           status,
-
           inspectorId,
-
           token_hash: tokenHash,
         };
 
-        /**
-         * ---------------------------------------------------------
-         * 6. Atomic relational sync
-         * ---------------------------------------------------------
-         *
-         * Everything needed by dashboards is committed together:
-         *
-         * GeneratedCertificate
-         * MeasuringInstrument
-         * VerificationApp
-         * InspectionRecord
-         * DigitalCertificate
-         * PaymentReceipt
-         */
         await prisma.$transaction(async (tx) => {
-          /**
-           * 6.1 GeneratedCertificate
-           */
           await tx.generatedCertificate.create({
             data: {
               certificateId: finalCertPayload.certificateId,
-
               instrumentCategory: finalCertPayload.instrumentCategory,
-
               instrumentSerialNumber: finalCertPayload.instrumentSerialNumber,
-
               lat: finalCertPayload.lat,
-
               long: finalCertPayload.long,
-
               sealImageUrls: finalCertPayload.sealImageUrls,
-
               hash: finalCertPayload.hash,
-
               issueDate: new Date(finalCertPayload.issueDate),
-
               verificationSignature: finalCertPayload.verificationSignature,
-
               status: finalCertPayload.status,
-
               tokenHash: finalCertPayload.token_hash || null,
             },
           });
 
-          /**
-           * 6.2 Update instrument
-           */
           await tx.measuringInstrument.update({
             where: {
               instrument_id: instrument.instrument_id,
             },
-
             data: {
               status: instrumentStatus,
             },
           });
 
-          /**
-           * 6.3 Update application
-           */
           await tx.verificationApp.update({
             where: {
               app_id: application.app_id,
             },
-
             data: {
               workflow_status: workflowStatus,
             },
           });
 
-          /**
-           * 6.4 Create inspection record
-           */
           const inspection = await tx.inspectionRecord.create({
             data: {
               time_taken_minutes: 15,
-
               inspection_mode: "FIELD_OFFLINE",
-
               test_verdict: isRejected ? "FAIL" : "PASS",
-
               geo_latitude: finalCertPayload.lat,
-
               geo_longitude: finalCertPayload.long,
-
               inspector_id: inspectorId,
-
               app_id: application.app_id,
             },
           });
 
-          /**
-           * 6.5 Create dashboard DigitalCertificate
-           */
           await tx.digitalCertificate.create({
             data: {
               certificate_no: finalCertPayload.certificateId,
-
               stamping_quarter_code: "Q3",
-
               issue_date: new Date(finalCertPayload.issueDate),
-
               expiry_date: expiryDate,
-
               sha256_hash: finalCertPayload.hash,
-
               dynamic_qr_url: dynamicQrUrl,
-
               inspection_id: inspection.inspection_id,
-
               instrument_id: instrument.instrument_id,
-
               rejection_reason: isRejected
                 ? "Failed Checklist (Warning)"
                 : null,
             },
           });
 
-          /**
-           * 6.6 Ensure payment is SUCCESS
-           */
           const receipt = await tx.paymentReceipt.findFirst({
             where: {
               app_id: application.app_id,
@@ -1087,7 +862,6 @@ export function createServer() {
               where: {
                 receipt_id: receipt.receipt_id,
               },
-
               data: {
                 payment_status: "SUCCESS",
               },
@@ -1096,27 +870,16 @@ export function createServer() {
             await tx.paymentReceipt.create({
               data: {
                 receipt_no: `REC-${Date.now()}`,
-
                 transaction_id: `TXN-${crypto.randomUUID()}`,
-
                 transaction_date: new Date(),
-
                 payment_method: "UPI",
-
                 statutory_fee: 500,
-
                 carriage_charges: 0,
-
                 adjusting_charges: 0,
-
                 total_amount: 500,
-
                 govt_share: 250,
-
                 gatc_share: 250,
-
                 payment_status: "SUCCESS",
-
                 app_id: application.app_id,
               },
             });
@@ -1127,22 +890,13 @@ export function createServer() {
           "[APPROVAL] Successfully synced inspection and certificate to relational tables:",
           {
             applicationNo: application.application_no,
-
             instrumentId: instrument.instrument_id,
-
             serialNumber: instrument.serial_number,
-
-            certificateId: certificateId,
-
+            certificateId,
             dynamicQrUrl,
           },
         );
 
-        /**
-         * IMPORTANT:
-         * Only tell clients that the certificate exists AFTER
-         * the entire relational transaction has committed.
-         */
         io.emit("certificate_generated", finalCertPayload);
       } catch (error) {
         console.error(
@@ -1152,7 +906,6 @@ export function createServer() {
 
         socket.emit("approval_failed", {
           success: false,
-
           message:
             error instanceof Error
               ? error.message
@@ -1162,9 +915,6 @@ export function createServer() {
     });
   });
 
-  /**
-   * Health check
-   */
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
 
@@ -1173,15 +923,10 @@ export function createServer() {
     });
   });
 
-  /**
-   * QR / certificate verification
-   */
   app.get("/api/verify/:certificateId", async (req, res) => {
     try {
       const { certificateId } = req.params;
-
       const { prisma } = await import("./lib/prisma");
-
       const latestCertificate = await prisma.generatedCertificate.findUnique({
         where: {
           certificateId,
@@ -1217,9 +962,6 @@ export function createServer() {
     }
   });
 
-  /**
-   * List standalone generated certificates
-   */
   app.get("/api/certificates", async (_req, res) => {
     try {
       const { prisma } = await import("./lib/prisma");
@@ -1241,15 +983,10 @@ export function createServer() {
     }
   });
 
-  /**
-   * Download certificate PDF
-   */
   app.get("/api/certificates/:certificateId/download", async (req, res) => {
     try {
       const { certificateId } = req.params;
-
       const { prisma } = await import("./lib/prisma");
-
       const cert = await prisma.generatedCertificate.findUnique({
         where: {
           certificateId,
@@ -1269,41 +1006,22 @@ export function createServer() {
       }
 
       const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
-
       const pdfDoc = await PDFDocument.create();
-
       let page = pdfDoc.addPage([595.28, 841.89]);
-
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
       const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
       const { width, height } = page.getSize();
 
-      /**
-       * Official Colors
-       */
       const navyBlue = rgb(11 / 255, 61 / 255, 145 / 255);
-
       const orange = rgb(249 / 255, 115 / 255, 22 / 255);
-
       const saffron = rgb(255 / 255, 153 / 255, 51 / 255);
-
       const white = rgb(1, 1, 1);
-
       const indiaGreen = rgb(19 / 255, 136 / 255, 8 / 255);
-
       const gray = rgb(0.5, 0.5, 0.5);
-
       const lightGray = rgb(0.97, 0.97, 0.97);
-
       const borderGray = rgb(0.9, 0.9, 0.9);
-
       const darkGray = rgb(0.15, 0.15, 0.15);
 
-      /**
-       * 1. Tricolor Banner
-       */
       const bannerHeight = 6;
 
       page.drawRectangle({
@@ -1330,63 +1048,38 @@ export function createServer() {
         color: indiaGreen,
       });
 
-      /**
-       * 2. Government Header
-       */
       page.drawText("GOVERNMENT OF INDIA", {
         x: width / 2 - 60,
-
         y: height - 50,
-
         size: 10,
-
         font: boldFont,
-
         color: gray,
       });
 
       page.drawText("DEPARTMENT OF CONSUMER AFFAIRS", {
         x: width / 2 - 105,
-
         y: height - 65,
-
         size: 10,
-
         font: boldFont,
-
         color: gray,
       });
 
-      /**
-       * 3. Title Section
-       */
       page.drawText("VERIFIED LEGAL METROLOGY", {
         x: 50,
-
         y: height - 120,
-
         size: 22,
-
         font: boldFont,
-
         color: navyBlue,
       });
 
       page.drawText("OFFICIAL VERIFICATION CERTIFICATE", {
         x: 50,
-
         y: height - 140,
-
         size: 11,
-
         font: boldFont,
-
         color: orange,
       });
 
-      /**
-       * Divider
-       */
       page.drawLine({
         start: {
           x: 50,
@@ -1403,137 +1096,89 @@ export function createServer() {
         color: borderGray,
       });
 
-      /**
-       * 4. Details Box
-       */
       const boxY = height - 280;
 
       page.drawRectangle({
         x: 50,
-
         y: boxY,
-
         width: width - 100,
-
         height: 110,
-
         color: lightGray,
-
         borderColor: borderGray,
-
         borderWidth: 1,
       });
 
       page.drawText("Instrument Category", {
         x: 70,
-
         y: boxY + 85,
-
         size: 9,
-
         font: font,
-
         color: gray,
       });
 
       page.drawText(cert.instrumentCategory || "N/A", {
         x: 70,
-
         y: boxY + 70,
-
         size: 14,
-
         font: boldFont,
-
         color: darkGray,
       });
 
       page.drawText("Serial Number", {
         x: 300,
-
         y: boxY + 85,
-
         size: 9,
-
         font: font,
-
         color: gray,
       });
 
       page.drawText(cert.instrumentSerialNumber, {
         x: 300,
-
         y: boxY + 70,
-
         size: 14,
-
         font: boldFont,
-
         color: darkGray,
       });
 
       page.drawText("Certificate ID", {
         x: 70,
-
         y: boxY + 35,
-
         size: 9,
-
         font: font,
-
         color: gray,
       });
 
       page.drawText(cert.certificateId, {
         x: 70,
-
         y: boxY + 20,
-
         size: 11,
-
         font: font,
-
         color: darkGray,
       });
 
       page.drawText("Issue Date", {
         x: 300,
-
         y: boxY + 35,
-
         size: 9,
-
         font: font,
-
         color: gray,
       });
 
       page.drawText(new Date(cert.issueDate).toLocaleString(), {
         x: 300,
-
         y: boxY + 20,
-
         size: 11,
-
         font: boldFont,
-
         color: darkGray,
       });
 
-      /**
-       * 5. Cryptographic Hash
-       */
       let currentY = boxY - 30;
 
       page.drawText("CRYPTOGRAPHIC HASH", {
         x: 50,
-
         y: currentY,
-
         size: 9,
-
         font: boldFont,
-
         color: gray,
       });
 
@@ -1541,47 +1186,30 @@ export function createServer() {
 
       page.drawRectangle({
         x: 50,
-
         y: currentY,
-
         width: width - 100,
-
         height: 20,
-
         color: white,
-
         borderColor: borderGray,
-
         borderWidth: 1,
       });
 
       page.drawText(cert.hash, {
         x: 60,
-
         y: currentY + 6,
-
         size: 9,
-
         font: font,
-
         color: navyBlue,
       });
 
-      /**
-       * Token hash / digital signature
-       */
       if (cert.tokenHash) {
         currentY -= 30;
 
         page.drawText("DIGITAL SIGNATURE (TOKEN HASH)", {
           x: 50,
-
           y: currentY,
-
           size: 9,
-
           font: boldFont,
-
           color: gray,
         });
 
@@ -1589,47 +1217,30 @@ export function createServer() {
 
         page.drawRectangle({
           x: 50,
-
           y: currentY,
-
           width: width - 100,
-
           height: 20,
-
           color: white,
-
           borderColor: borderGray,
-
           borderWidth: 1,
         });
 
         page.drawText(cert.tokenHash, {
           x: 60,
-
           y: currentY + 6,
-
           size: 9,
-
           font: font,
-
           color: navyBlue,
         });
       }
 
-      /**
-       * 6. Seal Image
-       */
       currentY -= 40;
 
       page.drawText("Live Physical Seal Evidence:", {
         x: 50,
-
         y: currentY,
-
         size: 14,
-
         font: boldFont,
-
         color: navyBlue,
       });
 
@@ -1637,9 +1248,6 @@ export function createServer() {
         for (let i = 0; i < cert.sealImageUrls.length; i++) {
           let imageUrl = cert.sealImageUrls[i];
 
-          /**
-           * Preserve your existing HTTP → HTTPS behavior.
-           */
           if (imageUrl.startsWith("http://")) {
             imageUrl = imageUrl.replace("http://", "https://");
           }
@@ -1663,9 +1271,6 @@ export function createServer() {
               img = await pdfDoc.embedJpg(imgBuffer);
             }
 
-            /**
-             * Scale image to fit nicely.
-             */
             const maxImgWidth = width - 100;
 
             const maxImgHeight = 250;
@@ -1682,9 +1287,6 @@ export function createServer() {
               imgDims = img.scale(scaleFactor);
             }
 
-            /**
-             * Add a new page if necessary.
-             */
             if (currentY - (imgDims.height + 15) < 50) {
               page = pdfDoc.addPage([595.28, 841.89]);
 
@@ -1692,13 +1294,9 @@ export function createServer() {
 
               page.drawText("Live Physical Seal Evidence (Continued):", {
                 x: 50,
-
                 y: currentY,
-
                 size: 14,
-
                 font: boldFont,
-
                 color: navyBlue,
               });
 
@@ -1707,30 +1305,19 @@ export function createServer() {
 
             currentY -= imgDims.height + 15;
 
-            /**
-             * Image border.
-             */
             page.drawRectangle({
               x: 48,
-
               y: currentY - 2,
-
               width: imgDims.width + 4,
-
               height: imgDims.height + 4,
-
               borderColor: orange,
-
               borderWidth: 2,
             });
 
             page.drawImage(img, {
               x: 50,
-
               y: currentY,
-
               width: imgDims.width,
-
               height: imgDims.height,
             });
 
@@ -1750,13 +1337,9 @@ export function createServer() {
               `[Seal Image ${i + 1} could not be loaded into PDF]`,
               {
                 x: 50,
-
                 y: currentY,
-
                 size: 10,
-
                 font,
-
                 color: orange,
               },
             );
@@ -1764,18 +1347,11 @@ export function createServer() {
         }
       }
 
-      /**
-       * Footer
-       */
       page.drawRectangle({
         x: 0,
-
         y: 0,
-
         width,
-
         height: 40,
-
         color: navyBlue,
       });
 
@@ -1783,20 +1359,13 @@ export function createServer() {
         "This is a cryptographically secured verification record. Any modification invalidates this certificate.",
         {
           x: 50,
-
           y: 15,
-
           size: 9,
-
           font,
-
           color: white,
         },
       );
 
-      /**
-       * Save PDF
-       */
       const pdfBytes = await pdfDoc.save();
 
       res.setHeader("Content-Type", "application/pdf");

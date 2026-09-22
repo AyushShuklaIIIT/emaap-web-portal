@@ -10,5 +10,15 @@
     <div id="root"></div>
 
     <script type="module" src="/client/App.tsx"></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.weglot.com/weglot.min.js"
+    ></script>
+    <script>
+      Weglot.initialize({
+        api_key: "%VITE_WEGLOT%"
+      });
+    </script>
+    </script>
   </body>
 </html>

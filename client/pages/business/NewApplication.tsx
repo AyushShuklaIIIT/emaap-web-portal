@@ -1,42 +1,26 @@
+import { FormEvent, type ReactNode, useEffect, useState } from "react";
+import { Loader2, CheckCircle2 } from "lucide-react";
+
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { AppType, PaymentMethod } from "@/services/business/payment.service";
+import { useVerificationMetadata } from "@/hooks/useVerificationMetaData";
 import {
-  Upload,
-  FileText,
-  CheckCircle2,
-  ChevronDown,
-  Check,
-  Loader2,
-} from "lucide-react";
-import { io } from "socket.io-client";
-import { QRCodeCanvas } from "qrcode.react";
-import { backendUrl } from "@/lib/backend-url.ts";
+  VerificationFeeQuote,
+  CreateVerificationApplicationResponse,
+  getVerificationFeeQuote,
+  createVerificationApplication,
+  uploadVerificationDocuments,
+} from "@/services/business/verificationApp.service";
 import { getCurrentUser } from "@/lib/current-user";
 
-const socket = io(backendUrl, {
-  autoConnect: false,
-});
-
-type Accclass = "Class I" | "Class II" | "Class III" | "Class IIII";
-interface VerificationForm {
-  applicationId: string;
-  instrumentCategory: string;
-  instrumentSubCategory: string;
-  modelNo: string;
-  accuracyClass: Accclass;
-  manufacturerName: string;
-  instrumentSerialNumber: string;
-  metric: string;
-  address: string;
-  pincode: number;
-  state: string;
-  lat: number;
-  long: number;
-}
+type FormFieldProps = {
+  label: string;
+  children: ReactNode;
+};
 
 const steps = [
   "Instrument Details",
@@ -44,819 +28,438 @@ const steps = [
   "Review & Payment",
 ];
 
-function FormField({
-  label,
-  children,
-}: {
-  readonly label: string;
-  readonly children: React.ReactNode;
-}) {
+const fieldClassName =
+  "h-11 rounded-lg border-[#E0E0E0] bg-white text-sm text-[#1A1A2E] shadow-none transition-colors placeholder:text-[#8A8A98] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15";
+
+const getAccuracyLabel = (value: string) => {
+  switch (value) {
+    case "CLASS_I":
+      return "Class I";
+
+    case "CLASS_II":
+      return "Class II";
+
+    case "CLASS_III":
+      return "Class III";
+
+    case "CLASS_IIII":
+      return "Class IIII";
+
+    default:
+      return value;
+  }
+};
+
+const formatCurrency = (amount: number) =>
+  amount.toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+function FormField({ label, children }: FormFieldProps) {
   return (
     <label className="flex flex-col gap-2">
       <span className="text-sm font-bold text-[#5C5C70]">{label}</span>
+
       {children}
     </label>
   );
 }
 
-const fieldClassName =
-  "h-11 rounded-lg border-[#E0E0E0] bg-white text-sm text-[#1A1A2E] shadow-none transition-colors placeholder:text-[#8A8A98] hover:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15";
-
-const categories = {
-  "Mass and Weighing": [
-    "Cast Iron, Brass, Bullion & Carat Standard Weights",
-    "Equal/Unequal Arm Balances & Beam Scales",
-    "Commercial & Retail Scales (Class I to Class IIII)",
-    "Industrial Weighbridges & Automatic Rail Weighbridges",
-    "Load Cells & Automatic Check Weighers",
-  ],
-  "Length and Area": [
-    "Rigid & Flexible Rules, Measuring Tapes",
-    "Calipers, Micrometers & Dial Gauges",
-    "Planimeters & Surface Area Measuring Machines",
-  ],
-  "Volume Flow and Capacity": [
-    "Static Capacity Measures & Calibrated Tanks (Road/Rail)",
-    "Laboratory Volume Measures (Flasks, Burettes, Syringes, Pipettes)",
-    "Flowmeters & Piston Metering Pumps",
-  ],
-  "Energy Gas and Fuel": [
-    "Petrol, Diesel, CNG, LNG & Hydrogen Fuel Dispensers",
-    "Single/Multi-Phase Electricity Meters & Smart Meters",
-    "Water Meters, Heat Meters & Gas Flowmeters",
-  ],
-  "Medical and Healthcare": [
-    "Clinical Thermometers & Sphygmomanometers (Blood Pressure Monitors)",
-    "Baby & Bed Weighing Scales",
-    "Radiation Protection Dosemeters",
-    "Clinical Laboratory Analyzers (Glucose, Spectrophotometers, Coagulometers)",
-  ],
-  "Traffic and Transport": [
-    "Speedometers, Chronotachographs & Traffic Control Radars",
-    "Axle Load Weighers & Breath Testers",
-    "Taximeters & Automobile Tire Pressure Gauges",
-  ],
-  "Environmental and Safety": [
-    "Sound Level Meters & Smoke Density Meters",
-    "Vehicle Exhaust Analyzers (CO/SO2) & Gas Detectors",
-    "Boiler Pressure Gauges & Electrical Safety Relays",
-  ],
-  "Official and Public Utility": [
-    "Postal Scales & Customs/Toll Legislation Meters",
-    "Ship/Barge Gauging Equipment & Geodetic Instruments",
-    "Gaming & Slot Machines",
-  ],
-};
-
-const statesAndUnionTerritories = [
-  { value: "AP", label: "Andhra Pradesh (AP)" },
-  { value: "AR", label: "Arunachal Pradesh (AR)" },
-  { value: "AS", label: "Assam (AS)" },
-  { value: "BR", label: "Bihar (BR)" },
-  { value: "CG", label: "Chhattisgarh (CG)" },
-  { value: "GA", label: "Goa (GA)" },
-  { value: "GJ", label: "Gujarat (GJ)" },
-  { value: "HR", label: "Haryana (HR)" },
-  { value: "HP", label: "Himachal Pradesh (HP)" },
-  { value: "JH", label: "Jharkhand (JH)" },
-  { value: "KA", label: "Karnataka (KA)" },
-  { value: "KL", label: "Kerala (KL)" },
-  { value: "MP", label: "Madhya Pradesh (MP)" },
-  { value: "MH", label: "Maharashtra (MH)" },
-  { value: "MN", label: "Manipur (MN)" },
-  { value: "ML", label: "Meghalaya (ML)" },
-  { value: "MZ", label: "Mizoram (MZ)" },
-  { value: "NL", label: "Nagaland (NL)" },
-  { value: "OD", label: "Odisha (OD)" },
-  { value: "PB", label: "Punjab (PB)" },
-  { value: "RJ", label: "Rajasthan (RJ)" },
-  { value: "SK", label: "Sikkim (SK)" },
-  { value: "TN", label: "Tamil Nadu (TN)" },
-  { value: "TS", label: "Telangana (TS)" },
-  { value: "TR", label: "Tripura (TR)" },
-  { value: "UK", label: "Uttarakhand (UK)" },
-  { value: "UP", label: "Uttar Pradesh (UP)" },
-  { value: "WB", label: "West Bengal (WB)" },
-  { value: "AN", label: "Andaman and Nicobar Islands (AN)" },
-  { value: "CH", label: "Chandigarh (CH)" },
-  { value: "DN", label: "Dadra and Nagar Haveli and Daman and Diu (DN)" },
-  { value: "DL", label: "Delhi (DL)" },
-  { value: "JK", label: "Jammu and Kashmir (JK)" },
-  { value: "LA", label: "Ladakh (LA)" },
-  { value: "LD", label: "Lakshadweep (LD)" },
-  { value: "PY", label: "Puducherry (PY)" },
-];
-
 export default function NewApplication() {
-  const navigate = useNavigate();
+  const {
+    data: metadata,
+    isLoading: metadataLoading,
+    error: metadataError,
+  } = useVerificationMetadata();
+
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [instrumentSubCategory, setInstrumentSubCategory] = useState("");
+  const [appType, setAppType] = useState<AppType>("INITIAL");
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState("");
   const [modelNo, setModelNo] = useState("");
-  const [accuracyClass, setAccuracyClass] = useState<Accclass>("Class II");
   const [manufacturerName, setManufacturerName] = useState("");
   const [instrumentSerialNumber, setInstrumentSerialNumber] = useState("");
   const [metric, setMetric] = useState("");
   const [address, setAddress] = useState("");
   const [pincode, setPincode] = useState<number | null>(null);
+  const [stateCode, setStateCode] = useState("");
+  const [coordinates, setCoordinates] = useState("");
   const [manufacturerInvoice, setManufacturerInvoice] = useState<File | null>(
     null,
   );
-  const [state, setState] = useState("MH");
-  const [coordinates, setCoordinates] = useState("");
-  const [prevCertificate, setPrevCertificate] = useState<File | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [previousCertificate, setPreviousCertificate] = useState<File | null>(
+    null,
+  );
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("UPI");
+  const [feeQuote, setFeeQuote] = useState<VerificationFeeQuote | null>(null);
+  const [isQuoting, setIsQuoting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionResult, setSubmissionResult] =
+    useState<CreateVerificationApplicationResponse | null>(null);
+  const [uploadWarning, setUploadWarning] = useState<string | null>(null);
 
-  const [connected, setConnected] = useState(false);
-  const [socketId, setSocketId] = useState<string | undefined>();
-  const [certificateData, setCertificateData] = useState<any>(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const selectedCategory = metadata?.categories.find(
+    (category) => category.category_code === selectedCategoryCode,
+  );
 
   useEffect(() => {
-    const onConnect = () => {
-      console.log("Socket connected:", socket.id);
-      setConnected(true);
-      setSocketId(socket.id);
-    };
+    if (!metadata || stateCode) {
+      return;
+    }
 
-    const onDisconnect = () => {
-      console.log("Socket disconnected");
-      setConnected(false);
-      setSocketId(undefined);
-    };
+    const currentUser = getCurrentUser() as {
+      jurisdiction_state?: string;
+      stateCode?: string;
+      state?: string;
+    } | null;
 
-    const onConnectError = (error: Error) => {
-      console.error("Socket connection error:", error.message);
-    };
+    const userState =
+      currentUser?.jurisdiction_state ||
+      currentUser?.stateCode ||
+      currentUser?.state ||
+      "";
 
-    const onReply = (data: unknown) => {
-      console.log(JSON.stringify(data));
-    };
+    const matchingState = metadata.states.find(
+      (state) => state.state_code === userState,
+    );
 
-    socket.on("reply", onReply);
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("connect_error", onConnectError);
-    socket.on("error", (err) => {
-      console.error("Socket error from server:", err);
-      alert(`Server error: ${err.message || "An error occurred"}`);
-    });
-    socket.on("certificate_generated", (data) => {
-      console.log("BOOM! Certificate received from LMO:", data);
-      setCertificateData(data);
-    });
+    if (matchingState) {
+      setStateCode(matchingState.state_code);
 
-    socket.connect();
+      return;
+    }
 
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("connect_error", onConnectError);
-      socket.off("reply", onReply);
-      socket.off("error");
-      socket.off("certificate_generated");
-      socket.disconnect();
-    };
-  }, []);
+    if (metadata.states.length > 0) {
+      setStateCode(metadata.states[0].state_code);
+    }
+  }, [metadata, stateCode]);
 
-  const renderInstrumentForm = () => {
-    return (
-      <form
-        className="px-4 pb-8 pt-6 sm:px-10 sm:pt-8"
-        onSubmit={(event) => {
-          event.preventDefault();
-          setCurrentStep(1);
-        }}
-      >
-        <div className="mb-6">
-          <h2 className="text-base font-bold text-[#1A1A2E]">
-            Instrument Details
-          </h2>
-          <p className="mt-1 text-sm text-[#5C5C70]">
-            Provide the details exactly as they appear on the manufacturer's
-            documentation.
-          </p>
-        </div>
+  const getLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <FormField label="Instrument Category">
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setInstrumentSubCategory("");
-              }}
-              className={`${fieldClassName} w-full px-3 outline-none`}
-            >
-              <option value="">Select a category</option>
-              {Object.entries(categories).map(([key]) => (
-                <option key={key} value={key}>
-                  {key}
-                </option>
-              ))}
-            </select>
+      return;
+    }
 
-            {selectedCategory && (
-              <select
-                value={instrumentSubCategory}
-                onChange={(e) => setInstrumentSubCategory(e.target.value)}
-                className={`${fieldClassName} w-full px-3 outline-none mt-2`}
-              >
-                <option value="">Select a subcategory</option>
-                {categories[selectedCategory as keyof typeof categories].map(
-                  (subcategory) => (
-                    <option key={subcategory} value={subcategory}>
-                      {subcategory}
-                    </option>
-                  ),
-                )}
-              </select>
-            )}
-          </FormField>
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
 
-          <FormField label="Manufacturer Name">
-            <Input
-              value={manufacturerName}
-              placeholder="e.g. Gilbarco Veeder-Root"
-              className={fieldClassName}
-              onChange={(e) => setManufacturerName(e.target.value)}
-            />
-          </FormField>
+        setCoordinates(`${latitude}, ${longitude}`);
+      },
+      (error) => {
+        console.error(error);
 
-          <FormField label="Model Number">
-            <Input
-              value={modelNo}
-              placeholder="e.g. CNG-Advantage-2025"
-              className={fieldClassName}
-              onChange={(e) => setModelNo(e.target.value)}
-            />
-          </FormField>
-
-          <FormField label="Instrument Serial Number">
-            <Input
-              value={instrumentSerialNumber}
-              placeholder="e.g. SN-8849201-MH"
-              className={fieldClassName}
-              onChange={(e) => setInstrumentSerialNumber(e.target.value)}
-            />
-          </FormField>
-
-          <FormField label="Accuracy Class">
-            <select
-              value={accuracyClass}
-              className={`${fieldClassName} w-full px-3 outline-none`}
-              onChange={(e) => setAccuracyClass(e.target.value as Accclass)}
-            >
-              <option value="Class I">Class I</option>
-              <option value="Class II">Class II</option>
-              <option value="Class III">Class III</option>
-              <option value="Class IIII">Class IIII</option>
-            </select>
-          </FormField>
-
-          <FormField label="Maximum Capacity / Flow Rate">
-            <Input
-              value={metric}
-              placeholder="e.g. 50 kg/min"
-              className={fieldClassName}
-              onChange={(e) => setMetric(e.target.value)}
-            />
-          </FormField>
-        </div>
-
-        <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
-          <Button
-            type="submit"
-            className="h-11 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]"
-          >
-            Next: Location &amp; Documents
-          </Button>
-        </div>
-      </form>
+        alert("Unable to get your location.");
+      },
     );
   };
 
-  const renderLocationDocumentsForm = () => {
-    const getLocation = () => {
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser.");
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setCoordinates(`${latitude}, ${longitude}`);
-        },
-        (error) => {
-          console.error(error);
-          alert("Unable to get your location.");
-        },
-      );
-    };
-
-    return (
-      <form
-        className="px-4 pb-8 pt-6 sm:px-10 sm:pt-8"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setCurrentStep(2); // Move to Review & Payment Step
-        }}
-      >
-        <div className="mb-6">
-          <h2 className="text-base font-bold text-[#1A1A2E]">
-            Location & Documents
-          </h2>
-          <p className="mt-1 text-sm text-[#5C5C70]">
-            Provide the physical installation address and upload all required
-            compliance documents.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <FormField label="Installation Address (Line 1)">
-            <Input
-              value={address}
-              placeholder="e.g. Jio-BP Station, BKC"
-              className={fieldClassName}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </FormField>
-
-          <FormField label="State / UT">
-            <select
-              value={state}
-              className={`${fieldClassName} w-full px-3 outline-none`}
-              onChange={(e) => setState(e.target.value)}
-            >
-              {statesAndUnionTerritories.map((state) => (
-                <option key={state.value} value={state.value}>
-                  {state.label}
-                </option>
-              ))}
-            </select>
-          </FormField>
-
-          <FormField label="Pincode">
-            <Input
-              type="number"
-              value={pincode ?? ""}
-              placeholder="e.g. 400051"
-              className={fieldClassName}
-              onChange={(e) =>
-                setPincode(
-                  e.target.value === "" ? null : Number(e.target.value),
-                )
-              }
-            />
-          </FormField>
-
-          <FormField label="Geo-Coordinates (Lat, Long)">
-            <div className="flex gap-2">
-              <Input
-                value={coordinates}
-                onChange={(e) => setCoordinates(e.target.value)}
-                placeholder="Latitude, Longitude"
-                className={fieldClassName}
-              />
-              <Button
-                type="button"
-                onClick={getLocation}
-                className="h-11 whitespace-nowrap"
-              >
-                Use My Location
-              </Button>
-            </div>
-          </FormField>
-
-          <FormField label="Manufacturer Invoice / Import Doc">
-            <Input
-              type="file"
-              className={`${fieldClassName} py-2`}
-              onChange={(e) =>
-                setManufacturerInvoice(e.target.files?.[0] ?? null)
-              }
-            />
-            {manufacturerInvoice && (
-              <p className="mt-2 text-sm text-gray-600">
-                Selected file: {manufacturerInvoice.name}
-              </p>
-            )}
-          </FormField>
-
-          <FormField label="Previous Certificate (If Renewal)">
-            <Input
-              type="file"
-              className={`${fieldClassName} py-2`}
-              onChange={(e) => setPrevCertificate(e.target.files?.[0] ?? null)}
-            />
-            {prevCertificate && (
-              <p className="mt-2 text-sm text-gray-600">
-                Selected file: {prevCertificate.name}
-              </p>
-            )}
-          </FormField>
-        </div>
-
-        <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
-          <Button
-            type="button"
-            onClick={() => setCurrentStep(0)}
-            variant="ghost"
-            className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
-          >
-            Back
-          </Button>
-          <Button
-            type="submit"
-            className="h-11 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]"
-          >
-            Next: Review &amp; Payment
-          </Button>
-        </div>
-      </form>
-    );
-  };
-
-  const renderReviewPaymentForm = () => {
-    return (
-      <form
-        className="px-4 pb-8 pt-6 sm:px-10 sm:pt-8"
-        onSubmit={submitApplication}
-      >
-        <div className="mb-6">
-          <h2 className="text-base font-bold text-[#1A1A2E]">
-            Review & Payment
-          </h2>
-          <p className="mt-1 text-sm text-[#5C5C70]">
-            Review your statutory verification fee and select a dummy payment
-            method to complete the application.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-          {/* Left Column: Fee Summary */}
-          <div className="rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-6">
-            <h3 className="mb-4 font-bold text-[#1A1A2E]">Fee Summary</h3>
-            <div className="mb-2 flex justify-between text-sm">
-              <span className="text-[#5C5C70]">Instrument Category</span>
-              <span className="max-w-[60%] text-right font-medium text-[#1A1A2E]">
-                {selectedCategory || "Not Selected"}
-              </span>
-            </div>
-            <div className="mb-2 flex justify-between text-sm">
-              <span className="text-[#5C5C70]">Statutory Verification Fee</span>
-              <span className="font-medium text-[#1A1A2E]">₹10,000.00</span>
-            </div>
-            <div className="mb-2 flex justify-between text-sm">
-              <span className="text-[#5C5C70]">Processing Fee</span>
-              <span className="font-medium text-[#1A1A2E]">₹0.00</span>
-            </div>
-            <div className="my-4 border-t border-[#E0E0E0]" />
-            <div className="flex justify-between text-lg font-bold">
-              <span className="text-[#1A1A2E]">Total Payable</span>
-              <span className="text-[#1E8E3E]">₹10,000.00</span>
-            </div>
-          </div>
-
-          {/* Right Column: Payment Options */}
-          <div>
-            <h3 className="mb-4 font-bold text-[#1A1A2E]">
-              Select Payment Method
-            </h3>
-            <div className="flex flex-col gap-3">
-              <Label
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
-                  paymentMethod === "upi"
-                    ? "border-[#0B3D91] bg-blue-50"
-                    : "border-[#E0E0E0] bg-white"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  value="upi"
-                  checked={paymentMethod === "upi"}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="h-4 w-4 text-[#0B3D91]"
-                />
-                <span className="font-medium">UPI (GPay, PhonePe, Paytm)</span>
-              </Label>
-              <Label
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
-                  paymentMethod === "netbanking"
-                    ? "border-[#0B3D91] bg-blue-50"
-                    : "border-[#E0E0E0] bg-white"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  value="netbanking"
-                  checked={paymentMethod === "netbanking"}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="h-4 w-4 text-[#0B3D91]"
-                />
-                <span className="font-medium">
-                  Corporate Net Banking / NEFT
-                </span>
-              </Label>
-              <Label
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
-                  paymentMethod === "card"
-                    ? "border-[#0B3D91] bg-blue-50"
-                    : "border-[#E0E0E0] bg-white"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  value="card"
-                  checked={paymentMethod === "card"}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="h-4 w-4 text-[#0B3D91]"
-                />
-                <span className="font-medium">Credit / Debit Card</span>
-              </Label>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
-          <Button
-            type="button"
-            onClick={() => setCurrentStep(1)}
-            variant="ghost"
-            className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
-          >
-            Back
-          </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="h-11 rounded-lg bg-[#0B3D91] px-5 font-bold text-white shadow-none hover:bg-[#082b66]"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              "Pay ₹10,000 & Submit Application"
-            )}
-          </Button>
-        </div>
-      </form>
-    );
-  };
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const submitApplication = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const applicationId =
-      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2, 15)}`;
-
+  const parseCoordinates = (): {
+    latitude: number;
+    longitude: number;
+  } | null => {
     const [latitude, longitude] = coordinates
       .split(",")
       .map((value) => Number(value.trim()));
 
-    if (!accuracyClass) {
-      alert("Please select an accuracy class");
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return null;
+    }
+
+    return {
+      latitude,
+      longitude,
+    };
+  };
+
+  const handleInstrumentStep = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!appType) {
+      alert("Please select the application type.");
+      return;
+    }
+
+    if (!selectedCategory) {
+      alert("Please select an instrument category.");
+      return;
+    }
+
+    if (!manufacturerName.trim()) {
+      alert("Please enter the manufacturer name.");
+      return;
+    }
+
+    if (!modelNo.trim()) {
+      alert("Please enter the model number.");
+      return;
+    }
+
+    if (!instrumentSerialNumber.trim()) {
+      alert("Please enter the instrument serial number.");
+      return;
+    }
+
+    if (!metric.trim()) {
+      alert("Please enter the maximum capacity / flow rate.");
+      return;
+    }
+
+    setCurrentStep(1);
+  };
+
+  const handleLocationStep = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!address.trim()) {
+      alert("Please enter the installation address.");
+      return;
+    }
+
+    if (pincode === null || !Number.isInteger(pincode)) {
+      alert("Please enter a valid 6-digit pincode.");
+      return;
+    }
+
+    if (!stateCode) {
+      alert("Please select a state.");
+      return;
+    }
+
+    const location = parseCoordinates();
+
+    if (!location) {
+      alert("Please enter valid latitude and longitude coordinates.");
+      return;
+    }
+
+    if (!selectedCategory) {
+      alert("Please select an instrument category.");
+      return;
+    }
+
+    const currentUser = getCurrentUser();
+
+    if (!currentUser?.userId) {
+      alert("User not found. Please log in again.");
+      return;
+    }
+
+    try {
+      setIsQuoting(true);
+
+      const quote = await getVerificationFeeQuote({
+        userId: currentUser.userId,
+        categoryCode: selectedCategory.category_code,
+        stateCode,
+        metric,
+      });
+
+      setFeeQuote(quote);
+
+      setCurrentStep(2);
+    } catch (error) {
+      console.error("Fee quote failed:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Unable to calculate verification fee.",
+      );
+    } finally {
+      setIsQuoting(false);
+    }
+  };
+
+  const submitApplication = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
+
+    const currentUser = getCurrentUser();
+
+    if (!currentUser?.userId) {
+      alert("User not found. Please log in again.");
+      return;
+    }
+
+    if (!selectedCategory) {
+      alert("Please select an instrument category.");
+      return;
+    }
+
+    if (!feeQuote) {
+      alert(
+        "Fee quote is missing. Please go back and calculate the fee again.",
+      );
+      return;
+    }
+
+    const location = parseCoordinates();
+
+    if (!location) {
+      alert("Invalid location coordinates.");
       return;
     }
 
     if (pincode === null) {
-      alert("Please enter a pincode");
+      alert("Please enter a pincode.");
       return;
     }
 
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-      alert("Please enter valid latitude and longitude coordinates");
+    if (!manufacturerInvoice) {
+      alert("Please upload the manufacturer invoice / import document.");
       return;
     }
 
     setIsSubmitting(true);
+    setUploadWarning(null);
 
-    const payload: VerificationForm & {
-      userId?: string;
-      businessName?: string;
-    } = {
-      applicationId,
-      instrumentCategory: selectedCategory,
-      instrumentSubCategory,
-      modelNo,
-      accuracyClass,
-      manufacturerName,
-      instrumentSerialNumber,
-      metric,
-      address,
-      pincode,
-      state,
-      lat: latitude,
-      long: longitude,
-    };
-
-    const currentUser = getCurrentUser();
-    if (!currentUser?.userId) {
-      alert("Error: User not found in localStorage. Please log in again.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    payload.userId = currentUser.userId;
-    payload.businessName =
-      currentUser.businessName ||
-      currentUser.fullName ||
-      "Default Business Name";
-
-    console.log(`Sent Data`, payload);
-
-    socket.emit("data", payload);
-
-    if (!manufacturerInvoice) {
-      alert("No Manufacturer Invoice Uploaded (Proceeding for Demo...)");
-    }
-
-    const formData = new FormData();
-    if (manufacturerInvoice) {
-      formData.append("manufacturerFile", manufacturerInvoice);
-    }
-    formData.append("applicationId", applicationId);
-    if (prevCertificate) {
-      formData.append("prevCertificateFile", prevCertificate);
-    }
     try {
-      await fetch(`${backendUrl}/api/upload`, {
-        method: "POST",
-        body: formData,
+      const uploadResult = await uploadVerificationDocuments(
+        manufacturerInvoice,
+        previousCertificate,
+      );
+
+      const result = await createVerificationApplication({
+        userId: currentUser.userId,
+        appType,
+        categoryCode: selectedCategory.category_code,
+        instrumentSubCategory: selectedCategory.category_name,
+        modelNo,
+        manufacturerName,
+        instrumentSerialNumber,
+        metric,
+        address,
+        pincode,
+        stateCode,
+        lat: location.latitude,
+        long: location.longitude,
+        paymentMethod,
+        manufacturerFileUrl: uploadResult.manufacturerFileUrl,
+        prevCertificateFileUrl: uploadResult.prevCertificateFileUrl,
+        applicationId: uploadResult.applicationId,
       });
-      console.log("File uploaded successfully");
+
+      setSubmissionResult(result);
     } catch (error) {
-      console.error("File upload failed", error);
+      console.error("Application submission failed:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Failed to submit application.",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
-    navigate("/business/application-submitted", {
-      state: { applicationId },
-    });
   };
 
-  const startAnotherApplication = () => {
-    setIsSubmitted(false);
-    setCertificateData(null);
+  const resetApplication = () => {
     setCurrentStep(0);
-    setSelectedCategory("");
-    setInstrumentSubCategory("");
+    setAppType("INITIAL");
+    setSelectedCategoryCode("");
     setModelNo("");
-    setAccuracyClass("Class II");
     setManufacturerName("");
     setInstrumentSerialNumber("");
     setMetric("");
     setAddress("");
     setPincode(null);
-    setManufacturerInvoice(null);
-    setState("MH");
     setCoordinates("");
-    setPrevCertificate(null);
-    setPaymentMethod("upi");
+    setManufacturerInvoice(null);
+    setPreviousCertificate(null);
+    setPaymentMethod("UPI");
+    setFeeQuote(null);
+    setSubmissionResult(null);
+    setUploadWarning(null);
   };
 
-  if (isSubmitted) {
+  if (submissionResult) {
     return (
       <DashboardLayout role="business">
         <section className="mx-auto max-w-200 rounded-xl border border-[#E0E0E0] bg-white p-5 text-center shadow-card sm:p-10">
           <div className="mb-6 flex justify-center">
             <div className="rounded-full bg-[#E8F5E9] p-4">
-              <svg
-                className="h-12 w-12 text-[#1E8E3E]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+              <CheckCircle2 className="h-12 w-12 text-[#1E8E3E]" />
             </div>
           </div>
 
           <h1 className="mb-2 text-3xl font-bold text-[#1A1A2E]">
             Application Submitted
           </h1>
+
           <p className="mx-auto max-w-xl text-[#5C5C70]">
             Your verification application has been submitted successfully.
-            Please wait for a response from the LMO officer.
           </p>
+
+          <div className="mx-auto mt-8 max-w-lg rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-6 text-left">
+            <div className="mb-4">
+              <p className="text-xs font-bold uppercase text-[#5C5C70]">
+                Application Number
+              </p>
+
+              <p className="mt-1 font-semibold text-[#1A1A2E]">
+                {submissionResult.applicationNo}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs font-bold uppercase text-[#5C5C70]">
+                Application Type
+              </p>
+
+              <p className="mt-1 font-semibold text-[#1A1A2E]">
+                {submissionResult.applicationType === "RE_VERIFICATION"
+                  ? "Re-verification"
+                  : "Initial Verification"}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs font-bold uppercase text-[#5C5C70]">
+                Instrument Category
+              </p>
+
+              <p className="mt-1 font-semibold text-[#1A1A2E]">
+                {submissionResult.category.categoryName}
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-xs font-bold uppercase text-[#5C5C70]">
+                Receipt Number
+              </p>
+
+              <p className="mt-1 font-semibold text-[#1A1A2E]">
+                {submissionResult.payment.receiptNo}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-xs font-bold uppercase text-[#5C5C70]">
+                Amount Paid
+              </p>
+
+              <p className="mt-1 text-xl font-bold text-[#1E8E3E]">
+                ₹{formatCurrency(submissionResult.payment.totalAmount)}
+              </p>
+            </div>
+          </div>
+
+          {uploadWarning && (
+            <div className="mx-auto mt-6 max-w-lg rounded-lg bg-amber-50 p-4 text-left text-sm text-amber-800">
+              {uploadWarning}
+            </div>
+          )}
 
           <Button
             className="mt-8 bg-[#0B3D91] hover:bg-[#082b66]"
-            onClick={startAnotherApplication}
+            onClick={resetApplication}
           >
             Start Another Application
-          </Button>
-        </section>
-      </DashboardLayout>
-    );
-  }
-
-  if (certificateData) {
-    const verificationUrl = `${window.location.origin}/verify/${certificateData.certificateId}?sig=${encodeURIComponent(certificateData.verificationSignature ?? "")}`;
-
-    return (
-      <DashboardLayout role="business">
-        <section className="mx-auto max-w-200 rounded-xl border border-[#1E8E3E] bg-white p-5 text-center shadow-lg sm:p-10">
-          <div className="mb-6 flex justify-center">
-            <div className="rounded-full bg-[#E8F5E9] p-4">
-              <svg
-                className="h-12 w-12 text-[#1E8E3E]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-          </div>
-
-          <h1 className="mb-2 text-3xl font-bold text-[#1A1A2E]">
-            Verification Complete
-          </h1>
-          <p className="mb-8 text-[#5C5C70]">
-            Digital Certificate generated securely via Legal Metrology
-            Authority.
-          </p>
-
-          <div className="mb-8 grid grid-cols-1 gap-5 rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-4 text-left sm:grid-cols-2 sm:gap-8 sm:p-6">
-            <div>
-              <p className="mb-1 text-xs font-bold uppercase text-[#5C5C70]">
-                Certificate ID
-              </p>
-              <p className="font-semibold text-[#1A1A2E]">
-                {certificateData.certificateId}
-              </p>
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-bold uppercase text-[#5C5C70]">
-                Instrument
-              </p>
-              <p className="font-semibold text-[#1A1A2E]">
-                {certificateData.instrumentCategory || "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-bold uppercase text-[#5C5C70]">
-                Serial Number
-              </p>
-              <p className="font-semibold text-[#1A1A2E]">
-                {certificateData.instrumentSerialNumber || "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="mb-1 text-xs font-bold uppercase text-[#5C5C70]">
-                Cryptographic Hash (SHA-256)
-              </p>
-              <p className="truncate rounded bg-blue-50 p-1 font-mono text-xs text-[#0B3D91]">
-                {certificateData.hash}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#E0E0E0] bg-white p-6">
-            <h3 className="mb-4 font-bold text-[#0B3D91]">
-              Scan to Verify Physical Seal
-            </h3>
-            <QRCodeCanvas
-              value={verificationUrl}
-              size={200}
-              fgColor="#1A1A2E"
-              level="H"
-              marginSize={4}
-            />
-            <p className="mt-4 max-w-sm text-sm text-[#5C5C70]">
-              Judges: Please scan this QR code with your smartphone camera to
-              view the live geo-tagged seal evidence.
-            </p>
-          </div>
-
-          <Button
-            className="mt-8 bg-[#0B3D91] hover:bg-[#082b66]"
-            onClick={() => {
-              setCertificateData(null);
-              setCurrentStep(0);
-            }}
-          >
-            Submit Another Application
           </Button>
         </section>
       </DashboardLayout>
@@ -875,13 +478,12 @@ export default function NewApplication() {
             {steps.map((step, index) => {
               const isActive = index <= currentStep;
               const isCurrent = index === currentStep;
-              let stepTextClass = "font-medium text-[#7B7F89]";
-              if (isActive) {
-                stepTextClass = "font-bold text-[#1A1A2E]";
-              }
-              if (isCurrent) {
-                stepTextClass = "font-bold text-[#0B3D91]";
-              }
+              const textClass = isCurrent
+                ? "font-bold text-[#0B3D91]"
+                : isActive
+                  ? "font-bold text-[#1A1A2E]"
+                  : "font-medium text-[#7B7F89]";
+
               return (
                 <div
                   key={step}
@@ -897,12 +499,12 @@ export default function NewApplication() {
                     >
                       {index + 1}
                     </div>
-                    <span
-                      className={`hidden text-sm sm:block ${stepTextClass}`}
-                    >
+
+                    <span className={`hidden text-sm sm:block ${textClass}`}>
                       {step}
                     </span>
                   </div>
+
                   {index < steps.length - 1 && (
                     <div
                       className={`mx-4 mt-4.5 h-px flex-1 ${
@@ -918,9 +520,517 @@ export default function NewApplication() {
 
         <div className="border-t border-[#E8E9EC]" />
 
-        {currentStep === 0 && renderInstrumentForm()}
-        {currentStep === 1 && renderLocationDocumentsForm()}
-        {currentStep === 2 && renderReviewPaymentForm()}
+        {currentStep === 0 && (
+          <form
+            className="px-4 pb-8 pt-6 sm:px-10 sm:pt-8"
+            onSubmit={handleInstrumentStep}
+          >
+            <div className="mb-6">
+              <h2 className="text-base font-bold text-[#1A1A2E]">
+                Instrument Details
+              </h2>
+
+              <p className="mt-1 text-sm text-[#5C5C70]">
+                Select the instrument category from the categories configured in
+                the Legal Metrology system.
+              </p>
+            </div>
+
+            {metadataLoading && (
+              <div className="mb-6 flex items-center gap-2 rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading instrument categories...
+              </div>
+            )}
+
+            {metadataError && (
+              <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-700">
+                {metadataError}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField label="Application Type">
+                <select
+                  value={appType}
+                  onChange={(event) =>
+                    setAppType(event.target.value as AppType)
+                  }
+                  className={`${fieldClassName} w-full px-3 outline-none`}
+                >
+                  <option value="INITIAL">Initial Verification</option>
+
+                  <option value="RE_VERIFICATION">Re-verification</option>
+                </select>
+              </FormField>
+
+              <FormField label="Instrument Category">
+                <select
+                  value={selectedCategoryCode}
+                  disabled={metadataLoading || !metadata}
+                  onChange={(event) => {
+                    setSelectedCategoryCode(event.target.value);
+                  }}
+                  className={`${fieldClassName} w-full px-3 outline-none`}
+                >
+                  <option value="">Select a category</option>
+
+                  {metadata?.categories.map((category) => (
+                    <option
+                      key={category.category_id}
+                      value={category.category_code}
+                    >
+                      {category.category_name}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField label="Manufacturer Name">
+                <Input
+                  value={manufacturerName}
+                  placeholder="e.g. Gilbarco Veeder-Root"
+                  className={fieldClassName}
+                  onChange={(event) => setManufacturerName(event.target.value)}
+                />
+              </FormField>
+
+              <FormField label="Model Number">
+                <Input
+                  value={modelNo}
+                  placeholder="e.g. CNG-Advantage-2025"
+                  className={fieldClassName}
+                  onChange={(event) => setModelNo(event.target.value)}
+                />
+              </FormField>
+
+              <FormField label="Instrument Serial Number">
+                <Input
+                  value={instrumentSerialNumber}
+                  placeholder="e.g. SN-8849201-MH"
+                  className={fieldClassName}
+                  onChange={(event) =>
+                    setInstrumentSerialNumber(event.target.value)
+                  }
+                />
+              </FormField>
+
+              <FormField label="Accuracy Class">
+                <Input
+                  value={
+                    selectedCategoryCode
+                      ? getAccuracyLabel(selectedCategory.accuracy_class)
+                      : ""
+                  }
+                  readOnly
+                  placeholder="Selected category determines accuracy class"
+                  className={fieldClassName}
+                />
+              </FormField>
+
+              <FormField label="Maximum Capacity / Flow Rate">
+                <Input
+                  value={metric}
+                  placeholder="e.g. 50 kg/min"
+                  className={fieldClassName}
+                  onChange={(event) => setMetric(event.target.value)}
+                />
+              </FormField>
+            </div>
+
+            {selectedCategory && (
+              <div className="mt-6 rounded-lg border border-blue-100 bg-blue-50 p-4">
+                <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs font-bold uppercase text-[#5C5C70]">
+                      Category Code
+                    </p>
+
+                    <p className="mt-1 font-medium text-[#1A1A2E]">
+                      {selectedCategory.category_code}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-bold uppercase text-[#5C5C70]">
+                      OIML Standard
+                    </p>
+
+                    <p className="mt-1 font-medium text-[#1A1A2E]">
+                      {selectedCategory.oiml_standard_ref}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-bold uppercase text-[#5C5C70]">
+                      Verification Cycle
+                    </p>
+
+                    <p className="mt-1 font-medium text-[#1A1A2E]">
+                      {selectedCategory.verification_cycle_months} months
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-10 flex justify-end border-t border-[#E8E9EC] pt-6">
+              <Button
+                type="submit"
+                disabled={metadataLoading || !metadata}
+                className="h-11 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]"
+              >
+                Next: Location & Documents
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {currentStep === 1 && (
+          <form
+            className="px-4 pb-8 pt-6 sm:px-10 sm:pt-8"
+            onSubmit={handleLocationStep}
+          >
+            <div className="mb-6">
+              <h2 className="text-base font-bold text-[#1A1A2E]">
+                Location & Documents
+              </h2>
+
+              <p className="mt-1 text-sm text-[#5C5C70]">
+                Provide the physical installation location and required
+                documents.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField label="Installation Address">
+                <Input
+                  value={address}
+                  placeholder="e.g. Jio-BP Station, BKC"
+                  className={fieldClassName}
+                  onChange={(event) => setAddress(event.target.value)}
+                />
+              </FormField>
+
+              <FormField label="State / UT">
+                <select
+                  value={stateCode}
+                  onChange={(event) => setStateCode(event.target.value)}
+                  className={`${fieldClassName} w-full px-3 outline-none`}
+                >
+                  <option value="">Select state</option>
+
+                  {metadata?.states.map((state) => (
+                    <option key={state.state_id} value={state.state_code}>
+                      {state.state_name} ({state.state_code})
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField label="Pincode">
+                <Input
+                  type="number"
+                  min="100000"
+                  max="999999"
+                  value={pincode ?? ""}
+                  placeholder="e.g. 400051"
+                  className={fieldClassName}
+                  onChange={(event) => {
+                    const value = event.target.value;
+
+                    setPincode(value === "" ? null : Number(value));
+                  }}
+                />
+              </FormField>
+
+              <FormField label="Geo-Coordinates (Lat, Long)">
+                <div className="flex gap-2">
+                  <Input
+                    value={coordinates}
+                    onChange={(event) => setCoordinates(event.target.value)}
+                    placeholder="Latitude, Longitude"
+                    className={fieldClassName}
+                  />
+
+                  <Button
+                    type="button"
+                    onClick={getLocation}
+                    className="h-11 whitespace-nowrap"
+                  >
+                    Use My Location
+                  </Button>
+                </div>
+              </FormField>
+
+              <FormField label="Manufacturer Invoice / Import Document">
+                <Input
+                  type="file"
+                  className={`${fieldClassName} py-2`}
+                  onChange={(event) =>
+                    setManufacturerInvoice(event.target.files?.[0] ?? null)
+                  }
+                />
+
+                {manufacturerInvoice && (
+                  <p className="text-sm text-gray-600">
+                    {manufacturerInvoice.name}
+                  </p>
+                )}
+              </FormField>
+
+              <FormField label="Previous Certificate">
+                <Input
+                  type="file"
+                  className={`${fieldClassName} py-2`}
+                  onChange={(event) =>
+                    setPreviousCertificate(event.target.files?.[0] ?? null)
+                  }
+                />
+
+                {previousCertificate && (
+                  <p className="text-sm text-gray-600">
+                    {previousCertificate.name}
+                  </p>
+                )}
+              </FormField>
+            </div>
+
+            <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setCurrentStep(0)}
+                className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
+              >
+                Back
+              </Button>
+
+              <Button
+                type="submit"
+                disabled={isQuoting}
+                className="h-11 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]"
+              >
+                {isQuoting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Calculating Fee...
+                  </>
+                ) : (
+                  "Next: Review & Payment"
+                )}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {currentStep === 2 && (
+          <form
+            className="px-4 pb-8 pt-6 sm:px-10 sm:pt-8"
+            onSubmit={submitApplication}
+          >
+            <div className="mb-6">
+              <h2 className="text-base font-bold text-[#1A1A2E]">
+                Review & Payment
+              </h2>
+
+              <p className="mt-1 text-sm text-[#5C5C70]">
+                Review the server-calculated statutory fee and select the
+                payment method.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              <div className="rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-6">
+                <h3 className="mb-4 font-bold text-[#1A1A2E]">
+                  Application Summary
+                </h3>
+
+                <div className="mb-3 flex justify-between gap-4 text-sm">
+                  <span className="text-[#5C5C70]">Application Type</span>
+
+                  <span className="font-medium text-[#1A1A2E]">
+                    {appType === "INITIAL"
+                      ? "Initial Verification"
+                      : "Re-verification"}
+                  </span>
+                </div>
+
+                <div className="mb-3 flex justify-between gap-4 text-sm">
+                  <span className="text-[#5C5C70]">Instrument Category</span>
+
+                  <span className="max-w-[60%] text-right font-medium text-[#1A1A2E]">
+                    {selectedCategory?.category_name}
+                  </span>
+                </div>
+
+                <div className="mb-3 flex justify-between gap-4 text-sm">
+                  <span className="text-[#5C5C70]">Accuracy Class</span>
+
+                  <span className="font-medium text-[#1A1A2E]">
+                    {selectedCategory
+                      ? getAccuracyLabel(selectedCategory.accuracy_class)
+                      : "N/A"}
+                  </span>
+                </div>
+
+                <div className="mb-3 flex justify-between gap-4 text-sm">
+                  <span className="text-[#5C5C70]">State</span>
+
+                  <span className="font-medium text-[#1A1A2E]">
+                    {
+                      metadata?.states.find(
+                        (item) => item.state_code === stateCode,
+                      )?.state_name
+                    }
+                  </span>
+                </div>
+
+                <div className="my-4 border-t border-[#E0E0E0]" />
+
+                <h3 className="mb-4 font-bold text-[#1A1A2E]">Fee Summary</h3>
+
+                <div className="mb-3 flex justify-between text-sm">
+                  <span className="text-[#5C5C70]">Statutory Fee</span>
+
+                  <span className="font-medium text-[#1A1A2E]">
+                    ₹{formatCurrency(feeQuote?.statutoryFee ?? 0)}
+                  </span>
+                </div>
+
+                <div className="mb-3 flex justify-between text-sm">
+                  <span className="text-[#5C5C70]">Additional Fee</span>
+
+                  <span className="font-medium text-[#1A1A2E]">
+                    ₹{formatCurrency(feeQuote?.additionalFee ?? 0)}
+                  </span>
+                </div>
+
+                <div className="mb-3 flex justify-between text-sm">
+                  <span className="text-[#5C5C70]">Processing Fee</span>
+
+                  <span className="font-medium text-[#1A1A2E]">₹0.00</span>
+                </div>
+
+                <div className="my-4 border-t border-[#E0E0E0]" />
+
+                <div className="flex justify-between text-lg font-bold">
+                  <span className="text-[#1A1A2E]">Total Payable</span>
+
+                  <span className="text-[#1E8E3E]">
+                    ₹{formatCurrency(feeQuote?.totalAmount ?? 0)}
+                  </span>
+                </div>
+
+                {feeQuote?.feeBasis && (
+                  <p className="mt-3 text-xs text-[#5C5C70]">
+                    Fee basis: {feeQuote.feeBasis}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <h3 className="mb-4 font-bold text-[#1A1A2E]">
+                  Select Payment Method
+                </h3>
+
+                <div className="flex flex-col gap-3">
+                  <Label
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
+                      paymentMethod === "UPI"
+                        ? "border-[#0B3D91] bg-blue-50"
+                        : "border-[#E0E0E0] bg-white"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="UPI"
+                      checked={paymentMethod === "UPI"}
+                      onChange={() => setPaymentMethod("UPI")}
+                      className="h-4 w-4"
+                    />
+
+                    <span className="font-medium">UPI</span>
+                  </Label>
+
+                  <Label
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
+                      paymentMethod === "NET_BANKING"
+                        ? "border-[#0B3D91] bg-blue-50"
+                        : "border-[#E0E0E0] bg-white"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="NET_BANKING"
+                      checked={paymentMethod === "NET_BANKING"}
+                      onChange={() => setPaymentMethod("NET_BANKING")}
+                      className="h-4 w-4"
+                    />
+
+                    <span className="font-medium">Net Banking</span>
+                  </Label>
+
+                  <Label
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${
+                      paymentMethod === "NEFT_RTGS"
+                        ? "border-[#0B3D91] bg-blue-50"
+                        : "border-[#E0E0E0] bg-white"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="NEFT_RTGS"
+                      checked={paymentMethod === "NEFT_RTGS"}
+                      onChange={() => setPaymentMethod("NEFT_RTGS")}
+                      className="h-4 w-4"
+                    />
+
+                    <span className="font-medium">NEFT / RTGS</span>
+                  </Label>
+                </div>
+
+                <div className="mt-6 rounded-lg bg-gray-50 p-4 text-sm text-[#5C5C70]">
+                  This environment currently records the selected method as a
+                  successful demo payment. A real payment gateway can replace
+                  this later.
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-col-reverse items-stretch justify-end gap-3 border-t border-[#E8E9EC] pt-6 sm:flex-row sm:items-center">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setCurrentStep(1)}
+                className="font-semibold text-primary hover:bg-primary/5 hover:text-primary"
+              >
+                Back
+              </Button>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting || !feeQuote}
+                className="h-11 rounded-lg bg-[#0B3D91] px-5 font-bold text-white shadow-none hover:bg-[#082b66]"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Pay ₹{formatCurrency(feeQuote?.totalAmount ?? 0)} & Submit
+                    Application
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        )}
       </section>
     </DashboardLayout>
   );

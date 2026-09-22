@@ -63,14 +63,22 @@ const NAV: Record<
   ],
   admin: [
     { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
-    { label: "Registration Approvals", href: "/admin/registrations", icon: UserCheck },
+    {
+      label: "Registration Approvals",
+      href: "/admin/registrations",
+      icon: UserCheck,
+    },
     { label: "Pendency Queue", href: "/admin/pendency", icon: ListChecks },
     { label: "GATC Management", href: "/admin/gatc", icon: Building2 },
     { label: "Revenue Reports", href: "/admin/revenue", icon: BarChart3 },
     { label: "Master Data", href: "/admin/master-data", icon: Database },
   ],
   gatc: [
-    { label: "Recognition Application", href: "/gatc/dashboard", icon: FilePlus2 },
+    {
+      label: "Recognition Application",
+      href: "/gatc/dashboard",
+      icon: FilePlus2,
+    },
   ],
 };
 
@@ -83,7 +91,7 @@ export function DashboardLayout({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [lang, setLang] = useState<"EN" | "HI">("EN");
+  const [language, setLanguage] = useState<string>("EN");
   const [notifOpen, setNotifOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const isMobile = useIsMobile();
@@ -93,10 +101,31 @@ export function DashboardLayout({
   const displayName =
     currentUser?.businessName ||
     currentUser?.fullName ||
-    (role === "business" ? "Business User" : role === "admin" ? "Administrator" : "LMO / GATC User");
+    (role === "business"
+      ? "Business User"
+      : role === "admin"
+        ? "Administrator"
+        : "LMO / GATC User");
   const roleDescription =
-    role === "business" ? "Business User" : role === "admin" ? "Administrator" : "LMO / GATC User";
-  const initials = displayName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+    role === "business"
+      ? "Business User"
+      : role === "admin"
+        ? "Administrator"
+        : "LMO / GATC User";
+  const initials = displayName
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const language = e.target.value;
+
+    setLanguage(language);
+
+    window.Weglot?.switchTo(language);
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-background">
@@ -119,7 +148,9 @@ export function DashboardLayout({
               >
                 <SheetHeader className="border-b border-sidebar-border px-5 py-4 text-left">
                   <SheetTitle className="text-sidebar-foreground">
-                    {role === "business" ? "Business Portal" : "Administrator Portal"}
+                    {role === "business"
+                      ? "Business Portal"
+                      : "Administrator Portal"}
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-1 px-3 py-5">
@@ -141,7 +172,9 @@ export function DashboardLayout({
                         <Icon
                           className={cn(
                             "h-4 w-4",
-                            active ? "text-saffron" : "text-sidebar-foreground/60",
+                            active
+                              ? "text-saffron"
+                              : "text-sidebar-foreground/60",
                           )}
                         />
                         {item.label}
@@ -166,14 +199,13 @@ export function DashboardLayout({
           <EmaapLogo className="min-w-0" />
         </div>
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <button
-            onClick={() => setLang(lang === "EN" ? "HI" : "EN")}
+          <select
+            onChange={handleLanguageChange}
             className="flex h-9 items-center gap-1.5 rounded-md border border-border px-2 text-sm font-medium text-foreground hover:bg-muted sm:px-3"
           >
-            <Globe className="h-4 w-4" />
-            {lang === "EN" ? "EN" : "हिं"}
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-          </button>
+            <option value="en">English</option>
+            <option value="hi">हिन्दी</option>
+          </select>
 
           <button
             onClick={() => setNotifOpen(true)}

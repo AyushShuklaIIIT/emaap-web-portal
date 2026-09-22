@@ -119,6 +119,7 @@ async function seed() {
       mobile,
       registrationRole,
       passwordHash,
+      employeeId,
     } = u;
 
     const baseUser = {
@@ -130,11 +131,13 @@ async function seed() {
       mobile,
       registrationRole,
       passwordHash,
+      employeeId,
       isActive: true,
       emailVerified: true,
       mobileVerified: true,
     };
 
+    const user_id = u.user_id; // Extract user_id if it exists
     let createdUser;
 
     if (registrationRole === "STAKEHOLDER") {
@@ -163,7 +166,10 @@ async function seed() {
             email,
           },
           update: baseUser,
-          create: baseUser,
+          create: {
+            ...(user_id ? { user_id } : {}),
+            ...baseUser,
+          },
         });
 
         continue;
@@ -174,7 +180,10 @@ async function seed() {
           email,
         },
         update: baseUser,
-        create: baseUser,
+        create: {
+          ...(user_id ? { user_id } : {}),
+          ...baseUser,
+        },
       });
 
       await prisma.businessProfile.upsert({
@@ -213,7 +222,10 @@ async function seed() {
           email,
         },
         update: baseUser,
-        create: baseUser,
+        create: {
+          ...(user_id ? { user_id } : {}),
+          ...baseUser,
+        },
       });
 
       await prisma.gatcCentre.upsert({
@@ -236,7 +248,10 @@ async function seed() {
           email,
         },
         update: baseUser,
-        create: baseUser,
+        create: {
+          ...(user_id ? { user_id } : {}),
+          ...baseUser,
+        },
       });
     }
 
@@ -356,6 +371,7 @@ async function seed() {
       status: inst.status as any,
       business_id: user.business_profile.business_id,
       category_id: category.category_id,
+      district: inst.district,
     };
 
     const existing = await prisma.measuringInstrument.findFirst({
@@ -556,54 +572,54 @@ async function seed() {
 
   console.log("Begin Seeding Certificates");
 
-  for (const cert of digitalCertificatesData) {
-    const app = await prisma.verificationApp.findUnique({
-      where: {
-        application_no: cert.application_no,
-      },
-    });
+  // for (const cert of digitalCertificatesData) {
+  //   const app = await prisma.verificationApp.findUnique({
+  //     where: {
+  //       application_no: cert.application_no,
+  //     },
+  //   });
 
-    if (!app) {
-      continue;
-    }
+  //   if (!app) {
+  //     continue;
+  //   }
 
-    const inspection = await prisma.inspectionRecord.findFirst({
-      where: {
-        app_id: app.app_id,
-      },
-    });
+  //   const inspection = await prisma.inspectionRecord.findFirst({
+  //     where: {
+  //       app_id: app.app_id,
+  //     },
+  //   });
 
-    if (!inspection) {
-      continue;
-    }
+  //   if (!inspection) {
+  //     continue;
+  //   }
 
-    await prisma.digitalCertificate.upsert({
-      where: {
-        certificate_no: cert.certificate_no,
-      },
-      update: {
-        stamping_quarter_code: cert.stamping_quarter_code,
-        issue_date: cert.issue_date,
-        expiry_date: cert.expiry_date,
-        sha256_hash: cert.sha256_hash,
-        dynamic_qr_url: cert.dynamic_qr_url,
-        rejection_reason: cert.rejection_reason,
-        inspection_id: inspection.inspection_id,
-        instrument_id: app.instrument_id,
-      },
-      create: {
-        certificate_no: cert.certificate_no,
-        stamping_quarter_code: cert.stamping_quarter_code,
-        issue_date: cert.issue_date,
-        expiry_date: cert.expiry_date,
-        sha256_hash: cert.sha256_hash,
-        dynamic_qr_url: cert.dynamic_qr_url,
-        rejection_reason: cert.rejection_reason,
-        inspection_id: inspection.inspection_id,
-        instrument_id: app.instrument_id,
-      },
-    });
-  }
+  //   await prisma.digitalCertificate.upsert({
+  //     where: {
+  //       certificate_no: cert.certificate_no,
+  //     },
+  //     update: {
+  //       stamping_quarter_code: cert.stamping_quarter_code,
+  //       issue_date: cert.issue_date,
+  //       expiry_date: cert.expiry_date,
+  //       sha256_hash: cert.sha256_hash,
+  //       dynamic_qr_url: cert.dynamic_qr_url,
+  //       rejection_reason: cert.rejection_reason,
+  //       inspection_id: inspection.inspection_id,
+  //       instrument_id: app.instrument_id,
+  //     },
+  //     create: {
+  //       certificate_no: cert.certificate_no,
+  //       stamping_quarter_code: cert.stamping_quarter_code,
+  //       issue_date: cert.issue_date,
+  //       expiry_date: cert.expiry_date,
+  //       sha256_hash: cert.sha256_hash,
+  //       dynamic_qr_url: cert.dynamic_qr_url,
+  //       rejection_reason: cert.rejection_reason,
+  //       inspection_id: inspection.inspection_id,
+  //       instrument_id: app.instrument_id,
+  //     },
+  //   });
+  // }
 
   console.log("Certificates seeded successfully");
   console.log("Constant Data Seeding completed");

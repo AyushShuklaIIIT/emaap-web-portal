@@ -6,6 +6,8 @@ import {
   manualOverridePendencyRouteService,
   bulkApprovePendencyRoutesService,
 } from "../../services/admin/pendency.service";
+import { emitAdminAllocationsUpdate } from "../../socket/adminEvents";
+import { emitRouteAssigned } from "../../socket/routeEvents";
 
 export const getPendencyQueue = async (req: Request, res: Response) => {
   try {
@@ -83,13 +85,28 @@ export const approvePendencyRoute = async (req: Request, res: Response) => {
       });
     }
 
-    const { gatcId } = req.body;
+    const { gatcId, lmoId } = req.body;
 
-    if (!gatcId) {
-      throw new AppError(400, "gatcId is required");
+    if ((gatcId && lmoId) || (!gatcId && !lmoId)) {
+      throw new AppError(400, "Provide exactly one of gatcId or lmoId");
     }
 
-    const result = await approvePendencyRouteService(appId, gatcId);
+    const result = await approvePendencyRouteService(appId, { gatcId, lmoId });
+    const io = req.app.get("io");
+
+    if (io) {
+      emitRouteAssigned(io, {
+        app_id: result.app_id,
+        application_no: result.application_no,
+        assigned_type: result.assigned_type,
+        assigned_id: result.assigned_id,
+        assigned_to: result.assigned_to,
+        business_name: result.business_name,
+        instrument_category: result.instrument_category,
+        timestamp: new Date().toISOString(),
+      });
+      emitAdminAllocationsUpdate(io, "pendency_route_approved");
+    }
 
     return res.status(200).json({
       success: true,
@@ -149,6 +166,22 @@ export const manualOverridePendencyRoute = async (
       assigned_id,
     );
 
+    const io = req.app.get("io");
+
+    if (io) {
+      emitRouteAssigned(io, {
+        app_id: data.app_id,
+        application_no: data.application_no,
+        assigned_type: data.assigned_type,
+        assigned_id: data.assigned_id,
+        assigned_to: data.assigned_to,
+        business_name: data.business_name,
+        instrument_category: data.instrument_category,
+        timestamp: new Date().toISOString(),
+      });
+      emitAdminAllocationsUpdate(io, "pendency_route_manually_overridden");
+    }
+
     return res.status(200).json({
       success: true,
       data,
@@ -207,6 +240,34 @@ export const bulkApprovePendencyRoutes = async (
     }
 
     const data = await bulkApprovePendencyRoutesService(appIds);
+    const io = req.app.get("io");
+
+    if (io) {
+      for (const result of data.results) {
+        if (
+          result.success &&
+          result.assigned_type &&
+          result.assigned_id &&
+          result.business_name &&
+          result.instrument_category
+        ) {
+          emitRouteAssigned(io, {
+            app_id: result.app_id,
+            application_no: result.application_no,
+            assigned_type: result.assigned_type,
+            assigned_id: result.assigned_id,
+            assigned_to: result.assigned_to,
+            business_name: result.business_name,
+            instrument_category: result.instrument_category,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+
+      if (data.successful > 0) {
+        emitAdminAllocationsUpdate(io, "bulk_pendency_routes_approved");
+      }
+    }
 
     return res.status(200).json({
       success: true,

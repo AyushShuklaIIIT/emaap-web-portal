@@ -1,7 +1,4 @@
-import {
-  randomBytes,
-  scrypt as scryptCallback,
-} from "node:crypto";
+import { randomBytes, scrypt as scryptCallback } from "node:crypto";
 import path from "node:path";
 import { promisify } from "node:util";
 import type { RequestHandler } from "express";
@@ -13,16 +10,23 @@ import { randomUUID } from "node:crypto";
 const scrypt = promisify(scryptCallback);
 
 const registrationSchema = z.object({
-  role: z.enum([
-    "STAKEHOLDER",
-    "ADMIN",
-    "INSPECTOR",
-    "GATC_OPERATOR",
-  ]),
+  role: z.enum(["STAKEHOLDER", "ADMIN", "LMO", "GATC_OPERATOR"]),
   category: z
-    .enum(["MANUFACTURER", "DEALER", "REPAIRER", "IMPORTER", "PACKER", "TRADER"])
+    .enum([
+      "MANUFACTURER",
+      "DEALER",
+      "REPAIRER",
+      "IMPORTER",
+      "PACKER",
+      "TRADER",
+    ])
     .optional(),
-  fullName: z.string().trim().min(3).max(100).regex(/^[A-Za-z][A-Za-z .'-]*$/),
+  fullName: z
+    .string()
+    .trim()
+    .min(3)
+    .max(100)
+    .regex(/^[A-Za-z][A-Za-z .'-]*$/),
   mobile: z.string().regex(/^[6-9]\d{9}$/),
   email: z.string().email(),
   password: z.string().min(8).max(128),
@@ -32,28 +36,34 @@ const registrationSchema = z.object({
     .string()
     .regex(/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/)
     .optional(),
-  pan: z.string().regex(/^[A-Z]{5}\d{4}[A-Z]$/).optional(),
+  pan: z
+    .string()
+    .regex(/^[A-Z]{5}\d{4}[A-Z]$/)
+    .optional(),
   employeeId: z.string().trim().min(1).max(100).optional(),
   jurisdictionDistrict: z.string().trim().min(1).max(100).optional(),
   jurisdictionState: z.string().trim().min(1).max(100).optional(),
 });
 
-const allowedMimeTypes = new Set(["application/pdf", "image/jpeg", "image/png"]);
+const allowedMimeTypes = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+]);
 const maxFileSize = 5 * 1024 * 1024;
 
 function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
-  return scrypt(password, salt, 64).then((derivedKey) =>
-    `${salt}:${Buffer.from(derivedKey as Buffer).toString("hex")}`,
+  return scrypt(password, salt, 64).then(
+    (derivedKey) =>
+      `${salt}:${Buffer.from(derivedKey as Buffer).toString("hex")}`,
   );
 }
 
 function getFiles(req: Parameters<RequestHandler>[0]): Express.Multer.File[] {
   const files = req.files;
   if (!files) return [];
-  return Array.isArray(files)
-    ? files
-    : Object.values(files).flat();
+  return Array.isArray(files) ? files : Object.values(files).flat();
 }
 
 function validateFiles(files: Express.Multer.File[]): string | undefined {
@@ -74,7 +84,10 @@ async function verifyIdentifiers(
   if (process.env.MOCK_MODE?.toLowerCase() === "true") return;
 
   const checks: Array<[string | undefined, Record<string, string>]> = [
-    [process.env.GSTN_VERIFICATION_URL, payload.gstin ? { gstin: payload.gstin } : {}],
+    [
+      process.env.GSTN_VERIFICATION_URL,
+      payload.gstin ? { gstin: payload.gstin } : {},
+    ],
     [process.env.PAN_VERIFICATION_URL, payload.pan ? { pan: payload.pan } : {}],
   ];
 
@@ -128,7 +141,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     });
   }
   if (
-    ["ADMIN", "INSPECTOR", "GATC_OPERATOR"].includes(input.role) &&
+    ["ADMIN", "LMO", "GATC_OPERATOR"].includes(input.role) &&
     !input.employeeId
   ) {
     return res.status(400).json({
@@ -201,82 +214,85 @@ export const registerUser: RequestHandler = async (req, res) => {
               status: "OTP_PENDING",
             },
           });
-            if (files.length > 0) {
-              await transaction.userDocument.createMany({
-                data: files.map((file) => ({
-                  userId: updatedUser.user_id,
-                  docType: file.fieldname.toUpperCase(),
-                  fileName: file.originalname,
-                  fileType: file.mimetype,
-                  fileSize: file.size,
-                  storagePath: file.path,
-                })),
-              });
-            }
-            return { user: updatedUser, application };
-          });
-          const otp = await dispatchOtp({
-            userId: user.user.user_id,
-            mobileNumber: input.mobile,
-            emailAddress: input.email,
-          });
-          return res.status(201).json({
-            success: true,
-            userId: user.user.user_id,
-            applicationId: user.application.id,
-            status: "OTP_PENDING",
-            otpSessionId: otp.sessionId,
-          });
-        }
-
-        return res.status(409).json({
-          success: false,
-          error: existing.email === input.email ? "Email is already registered" : "Mobile is already registered",
+          if (files.length > 0) {
+            await transaction.userDocument.createMany({
+              data: files.map((file) => ({
+                userId: updatedUser.user_id,
+                docType: file.fieldname.toUpperCase(),
+                fileName: file.originalname,
+                fileType: file.mimetype,
+                fileSize: file.size,
+                storagePath: file.path,
+              })),
+            });
+          }
+          return { user: updatedUser, application };
+        });
+        const otp = await dispatchOtp({
+          userId: user.user.user_id,
+          mobileNumber: input.mobile,
+          emailAddress: input.email,
+        });
+        return res.status(201).json({
+          success: true,
+          userId: user.user.user_id,
+          applicationId: user.application.id,
+          status: "OTP_PENDING",
+          otpSessionId: otp.sessionId,
         });
       }
 
-      const passwordHash = await hashPassword(input.password);
-      const user = await prisma.$transaction(async (transaction) => {
-        const createdUser = await transaction.user.create({
-          data: {
-            name: input.fullName,
-            fullName: input.fullName,
-            email: input.email,
-            mobile: input.mobile,
-            passwordHash,
-            registrationRole: input.role,
-            category: input.category,
-            businessName: input.businessName,
-            tradeLicenseNo: input.tradeLicenseNo,
-            gstin: input.gstin,
-            pan: input.pan,
-            employeeId: input.employeeId,
-            jurisdiction_district: input.jurisdictionDistrict ?? "PENDING",
-            jurisdiction_state: input.jurisdictionState ?? "PENDING",
-            isActive: false,
-          },
-        });
+      return res.status(409).json({
+        success: false,
+        error:
+          existing.email === input.email
+            ? "Email is already registered"
+            : "Mobile is already registered",
+      });
+    }
 
-        const application = await transaction.registrationApplication.create({
-          data: {
+    const passwordHash = await hashPassword(input.password);
+    const user = await prisma.$transaction(async (transaction) => {
+      const createdUser = await transaction.user.create({
+        data: {
+          name: input.fullName,
+          fullName: input.fullName,
+          email: input.email,
+          mobile: input.mobile,
+          passwordHash,
+          registrationRole: input.role,
+          category: input.category,
+          businessName: input.businessName,
+          tradeLicenseNo: input.tradeLicenseNo,
+          gstin: input.gstin,
+          pan: input.pan,
+          employeeId: input.employeeId,
+          jurisdiction_district: input.jurisdictionDistrict ?? "PENDING",
+          jurisdiction_state: input.jurisdictionState ?? "PENDING",
+          isActive: false,
+        },
+      });
+
+      const application = await transaction.registrationApplication.create({
+        data: {
+          userId: createdUser.user_id,
+          role: input.role,
+          status: "OTP_PENDING",
+        },
+      });
+
+      if (files.length > 0) {
+        await transaction.userDocument.createMany({
+          data: files.map((file) => ({
             userId: createdUser.user_id,
-            role: input.role,
-            status: "OTP_PENDING",
-          },
+            docType: file.fieldname.toUpperCase(),
+            fileName: file.originalname,
+            fileType: file.mimetype,
+            fileSize: file.size,
+            storagePath: file.path,
+          })),
         });
-
-        if (files.length > 0) {
-          await transaction.userDocument.createMany({
-            data: files.map((file) => ({
-              userId: createdUser.user_id,
-              docType: file.fieldname.toUpperCase(),
-              fileName: file.originalname,
-              fileType: file.mimetype,
-              fileSize: file.size,
-              storagePath: file.path,
-            })),
-          });
-        }
+      }
 
       return { user: createdUser, application };
     });
@@ -296,7 +312,9 @@ export const registerUser: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     if (error instanceof RegistrationError) {
-      return res.status(error.statusCode).json({ success: false, error: error.message });
+      return res
+        .status(error.statusCode)
+        .json({ success: false, error: error.message });
     }
     if (
       typeof error === "object" &&

@@ -9,10 +9,21 @@ export interface PendencyFilters {
 }
 
 export interface GatcRouteSuggestion {
+  type: "GATC";
   gatc_id: string;
   centre_code: string;
   distance_km: number;
 }
+
+export interface LmoRouteSuggestion {
+  type: "LMO";
+  lmo_id: string;
+  employee_code: string;
+  name: string;
+  jurisdiction_district: string;
+}
+
+export type RouteSuggestion = GatcRouteSuggestion | LmoRouteSuggestion;
 
 export interface PendencyItem {
   app_id: string;
@@ -45,7 +56,7 @@ export interface PendencyItem {
     name: string | null;
   };
 
-  suggestions: GatcRouteSuggestion[];
+  suggestions: RouteSuggestion[];
 
   action: "APPROVE_ROUTE" | "MANUAL_OVERRIDE" | "WAIT";
 }
@@ -107,9 +118,15 @@ export const getPendencyQueue = async (
   return response.data.data;
 };
 
-export const approvePendencyRoute = async (appId: string, gatcId: string) => {
+export type ApprovalRoutePayload =
+  { gatcId: string; lmoId?: never } | { gatcId?: never; lmoId: string };
+
+export const approvePendencyRoute = async (
+  appId: string,
+  route: ApprovalRoutePayload,
+) => {
   const response = await api.patch(`/admin/pendency/${appId}/approve-route`, {
-    gatcId,
+    ...route,
   });
 
   return response.data;

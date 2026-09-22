@@ -81,6 +81,7 @@ export default function NewApplication() {
   const [instrumentSerialNumber, setInstrumentSerialNumber] = useState("");
   const [metric, setMetric] = useState("");
   const [address, setAddress] = useState("");
+  const [district, setDistrict] = useState("");
   const [pincode, setPincode] = useState<number | null>(null);
   const [stateCode, setStateCode] = useState("");
   const [coordinates, setCoordinates] = useState("");
@@ -109,6 +110,7 @@ export default function NewApplication() {
 
     const currentUser = getCurrentUser() as {
       jurisdiction_state?: string;
+      jurisdiction_district?: string;
       stateCode?: string;
       state?: string;
     } | null;
@@ -118,6 +120,12 @@ export default function NewApplication() {
       currentUser?.stateCode ||
       currentUser?.state ||
       "";
+
+    const userDistrict = currentUser?.jurisdiction_district || "";
+
+    if (userDistrict && !district) {
+      setDistrict(userDistrict);
+    }
 
     const matchingState = metadata.states.find(
       (state) => state.state_code === userState,
@@ -132,7 +140,7 @@ export default function NewApplication() {
     if (metadata.states.length > 0) {
       setStateCode(metadata.states[0].state_code);
     }
-  }, [metadata, stateCode]);
+  }, [district, metadata, stateCode]);
 
   const getLocation = () => {
     if (!navigator.geolocation) {
@@ -310,6 +318,11 @@ export default function NewApplication() {
       return;
     }
 
+    if (!district.trim()) {
+      alert("Please enter a district.");
+      return;
+    }
+
     if (!manufacturerInvoice) {
       alert("Please upload the manufacturer invoice / import document.");
       return;
@@ -334,6 +347,7 @@ export default function NewApplication() {
         instrumentSerialNumber,
         metric,
         address,
+        district,
         pincode,
         stateCode,
         lat: location.latitude,
@@ -726,6 +740,15 @@ export default function NewApplication() {
                     </option>
                   ))}
                 </select>
+              </FormField>
+
+              <FormField label="District">
+                <Input
+                  value={district}
+                  placeholder="e.g. Mumbai Suburban"
+                  className={fieldClassName}
+                  onChange={(event) => setDistrict(event.target.value)}
+                />
               </FormField>
 
               <FormField label="Pincode">

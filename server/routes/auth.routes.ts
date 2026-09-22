@@ -16,13 +16,21 @@ const dispatchSchema = z.object({
   emailAddress: z.string().email(),
 });
 
-const verifySchema = z.object({
-  sessionId: z.string().uuid(),
-  mobileOtp: z.string().regex(/^\d{6}$/).optional(),
-  emailOtp: z.string().regex(/^[A-Za-z0-9]{6,8}$/).optional(),
-}).refine((value) => Boolean(value.mobileOtp || value.emailOtp), {
-  message: "At least one OTP is required",
-});
+const verifySchema = z
+  .object({
+    sessionId: z.string().uuid(),
+    mobileOtp: z
+      .string()
+      .regex(/^\d{6}$/)
+      .optional(),
+    emailOtp: z
+      .string()
+      .regex(/^[A-Za-z0-9]{6,8}$/)
+      .optional(),
+  })
+  .refine((value) => Boolean(value.mobileOtp || value.emailOtp), {
+    message: "At least one OTP is required",
+  });
 
 function sendError(res: Parameters<RequestHandler>[1], error: unknown) {
   if (error instanceof OtpServiceError) {
@@ -49,20 +57,27 @@ const roleMap = {
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
-  if (!secret || secret.length < 32) throw new Error("JWT_SECRET must be configured");
+  if (!secret || secret.length < 32)
+    throw new Error("JWT_SECRET must be configured");
   return secret;
 }
 
 authRouter.post("/login", async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ success: false, error: "Enter a valid mobile number and password" });
+    return res.status(400).json({
+      success: false,
+      error: "Enter a valid mobile number and password",
+    });
   }
 
   try {
     const { prisma } = await import("../lib/prisma");
     const user = await prisma.user.findFirst({
-      where: { mobile: parsed.data.mobile, registrationRole: roleMap[parsed.data.role] },
+      where: {
+        mobile: parsed.data.mobile,
+        registrationRole: roleMap[parsed.data.role],
+      },
       select: {
         user_id: true,
         passwordHash: true,
@@ -77,20 +92,32 @@ authRouter.post("/login", async (req, res) => {
       },
     });
     if (!user?.passwordHash) {
-      return res.status(401).json({ success: false, error: "Invalid mobile number or password" });
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid mobile number or password" });
     }
     if (!user.isActive) {
-      return res.status(403).json({ success: false, error: "Your account is awaiting administrator approval" });
+      return res.status(403).json({
+        success: false,
+        error: "Your account is awaiting administrator approval",
+      });
     }
 
     const [salt, expectedHex] = user.passwordHash.split(":");
     if (!salt || !expectedHex) {
-      return res.status(401).json({ success: false, error: "Invalid mobile number or password" });
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid mobile number or password" });
     }
-    const derived = await scrypt(parsed.data.password, salt, 64) as Buffer;
-    const valid = timingSafeEqual(Buffer.from(derived), Buffer.from(expectedHex, "hex"));
+    const derived = (await scrypt(parsed.data.password, salt, 64)) as Buffer;
+    const valid = timingSafeEqual(
+      Buffer.from(derived),
+      Buffer.from(expectedHex, "hex"),
+    );
     if (!valid) {
-      return res.status(401).json({ success: false, error: "Invalid mobile number or password" });
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid mobile number or password" });
     }
 
     return res.json({
@@ -113,7 +140,9 @@ authRouter.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Login request failed", error);
-    return res.status(502).json({ success: false, error: "Unable to complete login" });
+    return res
+      .status(502)
+      .json({ success: false, error: "Unable to complete login" });
   }
 });
 
@@ -125,14 +154,17 @@ const lmoLoginSchema = z.object({
 authRouter.post("/login/lmo", async (req, res) => {
   const parsed = lmoLoginSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ success: false, error: "Enter a valid Employee ID and password" });
+    return res.status(400).json({
+      success: false,
+      error: "Enter a valid Employee ID and password",
+    });
   }
 
   try {
     const { prisma } = await import("../lib/prisma");
-    
+
     const user = await prisma.user.findFirst({
-      where: { employeeId: parsed.data.employeeId, registrationRole: "INSPECTOR" },
+      where: { employeeId: parsed.data.employeeId, registrationRole: "LMO" },
       select: {
         user_id: true,
         passwordHash: true,
@@ -148,29 +180,41 @@ authRouter.post("/login/lmo", async (req, res) => {
     });
 
     if (!user?.passwordHash) {
-      return res.status(401).json({ success: false, error: "Invalid Employee ID or password" });
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid Employee ID or password" });
     }
     if (!user.isActive) {
-      return res.status(403).json({ success: false, error: "Your account is awaiting administrator approval" });
+      return res.status(403).json({
+        success: false,
+        error: "Your account is awaiting administrator approval",
+      });
     }
 
     const [salt, expectedHex] = user.passwordHash.split(":");
     if (!salt || !expectedHex) {
-      return res.status(401).json({ success: false, error: "Invalid Employee ID or password" });
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid Employee ID or password" });
     }
-    
-    const derived = await scrypt(parsed.data.password, salt, 64) as Buffer;
-    const valid = timingSafeEqual(Buffer.from(derived), Buffer.from(expectedHex, "hex"));
-    
+
+    const derived = (await scrypt(parsed.data.password, salt, 64)) as Buffer;
+    const valid = timingSafeEqual(
+      Buffer.from(derived),
+      Buffer.from(expectedHex, "hex"),
+    );
+
     if (!valid) {
-      return res.status(401).json({ success: false, error: "Invalid Employee ID or password" });
+      return res
+        .status(401)
+        .json({ success: false, error: "Invalid Employee ID or password" });
     }
 
     return res.json({
       success: true,
       data: {
         token: jwt.sign(
-          { sub: user.user_id, registrationRole: "INSPECTOR" },
+          { sub: user.user_id, registrationRole: "LMO" },
           getJwtSecret(),
           { expiresIn: "8h" },
         ),
@@ -180,19 +224,22 @@ authRouter.post("/login/lmo", async (req, res) => {
         mobile: user.mobile,
         jurisdictionState: user.jurisdiction_state,
         jurisdictionDistrict: user.jurisdiction_district,
-        registrationRole: "INSPECTOR",
+        registrationRole: "LMO",
         fingerprintRegistered: user.fingerprint_registered,
       },
     });
   } catch (error) {
     console.error("LMO Login request failed", error);
-    return res.status(502).json({ success: false, error: "Unable to complete login" });
+    return res
+      .status(502)
+      .json({ success: false, error: "Unable to complete login" });
   }
 });
 
 authRouter.post("/send-otp", async (req, res) => {
   const parsed = dispatchSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "Invalid OTP dispatch request" });
+  if (!parsed.success)
+    return res.status(400).json({ error: "Invalid OTP dispatch request" });
   try {
     return res.status(201).json(await dispatchOtp(parsed.data));
   } catch (error) {
@@ -201,8 +248,11 @@ authRouter.post("/send-otp", async (req, res) => {
 });
 
 authRouter.post("/resend-otp", async (req, res) => {
-  const parsed = dispatchSchema.extend({ sessionId: z.string().uuid() }).safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "Invalid OTP resend request" });
+  const parsed = dispatchSchema
+    .extend({ sessionId: z.string().uuid() })
+    .safeParse(req.body);
+  if (!parsed.success)
+    return res.status(400).json({ error: "Invalid OTP resend request" });
   try {
     const { sessionId, ...input } = parsed.data;
     return res.status(200).json(await resendOtp(sessionId, input));
@@ -213,7 +263,8 @@ authRouter.post("/resend-otp", async (req, res) => {
 
 authRouter.post("/verify-otp", async (req, res) => {
   const parsed = verifySchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "Invalid OTP verification request" });
+  if (!parsed.success)
+    return res.status(400).json({ error: "Invalid OTP verification request" });
   try {
     return res.status(200).json(await verifyOtp(parsed.data));
   } catch (error) {
@@ -229,13 +280,15 @@ authRouter.get("/lmo/:userId/fingerprint-status", async (req, res) => {
       where: { user_id: userId },
       select: { fingerprint_registered: true, registrationRole: true },
     });
-    
+
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
-    
-    if (user.registrationRole !== "INSPECTOR") {
-      return res.status(403).json({ success: false, error: "User is not an LMO" });
+
+    if (user.registrationRole !== "LMO") {
+      return res
+        .status(403)
+        .json({ success: false, error: "User is not an LMO" });
     }
 
     return res.json({
@@ -256,17 +309,21 @@ authRouter.post("/lmo/:userId/register-fingerprint", async (req, res) => {
       where: { user_id: userId },
       select: { fingerprint_registered: true, registrationRole: true },
     });
-    
+
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
-    
-    if (user.registrationRole !== "INSPECTOR") {
-      return res.status(403).json({ success: false, error: "User is not an LMO" });
+
+    if (user.registrationRole !== "LMO") {
+      return res
+        .status(403)
+        .json({ success: false, error: "User is not an LMO" });
     }
 
     if (user.fingerprint_registered) {
-      return res.status(400).json({ success: false, error: "Fingerprint is already registered" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Fingerprint is already registered" });
     }
 
     await prisma.user.update({

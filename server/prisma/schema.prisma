@@ -216,6 +216,7 @@ model MeasuringInstrument {
   accuracy_class       AccuracyClass
   metric               String
   address              String
+  district             String
   pincode              Int
   state                String
   lat                  Float
@@ -478,7 +479,7 @@ model GeneratedCertificate {
 model LmoOfficer {
   employee_id             String         @unique
   user_id                 String         @unique  @id
-  employee_code           String         @unique
+  employee_code           String         @unique // remove and fix this 
   designation             LmoDesignation @default(INSPECTOR)
   
   
@@ -495,7 +496,7 @@ model LmoOfficer {
   updated_at              DateTime       @updatedAt
 
   
-  user                    User           @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  user                    User           @relation(fields: [user_id], references: [user_id], onDelete: Cascade) // No Reference of EmployeeId to User employeeId
   state                   State          @relation(fields: [state_id], references: [state_id])
 
   @@index([state_id])

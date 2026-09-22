@@ -1,10 +1,6 @@
 import { VerificationAppSeedData } from "../types";
 
 export const verificationAppsData: VerificationAppSeedData[] = [
-  // =========================================================
-  // SUBMITTED
-  // =========================================================
-
   {
     application_no: "EMAAP-VER-2026-0001",
     app_type: "INITIAL",
@@ -50,13 +46,6 @@ export const verificationAppsData: VerificationAppSeedData[] = [
     instrument_serial_number: "TK-TM-001",
   },
 
-  // =========================================================
-  // ALLOCATED
-  // =========================================================
-
-  // Delhi business + Delhi GATC
-  // HW-WM-001 = WATER_METER
-  // GATC-DL-001 supports WATER_METER
   {
     application_no: "EMAAP-VER-2026-0006",
     app_type: "RE_VERIFICATION",
@@ -69,9 +58,6 @@ export const verificationAppsData: VerificationAppSeedData[] = [
     assigned_gatc_code: "GATC-DL-001",
   },
 
-  // UP business + UP GATC
-  // TK-BS-001 = BEAM_SCALES_CLASS_A_B
-  // GATC-UP-010 supports BEAM_SCALES_CLASS_A_B
   {
     application_no: "EMAAP-VER-2026-0009",
     app_type: "INITIAL",
@@ -84,9 +70,6 @@ export const verificationAppsData: VerificationAppSeedData[] = [
     assigned_gatc_code: "GATC-UP-010",
   },
 
-  // Maharashtra business + Maharashtra GATC
-  // BG-LC-001 = NON_AUTOMATIC_WEIGHING_CLASS_I_II
-  // GATC-MH-002 supports this category
   {
     application_no: "EMAAP-VER-2026-0010",
     app_type: "INITIAL",
@@ -99,9 +82,6 @@ export const verificationAppsData: VerificationAppSeedData[] = [
     assigned_gatc_code: "GATC-MH-002",
   },
 
-  // Maharashtra business + another Maharashtra GATC
-  // BG-LC-001 = NON_AUTOMATIC_WEIGHING_CLASS_I_II
-  // GATC-MH-003 supports this category
   {
     application_no: "EMAAP-VER-2026-0016",
     app_type: "INITIAL",
@@ -126,10 +106,6 @@ export const verificationAppsData: VerificationAppSeedData[] = [
     assigned_officer_email: "principal@nagpur-metrology.gov.in",
     assigned_gatc_code: "GATC-MH-004",
   },
-
-  // =========================================================
-  // CERTIFIED
-  // =========================================================
 
   // Delhi
   {
@@ -182,10 +158,6 @@ export const verificationAppsData: VerificationAppSeedData[] = [
     assigned_gatc_code: "GATC-MH-009",
   },
 
-  // =========================================================
-  // REJECTED
-  // =========================================================
-
   // Delhi
   {
     application_no: "EMAAP-VER-2026-0004",
@@ -224,12 +196,6 @@ export const verificationAppsData: VerificationAppSeedData[] = [
     assigned_officer_email: "principal@nagpur-metrology.gov.in",
     assigned_gatc_code: "GATC-MH-004",
   },
-
-  // =========================================================
-  // ADDITIONAL PENDING APPLICATIONS
-  // These are intentionally SUBMITTED so the pendency page
-  // has several applications to work with.
-  // =========================================================
 
   {
     application_no: "EMAAP-VER-2026-0020",

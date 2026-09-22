@@ -6,6 +6,7 @@ export const measuringInstrumentsData = [
     manufacturer_name: "Hardware Stanley",
     accuracy_class: "CLASS_I",
     metric: "Water Flow",
+    district: "Bhopal",
     capacity_value: 100,
     capacity_unit: "L/min",
 
@@ -15,9 +16,7 @@ export const measuringInstrumentsData = [
     state: "Delhi",
     lat: 28.5355,
     long: 77.2732,
-
     status: "VERIFIED",
-
     business_email: "kubrick@gmail.com",
     category_code: "WATER_METER",
   },
@@ -29,6 +28,7 @@ export const measuringInstrumentsData = [
     manufacturer_name: "Hardware Stanley",
     accuracy_class: "CLASS_I",
     metric: "Temperature",
+    district: "Bhopal",
     capacity_value: 50,
     capacity_unit: "°C",
 
@@ -54,7 +54,7 @@ export const measuringInstrumentsData = [
     metric: "Weight",
     capacity_value: 150,
     capacity_unit: "kg",
-
+    district: "Kanpur",
     address: "Block 2B, 1st Floor, Z Square Mall, Kanpur, Uttar Pradesh",
     pincode: 208001,
     state: "Uttar Pradesh",
@@ -76,7 +76,7 @@ export const measuringInstrumentsData = [
     metric: "Length",
     capacity_value: 30,
     capacity_unit: "m",
-
+    district: "Kanpur",
     address: "Block 2B, 1st Floor, Z Square Mall, Kanpur, Uttar Pradesh",
     pincode: 208001,
     state: "Uttar Pradesh",
@@ -98,7 +98,7 @@ export const measuringInstrumentsData = [
     metric: "Weight",
     capacity_value: 500,
     capacity_unit: "kg",
-
+    district: "Mumbai",
     address: "Container Freight Terminal 4, Navi Mumbai, Maharashtra 400703",
     pincode: 400703,
     state: "Maharashtra",
@@ -120,7 +120,7 @@ export const measuringInstrumentsData = [
     metric: "Weight",
     capacity_value: 50000,
     capacity_unit: "kg",
-
+    district: "Mumbai",
     address: "Container Freight Terminal 4, Navi Mumbai, Maharashtra 400703",
     pincode: 400703,
     state: "Maharashtra",

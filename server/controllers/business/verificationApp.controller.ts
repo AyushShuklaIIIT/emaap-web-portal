@@ -168,6 +168,7 @@ export const createVerificationApplication = async (
       lat,
       long,
       paymentMethod,
+      district,
     } = req.body;
 
     const data = await createVerificationApplicationService({
@@ -184,6 +185,7 @@ export const createVerificationApplication = async (
       lat: Number(lat),
       long: Number(long),
       payment_method: paymentMethod,
+      district,
     });
 
     return res.status(201).json({

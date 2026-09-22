@@ -13,11 +13,8 @@ import {
 import { DualOtpModal } from "@/components/registration/DualOtpModal";
 import type { GstinBusinessData } from "@/components/registration/GstinVerificationInput";
 
-type Role =
-  | "STAKEHOLDER"
-  | "ADMIN"
-  | "LMO_GATC";
-type StaffRole = "INSPECTOR" | "GATC_OPERATOR";
+type Role = "STAKEHOLDER" | "ADMIN" | "LMO_GATC";
+type StaffRole = "LMO" | "GATC_OPERATOR";
 
 interface RegistrationFormData extends RoleFormValues {
   fullName: string;
@@ -71,7 +68,8 @@ const roles: Array<{ value: Role; label: string; description: string }> = [
   {
     value: "LMO_GATC",
     label: "LMO / GATC",
-    description: "Legal Metrology Officer or Government Approved Test Centre operations",
+    description:
+      "Legal Metrology Officer or Government Approved Test Centre operations",
   },
 ];
 
@@ -107,7 +105,9 @@ export default function RegistrationPage() {
   const [formData, setFormData] = useState(initialFormData);
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [registration, setRegistration] = useState<RegistrationResponse | null>(null);
+  const [registration, setRegistration] = useState<RegistrationResponse | null>(
+    null,
+  );
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isIdentityVerified, setIsIdentityVerified] = useState(false);
   const [registrationError, setRegistrationError] = useState<string>();
@@ -141,7 +141,9 @@ export default function RegistrationPage() {
       businessData.address.city,
       businessData.address.state,
       businessData.address.pincode,
-    ].filter(Boolean).join(", ");
+    ]
+      .filter(Boolean)
+      .join(", ");
     setFormData((current) => ({
       ...current,
       legalBusinessName: businessData.legalName,
@@ -157,14 +159,15 @@ export default function RegistrationPage() {
     if (currentStep === 1) {
       return Boolean(
         formData.fullName &&
-          /^[A-Za-z][A-Za-z .'-]{2,99}$/.test(formData.fullName) &&
-          /^[6-9]\d{9}$/.test(formData.mobile) &&
-          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
-          formData.password.length >= 8 &&
-          formData.password.length <= 128 &&
-          (selectedRole === "STAKEHOLDER"
-            ? formData.businessName.trim().length >= 2 && Boolean(formData.category)
-            : Boolean(resolvedRole) && formData.employeeId.trim().length >= 1),
+        /^[A-Za-z][A-Za-z .'-]{2,99}$/.test(formData.fullName) &&
+        /^[6-9]\d{9}$/.test(formData.mobile) &&
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
+        formData.password.length >= 8 &&
+        formData.password.length <= 128 &&
+        (selectedRole === "STAKEHOLDER"
+          ? formData.businessName.trim().length >= 2 &&
+            Boolean(formData.category)
+          : Boolean(resolvedRole) && formData.employeeId.trim().length >= 1),
       );
     }
 
@@ -206,11 +209,14 @@ export default function RegistrationPage() {
     } catch (error) {
       const responseData =
         error && typeof error === "object" && "responseData" in error
-          ? (error.responseData as { details?: Record<string, string[]> } | undefined)
+          ? (error.responseData as
+              { details?: Record<string, string[]> } | undefined)
           : undefined;
       const detailMessage = responseData?.details
         ? Object.entries(responseData.details)
-            .flatMap(([field, messages]) => messages.map((message) => `${field}: ${message}`))
+            .flatMap(([field, messages]) =>
+              messages.map((message) => `${field}: ${message}`),
+            )
             .join(" ")
         : undefined;
       const message =
@@ -262,7 +268,11 @@ export default function RegistrationPage() {
                         : "bg-[#EEF0F3] text-[#8A8A98]"
                     }`}
                   >
-                    {index < currentStep ? <Check className="h-4 w-4" /> : index + 1}
+                    {index < currentStep ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      index + 1
+                    )}
                   </div>
                   <span
                     className={`hidden truncate text-xs font-medium sm:block ${
@@ -284,7 +294,8 @@ export default function RegistrationPage() {
                   <div>
                     <h2 className="text-xl font-semibold">Choose your role</h2>
                     <p className="mt-1 text-sm text-[#5C5C70]">
-                      Your role determines the information required in later steps.
+                      Your role determines the information required in later
+                      steps.
                     </p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -303,7 +314,9 @@ export default function RegistrationPage() {
                         }`}
                       >
                         <p className="font-semibold">{role.label}</p>
-                        <p className="mt-1 text-sm text-[#5C5C70]">{role.description}</p>
+                        <p className="mt-1 text-sm text-[#5C5C70]">
+                          {role.description}
+                        </p>
                       </button>
                     ))}
                   </div>
@@ -313,29 +326,53 @@ export default function RegistrationPage() {
               {currentStep === 1 && selectedRole && (
                 <section className="space-y-5">
                   <div>
-                    <h2 className="text-xl font-semibold">Demographic & business details</h2>
+                    <h2 className="text-xl font-semibold">
+                      Demographic & business details
+                    </h2>
                     <p className="mt-1 text-sm text-[#5C5C70]">
                       Registering as {selectedRoleLabel ?? "a new user"}.
                     </p>
                   </div>
                   {selectedRole === "LMO_GATC" && (
                     <div className="max-w-md space-y-2">
-                      <label htmlFor="staff-registration-role" className="text-sm font-medium">Registration type</label>
+                      <label
+                        htmlFor="staff-registration-role"
+                        className="text-sm font-medium"
+                      >
+                        Registration type
+                      </label>
                       <select
                         id="staff-registration-role"
                         className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
                         value={staffRole ?? ""}
-                        onChange={(event) => setStaffRole((event.target.value || null) as StaffRole | null)}
+                        onChange={(event) =>
+                          setStaffRole(
+                            (event.target.value || null) as StaffRole | null,
+                          )
+                        }
                       >
                         <option value="">Select LMO or GATC</option>
-                        <option value="INSPECTOR">LMO</option>
+                        <option value="LMO">LMO</option>
                         <option value="GATC_OPERATOR">GATC</option>
                       </select>
                     </div>
                   )}
-                  {resolvedRole && <RoleFormRenderer role={resolvedRole} section="demographic" values={formData} files={uploadedFiles} onChange={updateField} onFileSelected={handleFileSelected} onGstinVerified={handleGstinVerified} />}
+                  {resolvedRole && (
+                    <RoleFormRenderer
+                      role={resolvedRole}
+                      section="demographic"
+                      values={formData}
+                      files={uploadedFiles}
+                      onChange={updateField}
+                      onFileSelected={handleFileSelected}
+                      onGstinVerified={handleGstinVerified}
+                    />
+                  )}
                   {registrationError && (
-                    <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" role="alert">
+                    <p
+                      className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+                      role="alert"
+                    >
                       {registrationError}
                     </p>
                   )}
@@ -345,14 +382,27 @@ export default function RegistrationPage() {
               {currentStep === 2 && selectedRole && resolvedRole && (
                 <section className="space-y-5">
                   <div>
-                    <h2 className="text-xl font-semibold">Identity verification</h2>
+                    <h2 className="text-xl font-semibold">
+                      Identity verification
+                    </h2>
                     <p className="mt-1 text-sm text-[#5C5C70]">
                       Add identity details and supporting documents for review.
                     </p>
                   </div>
-                  <RoleFormRenderer role={resolvedRole} section="identity" values={formData} files={uploadedFiles} onChange={updateField} onFileSelected={handleFileSelected} onGstinVerified={handleGstinVerified} />
+                  <RoleFormRenderer
+                    role={resolvedRole}
+                    section="identity"
+                    values={formData}
+                    files={uploadedFiles}
+                    onChange={updateField}
+                    onFileSelected={handleFileSelected}
+                    onGstinVerified={handleGstinVerified}
+                  />
                   {registrationError && (
-                    <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" role="alert">
+                    <p
+                      className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+                      role="alert"
+                    >
                       {registrationError}
                     </p>
                   )}
@@ -364,15 +414,28 @@ export default function RegistrationPage() {
                   <div className="flex items-center gap-3">
                     <ShieldCheck className="h-6 w-6 text-primary" />
                     <div>
-                      <h2 className="text-xl font-semibold">Verify and complete</h2>
-                      <p className="text-sm text-[#5C5C70]">Enter both codes sent to your mobile and email.</p>
+                      <h2 className="text-xl font-semibold">
+                        Verify and complete
+                      </h2>
+                      <p className="text-sm text-[#5C5C70]">
+                        Enter both codes sent to your mobile and email.
+                      </p>
                     </div>
                   </div>
                   {registration && (
                     <div className="rounded-md bg-primary/5 p-4 text-sm">
-                      <p>Application {registration.applicationId} is ready for OTP verification.</p>
-                      <Button type="button" className="mt-3" onClick={() => setIsOtpModalOpen(true)}>
-                        {isIdentityVerified ? "View verification result" : "Open OTP verification"}
+                      <p>
+                        Application {registration.applicationId} is ready for
+                        OTP verification.
+                      </p>
+                      <Button
+                        type="button"
+                        className="mt-3"
+                        onClick={() => setIsOtpModalOpen(true)}
+                      >
+                        {isIdentityVerified
+                          ? "View verification result"
+                          : "Open OTP verification"}
                       </Button>
                     </div>
                   )}
@@ -380,12 +443,26 @@ export default function RegistrationPage() {
               )}
 
               <div className="flex justify-between gap-3 border-t border-[#EEF0F3] pt-5">
-                <Button type="button" variant="outline" disabled={currentStep === 0 || isSubmitting} onClick={() => setCurrentStep((step) => Math.max(0, step - 1))}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={currentStep === 0 || isSubmitting}
+                  onClick={() =>
+                    setCurrentStep((step) => Math.max(0, step - 1))
+                  }
+                >
                   Back
                 </Button>
                 {currentStep < 3 ? (
-                  <Button type="submit" disabled={!canContinue() || isSubmitting}>
-                    {isSubmitting ? "Submitting..." : currentStep === 2 ? "Submit registration" : "Continue"}
+                  <Button
+                    type="submit"
+                    disabled={!canContinue() || isSubmitting}
+                  >
+                    {isSubmitting
+                      ? "Submitting..."
+                      : currentStep === 2
+                        ? "Submit registration"
+                        : "Continue"}
                   </Button>
                 ) : null}
               </div>

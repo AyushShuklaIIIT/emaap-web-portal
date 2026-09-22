@@ -200,6 +200,23 @@ export default function Pendency() {
     );
   };
 
+  const handleAssignLmo = (appId: string, lmoId: string) => {
+    manualOverrideMutation.mutate(
+      {
+        appId,
+        payload: {
+          assigned_type: "LMO",
+          assigned_id: lmoId,
+        },
+      },
+      {
+        onSuccess: () => {
+          setSelectedAppIds((current) => current.filter((id) => id !== appId));
+        },
+      },
+    );
+  };
+
   const handleBulkApprove = () => {
     if (selectedAppIds.length === 0) {
       return;
@@ -225,7 +242,7 @@ export default function Pendency() {
     approveRouteMutation.mutate(
       {
         appId,
-        gatcId,
+        route: { gatcId },
       },
       {
         onSuccess: () => {
@@ -528,21 +545,31 @@ export default function Pendency() {
                             {item.suggestions.length > 0 ? (
                               <div className="rounded-md bg-[#E3F2FD] px-3 py-2.5 text-xs font-medium leading-5 text-[#0B3D91]">
                                 <p>
-                                  {item.suggestions.length} eligible GATC
-                                  {item.suggestions.length === 1
-                                    ? ""
-                                    : "s"}{" "}
-                                  found in the jurisdiction state.
+                                  {
+                                    item.suggestions.filter(
+                                      (suggestion) =>
+                                        suggestion.type === "GATC",
+                                    ).length
+                                  }{" "}
+                                  eligible GATC and{" "}
+                                  {
+                                    item.suggestions.filter(
+                                      (suggestion) => suggestion.type === "LMO",
+                                    ).length
+                                  }{" "}
+                                  LMO candidates found.
                                 </p>
-                                <p className="mt-1 text-[11px] text-[#3564A3]">
-                                  Nearest: {item.suggestions[0].centre_code} at{" "}
-                                  {item.suggestions[0].distance_km} km
-                                </p>
+                                {item.suggestions[0].type === "GATC" && (
+                                  <p className="mt-1 text-[11px] text-[#3564A3]">
+                                    Nearest: {item.suggestions[0].centre_code}{" "}
+                                    at {item.suggestions[0].distance_km} km
+                                  </p>
+                                )}
                               </div>
                             ) : (
                               <div className="rounded-md bg-[#FFF7ED] px-3 py-2.5 text-xs font-medium leading-5 text-[#9A3412]">
-                                No eligible GATC is available in the
-                                jurisdiction state.
+                                No eligible route is available for this
+                                application.
                               </div>
                             )}
                           </TableCell>
@@ -557,9 +584,13 @@ export default function Pendency() {
                               </div>
                             ) : (
                               <div className="space-y-2.5">
-                                {item.suggestions.map((gatc, index) => (
+                                {item.suggestions.map((suggestion, index) => (
                                   <div
-                                    key={gatc.gatc_id}
+                                    key={
+                                      suggestion.type === "GATC"
+                                        ? suggestion.gatc_id
+                                        : suggestion.lmo_id
+                                    }
                                     className="flex items-center justify-between gap-3 rounded-md border border-[#D9E7F7] bg-[#F4F9FF] px-3 py-2.5"
                                   >
                                     <div className="min-w-0">
@@ -569,30 +600,50 @@ export default function Pendency() {
                                         </span>
 
                                         <p className="truncate text-xs font-bold text-[#0B3D91]">
-                                          {gatc.centre_code}
+                                          {suggestion.type === "GATC"
+                                            ? suggestion.centre_code
+                                            : suggestion.name}
                                         </p>
                                       </div>
 
                                       <p className="mt-1 pl-7 text-[11px] text-[#3564A3]">
-                                        {gatc.distance_km} km away
+                                        {suggestion.type === "GATC"
+                                          ? `${suggestion.distance_km} km away`
+                                          : `LMO - ${suggestion.employee_code} (${suggestion.jurisdiction_district})`}
                                       </p>
                                     </div>
 
-                                    <Button
-                                      type="button"
-                                      disabled={isAnyMutationPending}
-                                      onClick={() =>
-                                        handleApproveRoute(
-                                          item.app_id,
-                                          gatc.gatc_id,
-                                        )
-                                      }
-                                      className="h-8 shrink-0 whitespace-nowrap rounded-lg bg-[#FF6F00] px-2.5 text-[11px] font-bold text-white shadow-none hover:bg-[#E66000]"
-                                    >
-                                      {approveRouteMutation.isPending
-                                        ? "Approving..."
-                                        : "Approve Route"}
-                                    </Button>
+                                    {suggestion.type === "GATC" ? (
+                                      <Button
+                                        type="button"
+                                        disabled={isAnyMutationPending}
+                                        onClick={() =>
+                                          handleApproveRoute(
+                                            item.app_id,
+                                            suggestion.gatc_id,
+                                          )
+                                        }
+                                        className="h-8 shrink-0 whitespace-nowrap rounded-lg bg-[#FF6F00] px-2.5 text-[11px] font-bold text-white shadow-none hover:bg-[#E66000]"
+                                      >
+                                        {approveRouteMutation.isPending
+                                          ? "Approving..."
+                                          : "Approve Route"}
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        type="button"
+                                        disabled={isAnyMutationPending}
+                                        onClick={() =>
+                                          handleAssignLmo(
+                                            item.app_id,
+                                            suggestion.lmo_id,
+                                          )
+                                        }
+                                        className="h-8 shrink-0 whitespace-nowrap rounded-lg bg-[#0B3D91] px-2.5 text-[11px] font-bold text-white shadow-none hover:bg-[#082E70]"
+                                      >
+                                        Assign LMO
+                                      </Button>
+                                    )}
                                   </div>
                                 ))}
                               </div>

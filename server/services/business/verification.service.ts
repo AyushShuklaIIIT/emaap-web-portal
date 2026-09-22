@@ -321,6 +321,10 @@ export const createVerificationApplicationService = async (
     throw new Error("Installation address is required");
   }
 
+  if (!input.district?.trim()) {
+    throw new Error("District is required");
+  }
+
   validatePincode(input.pincode);
   validateCoordinates(input.lat, input.long);
   validatePaymentMethod(input.payment_method);
@@ -431,6 +435,7 @@ export const createVerificationApplicationService = async (
       accuracy_class: normalizeAccuracyClass(category.accuracy_class),
       metric: input.metric.trim(),
       address: input.address.trim(),
+      district: input.district.trim(),
       pincode: input.pincode,
       state: state.state_code,
       lat: input.lat,

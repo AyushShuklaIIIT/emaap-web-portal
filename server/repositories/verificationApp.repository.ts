@@ -207,6 +207,7 @@ export const createApplicationTransaction = async (params: {
     accuracy_class: AccuracyClass;
     metric: string;
     address: string;
+    district: string;
     pincode: number;
     state: string;
     lat: number;
@@ -258,6 +259,7 @@ export const createApplicationTransaction = async (params: {
           accuracy_class: params.instrument.accuracy_class,
           metric: params.instrument.metric,
           address: params.instrument.address,
+          district: params.instrument.district,
           pincode: params.instrument.pincode,
           state: params.instrument.state,
           lat: params.instrument.lat,
@@ -278,6 +280,7 @@ export const createApplicationTransaction = async (params: {
           accuracy_class: params.instrument.accuracy_class,
           metric: params.instrument.metric,
           address: params.instrument.address,
+          district: params.instrument.district,
           pincode: params.instrument.pincode,
           state: params.instrument.state,
           lat: params.instrument.lat,

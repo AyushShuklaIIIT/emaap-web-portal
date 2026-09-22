@@ -24,6 +24,7 @@ import { adminReviewRouter } from "./routes/admin-review.routes";
 import { gstnRouter } from "./routes/gstn.routes";
 import { panRouter } from "./routes/pan.routes";
 import { nswsRouter } from "./routes/nsws.routes";
+import { getGatcRoom, getOfficerRoom } from "./socket/routeEvents";
 
 import { correlationIdMiddleware } from "./middleware/correlation-id";
 
@@ -155,10 +156,6 @@ const findApplicationWithRetry = async (
   return null;
 };
 
-const getOfficerRoom = (officerId: string): string => {
-  return `officer:${officerId}`;
-};
-
 export function createServer() {
   const app = express();
 
@@ -191,6 +188,20 @@ export function createServer() {
 
     callback(null, false);
   };
+
+  app.use(
+    cors({
+      origin: corsOrigin,
+      credentials: true,
+      allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "Accept",
+        "x-correlation-id",
+      ],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    }),
+  );
 
   const io = new SocketIOServer(httpServer, {
     cors: {
@@ -289,6 +300,58 @@ export function createServer() {
           message: "Failed to join officer room.",
         });
       }
+    });
+
+    socket.on("join_gatc_room", async (payload) => {
+      try {
+        const gatcId = String(payload?.gatcId ?? "").trim();
+
+        if (!gatcId) {
+          return socket.emit("gatc_room_error", {
+            success: false,
+            message: "GATC ID is required.",
+          });
+        }
+
+        const { prisma } = await import("./lib/prisma");
+        const gatc = await prisma.gatcCentre.findFirst({
+          where: {
+            gatc_id: gatcId,
+            status: "ACTIVE",
+            principal_officer: {
+              registrationRole: "GATC_OPERATOR",
+              isActive: true,
+            },
+          },
+          select: { gatc_id: true },
+        });
+
+        if (!gatc) {
+          return socket.emit("gatc_room_error", {
+            success: false,
+            message: "Invalid or inactive GATC.",
+          });
+        }
+
+        const room = getGatcRoom(gatc.gatc_id);
+        await socket.join(room);
+
+        socket.emit("gatc_room_joined", { success: true, room });
+      } catch (error) {
+        console.error("[SOCKET] Failed to join GATC room:", error);
+        socket.emit("gatc_room_error", {
+          success: false,
+          message: "Failed to join GATC room.",
+        });
+      }
+    });
+
+    socket.on("join_admin_dashboard", async () => {
+      await socket.join("admin-dashboard");
+      socket.emit("admin_dashboard_joined", {
+        success: true,
+        room: "admin-dashboard",
+      });
     });
 
     socket.on("data", async (data) => {
@@ -432,6 +495,7 @@ export function createServer() {
               status: "PENDING",
               business_id: business.business_id,
               category_id: category.category_id,
+              district: data?.district,
             },
           });
 
@@ -650,22 +714,42 @@ export function createServer() {
           serialNumber,
         });
 
-        const application = await findApplicationWithRetry(
+        let application = await findApplicationWithRetry(
           prisma,
           applicationIdentifier,
           serialNumber,
         );
 
-        if (!application) {
-          console.error("[APPROVAL] VerificationApp not found after retry.", {
-            applicationIdentifier,
-            serialNumber,
+        if (!application && inspectorId) {
+          console.warn(
+            "[APPROVAL] Falling back to finding the most recent assigned application for this inspector...",
+          );
+          application = await prisma.verificationApp.findFirst({
+            where: {
+              assigned_officer_id: inspectorId,
+            },
+            include: {
+              instrument: true,
+            },
+            orderBy: {
+              submission_timestamp: "desc",
+            },
           });
+        }
+
+        if (!application) {
+          console.error(
+            "[APPROVAL] VerificationApp not found after retry and fallback.",
+            {
+              applicationIdentifier,
+              serialNumber,
+              inspectorId,
+            },
+          );
 
           return socket.emit("approval_failed", {
             success: false,
-            message:
-              "Verification application was not persisted before approval.",
+            message: "Verification application was not found for approval.",
           });
         }
 
@@ -704,6 +788,7 @@ export function createServer() {
 
         if (
           serialNumber &&
+          serialNumber !== "PENDINGDETAILS" &&
           normalizeSerialNumber(instrument.serial_number) !== serialNumber
         ) {
           console.error("[APPROVAL] Serial number mismatch:", {
@@ -933,12 +1018,53 @@ export function createServer() {
         },
       });
 
+      const digitalCertificate = latestCertificate
+        ? null
+        : await prisma.digitalCertificate.findUnique({
+            where: {
+              certificate_no: certificateId,
+            },
+            include: {
+              instrument: {
+                include: {
+                  category: true,
+                },
+              },
+              inspection: {
+                include: {
+                  seals: true,
+                },
+              },
+            },
+          });
+
+      const certificate =
+        latestCertificate ??
+        (digitalCertificate
+          ? {
+              certificateId: digitalCertificate.certificate_no,
+              instrumentCategory:
+                digitalCertificate.instrument.category.category_name,
+              instrumentSerialNumber:
+                digitalCertificate.instrument.serial_number,
+              issueDate: digitalCertificate.issue_date,
+              hash: digitalCertificate.sha256_hash,
+              sealImageUrls: digitalCertificate.inspection.seals.map(
+                (seal) => seal.s3_photo_url,
+              ),
+              status: digitalCertificate.rejection_reason
+                ? "FAILED_CHECKLIST"
+                : "APPROVED_CHECKLIST",
+              tokenHash: null,
+            }
+          : null);
+
       const signature = typeof req.query.sig === "string" ? req.query.sig : "";
 
       if (
-        !latestCertificate ||
+        !certificate ||
         !signature ||
-        !verifyCertificateSignature(latestCertificate.hash, signature)
+        !verifyCertificateSignature(certificate.hash, signature)
       ) {
         return res.status(403).json({
           success: false,
@@ -946,11 +1072,11 @@ export function createServer() {
         });
       }
 
-      console.log("Accepted certificate data:", latestCertificate);
+      console.log("Accepted certificate data:", certificate);
 
       return res.json({
         success: true,
-        certificate: latestCertificate,
+        certificate,
       });
     } catch (error) {
       console.error("Failed to verify certificate:", error);
@@ -963,6 +1089,7 @@ export function createServer() {
   });
 
   app.get("/api/certificates", async (_req, res) => {
+    // Remove the 7d ago certificate -> have to implement
     try {
       const { prisma } = await import("./lib/prisma");
 

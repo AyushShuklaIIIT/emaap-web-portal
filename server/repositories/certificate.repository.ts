@@ -24,6 +24,6 @@ export const getCertificatesByBusinessId = async (businessId: string) => {
 
   return certs.map((cert) => ({
     ...cert,
-    verificationSignature: createCertificateSignature(cert.certificate_no, cert.sha256_hash),
+    verificationSignature: createCertificateSignature(cert.cert_id, cert.sha256_hash),
   }));
 };

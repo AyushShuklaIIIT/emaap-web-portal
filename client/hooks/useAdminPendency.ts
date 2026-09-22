@@ -2,6 +2,7 @@ import {
   PendencyFilters,
   getPendencyQueue,
   approvePendencyRoute,
+  ApprovalRoutePayload,
   ManualOverridePayload,
   manualOverridePendency,
   bulkApprovePendencyRoutes,
@@ -28,8 +29,13 @@ export const useApprovePendencyRoute = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ appId, gatcId }: { appId: string; gatcId: string }) =>
-      approvePendencyRoute(appId, gatcId),
+    mutationFn: ({
+      appId,
+      route,
+    }: {
+      appId: string;
+      route: ApprovalRoutePayload;
+    }) => approvePendencyRoute(appId, route),
 
     onSuccess: () => {
       queryClient.invalidateQueries({

@@ -8,6 +8,7 @@ import {
   assignApplication,
   getActiveGatcById,
   getLmoById,
+  getEligibleLmos,
 } from "../../repositories/pendencyAdmin.repository";
 
 const SLA_DAYS = 15;
@@ -22,10 +23,21 @@ interface PendencyQueueInput {
 }
 
 interface GatcRouteSuggestion {
+  type: "GATC";
   gatc_id: string;
   centre_code: string;
   distance_km: number;
 }
+
+interface LmoRouteSuggestion {
+  type: "LMO";
+  lmo_id: string;
+  employee_code: string;
+  name: string;
+  jurisdiction_district: string;
+}
+
+type RouteSuggestion = GatcRouteSuggestion | LmoRouteSuggestion;
 
 interface AdminPendencyItem {
   app_id: string;
@@ -58,7 +70,7 @@ interface AdminPendencyItem {
     name: string | null;
   };
 
-  suggestions: GatcRouteSuggestion[];
+  suggestions: RouteSuggestion[];
 
   action: "APPROVE_ROUTE" | "MANUAL_OVERRIDE" | "WAIT";
 }
@@ -108,10 +120,16 @@ const findNearestGatcs = async (
   categoryCode: string,
   categoryName: string,
   stateCode: string,
+  district: string,
   instrumentLat: number,
   instrumentLong: number,
 ) => {
-  const gatcs = await getEligibleGatcs(categoryCode, stateCode, categoryName);
+  const gatcs = await getEligibleGatcs(
+    categoryCode,
+    stateCode,
+    district,
+    categoryName,
+  );
 
   if (gatcs.length === 0) {
     return [];
@@ -127,6 +145,7 @@ const findNearestGatcs = async (
       );
 
       return {
+        type: "GATC" as const,
         gatc_id: gatc.gatc_id,
         centre_code: gatc.centre_code,
         distance_km: round(distance),
@@ -138,6 +157,8 @@ const findNearestGatcs = async (
 
 type PendencyApplicationLocation = {
   instrument: {
+    accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
+    district: string;
     category: {
       category_code: string;
       category_name: string;
@@ -149,6 +170,9 @@ type PendencyApplicationLocation = {
     state: {
       state_code: string;
     };
+    user: {
+      jurisdiction_district: string;
+    };
   };
 };
 
@@ -156,15 +180,40 @@ const buildSuggestions = async (application: PendencyApplicationLocation) => {
   const instrument = application.instrument;
   const businessState = application.business.state;
 
-  const nearestGatcs = await findNearestGatcs(
-    instrument.category.category_code,
-    instrument.category.category_name,
+  const suggestions: RouteSuggestion[] = [];
+
+  if (
+    instrument.accuracy_class === "CLASS_III" ||
+    instrument.accuracy_class === "CLASS_IIII"
+  ) {
+    const nearestGatcs = await findNearestGatcs(
+      instrument.category.category_code,
+      instrument.category.category_name,
+      businessState.state_code,
+      instrument.district,
+      instrument.lat,
+      instrument.long,
+    );
+
+    suggestions.push(...nearestGatcs);
+  }
+
+  const lmos = await getEligibleLmos(
     businessState.state_code,
-    instrument.lat,
-    instrument.long,
+    instrument.district,
   );
 
-  return nearestGatcs;
+  suggestions.push(
+    ...lmos.map((lmo) => ({
+      type: "LMO" as const,
+      lmo_id: lmo.user_id,
+      employee_code: lmo.employee_code,
+      name: lmo.user.name,
+      jurisdiction_district: lmo.user.jurisdiction_district,
+    })),
+  );
+
+  return suggestions;
 };
 
 export const getPendencyQueueService = async ({
@@ -218,7 +267,11 @@ export const getPendencyQueueService = async ({
     }
 
     const action: "APPROVE_ROUTE" | "MANUAL_OVERRIDE" | "WAIT" =
-      suggestions.length > 0 ? "APPROVE_ROUTE" : "WAIT";
+      suggestions.some((suggestion) => suggestion.type === "GATC")
+        ? "APPROVE_ROUTE"
+        : suggestions.length > 0
+          ? "MANUAL_OVERRIDE"
+          : "WAIT";
     items.push({
       app_id: application.app_id,
       application_no: application.application_no,
@@ -276,7 +329,7 @@ export const getPendencyQueueService = async ({
 
 export const approvePendencyRouteService = async (
   appId: string,
-  gatcId: string,
+  route: { gatcId?: string; lmoId?: string },
 ) => {
   const application = await getPendencyApplicationById(appId);
 
@@ -288,39 +341,82 @@ export const approvePendencyRouteService = async (
     throw new AppError(400, "Only pending applications can be routed");
   }
 
-  const gatc = await getActiveGatcById(gatcId);
-
-  if (!gatc) {
-    throw new AppError(404, "Active GATC not found");
+  if ((route.gatcId && route.lmoId) || (!route.gatcId && !route.lmoId)) {
+    throw new AppError(400, "Provide exactly one of gatcId or lmoId");
   }
 
-  const categoryCode = application.instrument.category.category_code;
+  if (route.gatcId) {
+    if (
+      application.instrument.accuracy_class !== "CLASS_III" &&
+      application.instrument.accuracy_class !== "CLASS_IIII"
+    ) {
+      throw new AppError(
+        400,
+        "GATCs are not permitted to verify Class I and II instruments.",
+      );
+    }
 
-  const stateCode = application.business.state.state_code;
+    const gatc = await getActiveGatcById(route.gatcId);
 
-  const eligibleGatcs = await getEligibleGatcs(
-    categoryCode,
-    stateCode,
-    application.instrument.category.category_name,
-  );
+    if (!gatc) {
+      throw new AppError(404, "Active GATC not found");
+    }
 
-  const isEligible = eligibleGatcs.some((item) => item.gatc_id === gatcId);
+    const eligibleGatcs = await getEligibleGatcs(
+      application.instrument.category.category_code,
+      application.business.state.state_code,
+      application.instrument.district,
+      application.instrument.category.category_name,
+    );
 
-  if (!isEligible) {
+    if (!eligibleGatcs.some((item) => item.gatc_id === route.gatcId)) {
+      throw new AppError(
+        400,
+        "Selected GATC is not eligible for this application",
+      );
+    }
+
+    const updated = await assignApplication(appId, "GATC", route.gatcId);
+
+    return {
+      app_id: updated.app_id,
+      application_no: updated.application_no,
+      workflow_status: updated.workflow_status,
+      assigned_type: "GATC" as const,
+      assigned_id: route.gatcId,
+      assigned_to: updated.assigned_gatc?.centre_code ?? null,
+      business_name: application.business.trade_name,
+      instrument_category: application.instrument.category.category_name,
+    };
+  }
+
+  const lmo = await getLmoById(route.lmoId!);
+
+  if (!lmo) {
+    throw new AppError(404, "Active LMO not found");
+  }
+
+  if (
+    lmo.user.jurisdiction_state !== application.business.state.state_code ||
+    lmo.user.jurisdiction_district !== application.instrument.district
+  ) {
     throw new AppError(
       400,
-      "Selected GATC is not eligible for this application",
+      "Selected LMO is not eligible for this application jurisdiction",
     );
   }
 
-  const updated = await assignApplication(appId, "GATC", gatcId);
+  const updated = await assignApplication(appId, "LMO", route.lmoId!);
 
   return {
     app_id: updated.app_id,
     application_no: updated.application_no,
     workflow_status: updated.workflow_status,
-    assigned_type: "GATC",
-    assigned_to: updated.assigned_gatc?.centre_code ?? null,
+    assigned_type: "LMO" as const,
+    assigned_id: route.lmoId,
+    assigned_to: updated.assigned_officer?.name ?? null,
+    business_name: application.business.trade_name,
+    instrument_category: application.instrument.category.category_name,
   };
 };
 
@@ -342,6 +438,16 @@ export const manualOverridePendencyRouteService = async (
   }
 
   if (assignedType === "GATC") {
+    if (
+      application.instrument.accuracy_class !== "CLASS_III" &&
+      application.instrument.accuracy_class !== "CLASS_IIII"
+    ) {
+      throw new AppError(
+        400,
+        "GATCs are not permitted to verify Class I and II instruments.",
+      );
+    }
+
     const gatc = await getActiveGatcById(assignedId);
 
     if (!gatc) {
@@ -352,6 +458,7 @@ export const manualOverridePendencyRouteService = async (
     const eligibleGatcs = await getEligibleGatcs(
       categoryCode,
       application.business.state.state_code,
+      application.instrument.district,
       application.instrument.category.category_name,
     );
 
@@ -382,6 +489,9 @@ export const manualOverridePendencyRouteService = async (
     application_no: updated.application_no,
     workflow_status: updated.workflow_status,
     assigned_type: assignedType,
+    assigned_id: assignedId,
+    business_name: application.business.trade_name,
+    instrument_category: application.instrument.category.category_name,
     assigned_to:
       assignedType === "GATC"
         ? (updated.assigned_gatc?.centre_code ?? null)
@@ -394,6 +504,10 @@ export const bulkApprovePendencyRoutesService = async (appIds: string[]) => {
     app_id: string;
     application_no: string;
     assigned_to: string | null;
+    assigned_type?: "LMO" | "GATC";
+    assigned_id?: string;
+    business_name?: string;
+    instrument_category?: string;
     success: boolean;
     message?: string;
   }> = [];
@@ -407,20 +521,27 @@ export const bulkApprovePendencyRoutesService = async (appIds: string[]) => {
       }
 
       const suggestions = await buildSuggestions(application);
+      const suggestion = suggestions[0];
 
-      if (suggestions.length === 0) {
-        throw new AppError(400, "No eligible GATC route is available");
+      if (!suggestion) {
+        throw new AppError(400, "No eligible route is available");
       }
 
       const result = await approvePendencyRouteService(
         appId,
-        suggestions[0].gatc_id,
+        suggestion.type === "GATC"
+          ? { gatcId: suggestion.gatc_id }
+          : { lmoId: suggestion.lmo_id },
       );
 
       results.push({
         app_id: result.app_id,
         application_no: result.application_no,
         assigned_to: result.assigned_to,
+        assigned_type: result.assigned_type,
+        assigned_id: result.assigned_id,
+        business_name: result.business_name,
+        instrument_category: result.instrument_category,
         success: true,
       });
     } catch (error) {

@@ -25,6 +25,7 @@ export interface VerificationForm {
   instrumentSerialNumber: string;
   metric: string;
   address: string;
+  district: string;
   pincode: number;
   state: string;
   lat: number;
@@ -76,6 +77,7 @@ export interface CreateVerificationApplicationPayload {
   instrumentSerialNumber: string;
   metric: string;
   address: string;
+  district: string;
   pincode: number;
   stateCode: string;
   lat: number;

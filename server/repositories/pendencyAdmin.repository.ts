@@ -80,6 +80,11 @@ export const getPendencyApplications = async (query: PendencyQuery) => {
       business: {
         include: {
           state: true,
+          user: {
+            select: {
+              jurisdiction_district: true,
+            },
+          },
         },
       },
 
@@ -151,6 +156,7 @@ export const countBreachedApplications = async (
 export const getEligibleGatcs = async (
   categoryCode: string,
   stateCode: string,
+  district: string,
   categoryName: string,
 ) => {
   const now = new Date();
@@ -173,6 +179,7 @@ export const getEligibleGatcs = async (
 
       principal_officer: {
         jurisdiction_state: stateCode,
+        jurisdiction_district: district,
       },
     },
 
@@ -194,6 +201,35 @@ export const getEligibleGatcs = async (
   });
 
   return gatcs;
+};
+
+export const getEligibleLmos = async (stateCode: string, district: string) => {
+  return prisma.lmoOfficer.findMany({
+    where: {
+      user: {
+        isActive: true,
+        jurisdiction_state: stateCode,
+        jurisdiction_district: district,
+      },
+    },
+    orderBy: {
+      user: {
+        name: "asc",
+      },
+    },
+    take: 5,
+    select: {
+      user_id: true,
+      employee_code: true,
+      user: {
+        select: {
+          name: true,
+          jurisdiction_district: true,
+          jurisdiction_state: true,
+        },
+      },
+    },
+  });
 };
 
 export const getAllEligibleGatcs = async (
@@ -241,18 +277,25 @@ export const getActiveGatcById = async (gatcId: string) => {
 };
 
 export const getLmoById = async (lmoId: string) => {
-  return prisma.user.findFirst({
+  return prisma.lmoOfficer.findFirst({
     where: {
       user_id: lmoId,
-      registrationRole: RoleType.INSPECTOR,
+      user: {
+        registrationRole: RoleType.LMO,
+        isActive: true,
+      },
     },
 
     select: {
       user_id: true,
-      name: true,
-      email: true,
-      jurisdiction_district: true,
-      jurisdiction_state: true,
+      user: {
+        select: {
+          name: true,
+          email: true,
+          jurisdiction_district: true,
+          jurisdiction_state: true,
+        },
+      },
     },
   });
 };
@@ -267,6 +310,11 @@ export const getPendencyApplicationById = async (appId: string) => {
       business: {
         include: {
           state: true,
+          user: {
+            select: {
+              jurisdiction_district: true,
+            },
+          },
         },
       },
 

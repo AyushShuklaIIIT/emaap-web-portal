@@ -26,6 +26,7 @@ export interface User {
   passwordHash?: string;
   jurisdiction_district?: string;
   jurisdiction_state?: string;
+  employeeId?: string;
 }
 
 export interface GatcUser extends User {
@@ -398,7 +399,7 @@ export interface VerificationFeeQuoteResponse {
 
 export interface CreateVerificationApplicationInput {
   user_id: string;
-
+  district: string;
   app_type: AppType;
 
   category_code: string;
@@ -455,6 +456,7 @@ export interface CreateVerificationApplicationResponse {
 }
 
 export interface LmoOfficerSeed {
+  userId: string;
   employee_id: string;
   user_email: string;
   employee_code: string;

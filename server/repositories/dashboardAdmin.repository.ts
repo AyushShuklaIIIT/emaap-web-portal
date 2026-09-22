@@ -36,7 +36,7 @@ export const getActiveUnitCounts = async () => {
 
     prisma.user.count({
       where: {
-        registrationRole: RoleType.INSPECTOR,
+        registrationRole: RoleType.LMO,
       },
     }),
   ]);

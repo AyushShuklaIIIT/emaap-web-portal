@@ -505,4 +505,26 @@ export const categories = [
     verification_cycle_months: 12,
     isApprovedForGatc: true,
   },
+
+  {
+    category_code: "ENERGY_METER",
+    category_name: "Energy Meter",
+    oiml_standard_ref: "OIML R 46",
+    verification_cycle_months: 12,
+    isApprovedForGatc: true,
+  },
+  {
+    category_code: "LOAD_CELL",
+    category_name: "Load Cell",
+    oiml_standard_ref: "OIML R 60",
+    verification_cycle_months: 12,
+    isApprovedForGatc: true,
+  },
+  {
+    category_code: "MULTI_DIMENSIONAL_MEASURING_INSTRUMENTS",
+    category_name: "Multi-dimensional measuring instruments",
+    verification_cycle_months: 12,
+    oiml_standard_ref: "OIML R 129",
+    isApprovedForGatc: true,
+  },
 ];

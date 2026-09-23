@@ -16,20 +16,20 @@ export const states: State[] = [
   { state_code: "MP", state_name: "Madhya Pradesh" },
   { state_code: "MH", state_name: "Maharashtra" },
   { state_code: "MN", state_name: "Manipur" },
-  { state_code: "ML", state_name: "Meghalaya" }, // Next
+  { state_code: "ML", state_name: "Meghalaya" },
   { state_code: "MZ", state_name: "Mizoram" },
-  { state_code: "NL", state_name: "Nagaland" },
+  { state_code: "NL", state_name: "Nagaland" }, // Not found
   { state_code: "OR", state_name: "Odisha" },
   { state_code: "PB", state_name: "Punjab" },
   { state_code: "RJ", state_name: "Rajasthan" },
-  { state_code: "SK", state_name: "Sikkim" },
+  { state_code: "SK", state_name: "Sikkim" }, // Not found
   { state_code: "TN", state_name: "Tamil Nadu" },
   { state_code: "TS", state_name: "Telangana" },
   { state_code: "TR", state_name: "Tripura" },
   { state_code: "UK", state_name: "Uttarakhand" },
   { state_code: "UP", state_name: "Uttar Pradesh" },
   { state_code: "WB", state_name: "West Bengal" },
-  { state_code: "AN", state_name: "Andaman and Nicobar Islands" },
+  { state_code: "AN", state_name: "Andaman and Nicobar Islands" }, // not found
   { state_code: "CH", state_name: "Chandigarh" },
   { state_code: "DN", state_name: "Dadra and Nagar Haveli and Daman and Diu" },
   { state_code: "DL", state_name: "Delhi" },

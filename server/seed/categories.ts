@@ -443,4 +443,19 @@ export const categories = [
     verification_cycle_months: 12,
   },
 
+  },
+  {
+    category_code: "ENERGY_METER",
+    category_name: "Energy Meter"
+  }
+  },
+  {
+    category_code: "LOAD_CELL",
+    category_name: "Load Cell"
+  },
+  {
+    category_code: "MULTI_DIMENSIONAL_MEASURING_INSTRUMENTS",
+    category_name: "Multi-dimensional measuring instruments"
+  }
 ];
+

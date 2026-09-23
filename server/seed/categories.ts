@@ -4,6 +4,7 @@ export const categories = [
     category_name: "Bullion Weights",
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
+    isApprovedForGatc: true,
     verification_cycle_months: 12,
   },
   {
@@ -11,6 +12,7 @@ export const categories = [
     category_name: "Flow Meters",
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
+    isApprovedForGatc: true,
     verification_cycle_months: 12,
   },
   {
@@ -18,6 +20,7 @@ export const categories = [
     category_name: "Counter Machine",
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
+    isApprovedForGatc: true,
     verification_cycle_months: 12,
   },
   {
@@ -25,6 +28,7 @@ export const categories = [
     category_name: "Carat Weights",
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
+    isApprovedForGatc: true,
     verification_cycle_months: 12,
   },
   {
@@ -32,6 +36,7 @@ export const categories = [
     category_name: "Cylindrical Knob Type Weights",
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
+    isApprovedForGatc: true,
     verification_cycle_months: 12,
   },
   {
@@ -39,6 +44,7 @@ export const categories = [
     category_name: "Sheet Metal Weight",
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
+    isApprovedForGatc: true,
     verification_cycle_months: 12,
   },
   {
@@ -47,6 +53,7 @@ export const categories = [
       "Iron Hexagonal Knob Type Weights and Parallelepiped Weights",
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
+    isApprovedForGatc: true,
     verification_cycle_months: 12,
   },
   {
@@ -55,6 +62,7 @@ export const categories = [
       "Standard Weights for Testing of High Capacity Weighing Machines",
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
+    isApprovedForGatc: true,
     verification_cycle_months: 12,
   },
   {
@@ -62,6 +70,7 @@ export const categories = [
     category_name: "Capacity Measures",
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
+    isApprovedForGatc: false,
     verification_cycle_months: 12,
   },
   {
@@ -70,6 +79,8 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+
+    isApprovedForGatc: false,
   },
   {
     category_code: "FABRIC_PLASTIC_WOVEN_STEEL_TAPES",
@@ -77,6 +88,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "FOLDING_SCALES",
@@ -84,6 +96,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "SURVEYING_CHAIN",
@@ -91,6 +104,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "BEAM_SCALES_CLASS_A_B",
@@ -98,6 +112,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "BEAM_SCALES_CLASS_C_D",
@@ -105,6 +120,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "NON_AUTOMATIC_WEIGHING_MECHANICAL_CLASS_III_IV",
@@ -113,6 +129,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "NON_AUTOMATIC_WEIGHING_ELECTRONIC_CLASS_III_IV",
@@ -121,6 +138,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "NON_AUTOMATIC_WEIGHING_CLASS_I_II",
@@ -129,6 +147,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "AUTOMATIC_WEIGHING_INSTRUMENTS",
@@ -136,6 +155,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "DISPENSING_PUMPS",
@@ -143,6 +163,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "VOLUMETRIC_TOTALIZING_COUNTER",
@@ -150,6 +171,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "VOLUMETRIC_OTHER_INSTRUMENTS",
@@ -157,6 +179,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "BULK_METERS_LIQUID_OTHER_THAN_WATER",
@@ -165,6 +188,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "BULK_METER_TOTALIZING_COUNTER",
@@ -172,6 +196,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "TAXI_AUTO_RICKSHAW_METERS",
@@ -179,6 +204,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "OTHER_LINEAR_METERS",
@@ -186,6 +212,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "CLINICAL_THERMOMETER",
@@ -193,6 +220,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "WATER_METER",
@@ -200,6 +228,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "PEG_MEASURE",
@@ -207,6 +236,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "CNG_DISPENSERS",
@@ -214,6 +244,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "CNG_TOTALIZING_COUNTERS",
@@ -221,6 +252,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "LPG_DISPENSERS",
@@ -228,6 +260,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "LPG_TOTALIZING_COUNTERS",
@@ -235,6 +268,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "LIQUOR_MEASURES",
@@ -242,6 +276,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "BLOOD_PRESSURE_MEASURING_INSTRUMENTS",
@@ -249,6 +284,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "STORAGE_TANKS_AND_VATS",
@@ -256,6 +292,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "WEIGH_BRIDGE_MOBILE_KIT",
@@ -263,6 +300,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "VEHICLE_TANKS",
@@ -270,6 +308,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "DIP_TAPE",
@@ -277,6 +316,7 @@ export const categories = [
     accuracy_class: "CLASS_II",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "AUTOMATIC_RAIL_WEIGHBRIDGE",
@@ -284,6 +324,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "AUTOMATIC_IN_MOTION_ROAD_WEIGHBRIDGE",
@@ -291,6 +332,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "DISCONTINUOUS_TOTALIZING_AUTOMATIC_WEIGHING_INSTRUMENTS",
@@ -298,6 +340,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
 
   {
@@ -306,6 +349,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML R 111",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "IRON_STEEL_WEIGHTS",
@@ -313,6 +357,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML R 111",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "FABRIC_PLASTIC_TAPES",
@@ -320,6 +365,7 @@ export const categories = [
     accuracy_class: "CLASS_II",
     oiml_standard_ref: "OIML R 35",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "WOVEN_TAPES",
@@ -327,6 +373,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML R 35",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "STEEL_TAPES",
@@ -334,6 +381,7 @@ export const categories = [
     accuracy_class: "CLASS_I",
     oiml_standard_ref: "OIML R 35",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "KITCHEN_SCALE",
@@ -341,6 +389,7 @@ export const categories = [
     accuracy_class: "CLASS_IIII",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "TUBULAR_BALANCE",
@@ -348,6 +397,7 @@ export const categories = [
     accuracy_class: "CLASS_IIII",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "PERSON_WEIGHING_MACHINE",
@@ -355,6 +405,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML R 76",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "BATHROOM_SCALES",
@@ -362,6 +413,7 @@ export const categories = [
     accuracy_class: "CLASS_IIII",
     oiml_standard_ref: "OIML R 76",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "BABY_WEIGHING_SCALES",
@@ -369,6 +421,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML R 76",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "TOTALIZING_MACHINE",
@@ -376,6 +429,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "AUTOMATIC_GRAVIMETRIC_FILLING_INSTRUMENTS",
@@ -383,6 +437,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML R 61",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "CONTINUOUS_TOTALIZING_AUTOMATIC_WEIGHING_INSTRUMENTS",
@@ -391,6 +446,7 @@ export const categories = [
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML R 50",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "WEIGHTS_FOR_HIGH_CAPACITY_WEIGHING_MACHINES",
@@ -398,6 +454,7 @@ export const categories = [
     accuracy_class: "CLASS_M1",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "CHECK_WEIGHING_AND_WEIGHT_GRADING_MACHINES",
@@ -405,6 +462,7 @@ export const categories = [
     accuracy_class: "CLASS_XIII",
     oiml_standard_ref: "OIML R 51",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
   {
     category_code: "LIQUID_MEASURING_SYSTEMS",
@@ -412,6 +470,7 @@ export const categories = [
     accuracy_class: "CLASS_0_5",
     oiml_standard_ref: "OIML R 117",
     verification_cycle_months: 12,
+    isApprovedForGatc: false,
   },
 
   {
@@ -420,27 +479,30 @@ export const categories = [
     accuracy_class: "CLASS_1_5",
     oiml_standard_ref: "OIML R 137",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "MOISTURE_METERS",
     category_name: "Moisture meters for cereal grains and oil seeds",
-    accuracy_class: "N/A",
+    accuracy_class: "N_A",
     oiml_standard_ref: "OIML",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "RADAR_EQUIPMENT",
     category_name: "Radar equipment for measuring speed of vehicle",
-    accuracy_class: "N/A",
+    accuracy_class: "N_A",
     oiml_standard_ref: "OIML R 91",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
   {
     category_code: "EVIDENTIAL_BREATH_ANALYZER",
     category_name: "Evidential Breath Analyzer",
-    accuracy_class: "N/A",
+    accuracy_class: "N_A",
     oiml_standard_ref: "OIML R 126",
     verification_cycle_months: 12,
+    isApprovedForGatc: true,
   },
-
 ];

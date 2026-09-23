@@ -32,6 +32,8 @@ enum AccuracyClass {
   CLASS_M1
   CLASS_XIII
   CLASS_0_5
+  CLASS_1_5
+  N_A
 }
 
 enum InstrumentStatus {
@@ -203,6 +205,7 @@ model InstrumentCategory {
   accuracy_class            AccuracyClass
   oiml_standard_ref         String
   verification_cycle_months Int
+  isApprovedForGatc         Boolean
 
   instruments MeasuringInstrument[]
   fee_rules   FeeRule[]
@@ -357,7 +360,7 @@ model TechnicalSpec {
   @@map("technical_specs")
 }
 
-model State {
+model State { // TODO: add revenue split
   state_id   String @id @default(uuid())
   state_code String @unique
   state_name String @unique

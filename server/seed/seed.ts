@@ -49,6 +49,7 @@ async function seed() {
         accuracy_class: category.accuracy_class as AccuracyClass,
         oiml_standard_ref: category.oiml_standard_ref,
         verification_cycle_months: category.verification_cycle_months,
+        isApprovedForGatc: category.isApprovedForGatc,
       },
     });
   }

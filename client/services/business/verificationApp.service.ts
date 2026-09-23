@@ -55,6 +55,13 @@ export interface VerificationState {
   state_name: string;
 }
 
+export interface VerificationDistrict {
+  district_id: string;
+  district_no: string;
+  district_code: string;
+  district_name: string;
+}
+
 export interface VerificationMetadata {
   categories: VerificationCategory[];
   states: VerificationState[];
@@ -226,6 +233,17 @@ export const getVerificationCategories = async (
   );
 
   return parseResponse<VerificationCategory[]>(response);
+};
+
+export const getVerificationDistricts = async (
+  stateCode: string,
+): Promise<VerificationDistrict[]> => {
+  const response = await fetch(
+    `${backendUrl}/api/verification/districts?stateCode=${encodeURIComponent(stateCode)}`,
+    { credentials: "include" },
+  );
+
+  return parseResponse<VerificationDistrict[]>(response);
 };
 
 export const getVerificationConditions = async (

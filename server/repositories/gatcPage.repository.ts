@@ -199,7 +199,7 @@ export const createGatcOfficerRepository = async ({
         mobile,
         employeeId,
         passwordHash,
-        jurisdiction_district: jurisdictionDistrict,
+        jurisdiction_district_id: jurisdictionDistrict,
         jurisdiction_state: jurisdictionState,
         gatc_id: gatcId,
         registrationRole: RoleType.GATC_OFFICER,

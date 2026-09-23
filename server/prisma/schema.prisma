@@ -127,10 +127,12 @@ model User {
   user_id               String   @id @default(uuid())
   name                  String
   email                 String   @unique
-  jurisdiction_district String
+  
   jurisdiction_state    String
   gatc_id       String?
   gatc_employer GatcCentre? @relation("GatcOfficers", fields: [gatc_id], references: [gatc_id])
+  jurisdiction_district_id String?
+  jurisdiction_district    District? @relation(fields: [jurisdiction_district_id],references: [district_id])
 
   business_profile          BusinessProfile?
   gatc_centres              GatcCentre?               @relation("GatcPrincipal")
@@ -171,7 +173,9 @@ model BusinessProfile {
 
   state_id String
   user_id  String @unique
+  district_id String
 
+  district District @relation(fields: [district_id],references: [district_id])
   instruments  MeasuringInstrument[]
   applications VerificationApp[]
 
@@ -226,7 +230,6 @@ model MeasuringInstrument {
   accuracy_class       AccuracyClass
   metric               String
   address              String
-  district             String
   pincode              Int
   state                String
   lat                  Float
@@ -238,6 +241,10 @@ model MeasuringInstrument {
 
   business_id          String
   category_id          String
+
+  district_id String
+
+  district District @relation(fields: [district_id],references: [district_id])
 
   status               InstrumentStatus
   applications         VerificationApp[]
@@ -374,6 +381,7 @@ model State { // TODO: add revenue split
   state_name String @unique
 
   fee_rules  FeeRule[]
+  districts       District[]
   businesses BusinessProfile[]
   lmo_officers LmoOfficer[]
 
@@ -515,4 +523,24 @@ model LmoOfficer {
   @@index([state_id])
   @@index([jurisdiction_zone])
   @@map("lmoOfficers")
+}
+
+model District {
+  district_id   String   @id @default(uuid())
+  district_no   String   @unique
+  district_code String   @unique
+  district_name String
+
+  state_id      String
+
+  state         State    @relation(fields: [state_id], references: [state_id])
+
+  users         User[]
+  businesses    BusinessProfile[]
+  instruments   MeasuringInstrument[]
+
+  @@unique([state_id, district_name])
+  @@index([state_id])
+
+  @@map("districts")
 }

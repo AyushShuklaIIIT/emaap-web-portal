@@ -3,6 +3,7 @@ import { VerificationForm } from "../../types";
 import {
   createVerificationApplicationService,
   getVerificationCategoriesService,
+  getVerificationDistrictsService,
   getVerificationConditionsService,
   getVerificationAppService,
   getVerificationFeeQuoteService,
@@ -140,6 +141,33 @@ export const getVerificationCategories = async (
     }
 
     const data = await getVerificationCategoriesService(stateCode);
+
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    const message = getErrorMessage(error);
+
+    return res
+      .status(getErrorStatus(message))
+      .json({ success: false, message });
+  }
+};
+
+export const getVerificationDistricts = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const stateCode = String(req.query.stateCode ?? "")
+      .trim()
+      .toUpperCase();
+
+    if (!stateCode) {
+      return res
+        .status(400)
+        .json({ success: false, message: "stateCode is required" });
+    }
+
+    const data = await getVerificationDistrictsService(stateCode);
 
     return res.status(200).json({ success: true, data });
   } catch (error) {

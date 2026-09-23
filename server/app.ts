@@ -398,13 +398,6 @@ export function createServer() {
     });
 
     socket.on("data", async (data) => {
-      console.log("[DATA] Verification submission received:", {
-        socketId: socket.id,
-        userId: data?.userId,
-        applicationId: getApplicationIdentifier(data),
-        instrumentSerialNumber: JSON.stringify(data?.instrumentSerialNumber),
-      });
-
       try {
         const { prisma } = await import("./lib/prisma");
 
@@ -430,7 +423,7 @@ export function createServer() {
         }
 
         if (!userId || !serialNumber) {
-          console.error("[DATA] Missing required fields:", {
+          console.error("Missing required fields:", {
             userId,
             serialNumber,
             rawInstrumentSerialNumber: data?.instrumentSerialNumber,
@@ -443,10 +436,6 @@ export function createServer() {
           });
         }
 
-        console.log("[DATA] Looking for BusinessProfile:", {
-          userId,
-        });
-
         let business = await prisma.businessProfile.findUnique({
           where: {
             user_id: userId,
@@ -454,9 +443,9 @@ export function createServer() {
         });
 
         if (!business) {
-          console.log("[DATA] BusinessProfile not found. Creating one...");
-
-          const stateCode = String(data?.state ?? "MH")
+          const stateCode = String(
+            data?.stateCode ?? data?.state ?? data?.state_code ?? "MH",
+          )
             .trim()
             .toUpperCase();
 
@@ -477,8 +466,6 @@ export function createServer() {
           });
 
           if (!stateObj) {
-            console.log("[DATA] State not found. Creating:", stateCode);
-
             stateObj = await prisma.state.create({
               data: {
                 state_no: stateNo,
@@ -488,25 +475,74 @@ export function createServer() {
             });
           }
 
+          const districtName = String(data?.district ?? "").trim();
+
+          if (!districtName) {
+            socket.emit("verification_persistence_failed", {
+              success: false,
+              message: "District is required.",
+            });
+            return;
+          }
+
+          const district = await prisma.district.findFirst({
+            where: {
+              state_id: stateObj.state_id,
+              OR: [
+                {
+                  district_name: {
+                    equals: districtName,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  district_code: {
+                    equals: districtName,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  district_no: districtName,
+                },
+              ],
+            },
+          });
+
+          if (!district) {
+            socket.emit("verification_persistence_failed", {
+              success: false,
+              message: `District '${districtName}' not found for state '${stateCode}'.`,
+            });
+            return;
+          }
+
           business = await prisma.businessProfile.create({
             data: {
-              user_id: userId,
               registration_number: `REG-${Date.now()}`,
               trade_name: data?.businessName || "Default Business",
               entity_type: "USER",
               geo_address: data?.address || "Unknown Address",
-              state_id: stateObj.state_id,
+
+              user: {
+                connect: {
+                  user_id: userId,
+                },
+              },
+
+              state: {
+                connect: {
+                  state_id: stateObj.state_id,
+                },
+              },
+
+              district: {
+                connect: {
+                  district_id: district.district_id,
+                },
+              },
             },
           });
-
-          console.log("[DATA] BusinessProfile created:", {
-            businessId: business.business_id,
-          });
         }
-
-        console.log("[DATA] Looking for InstrumentCategory:", {
-          categoryName: data?.instrumentSubCategory || "Default Category",
-        });
 
         let category = await prisma.instrumentCategory.findFirst({
           where: {
@@ -525,16 +561,7 @@ export function createServer() {
               isApprovedForGatc: data?.isApprovedForGatc,
             },
           });
-
-          console.log("[DATA] InstrumentCategory created:", {
-            categoryId: category.category_id,
-          });
         }
-
-        console.log("[DATA] Looking for MeasuringInstrument:", {
-          businessId: business.business_id,
-          serialNumber,
-        });
 
         let instrument = await prisma.measuringInstrument.findFirst({
           where: {
@@ -544,7 +571,66 @@ export function createServer() {
         });
 
         if (!instrument) {
-          console.log("[DATA] MeasuringInstrument not found. Creating...");
+          const stateCode = String(
+            data?.stateCode ?? data?.state ?? data?.state_code ?? "",
+          )
+            .trim()
+            .toUpperCase();
+
+          const stateObj = await prisma.state.findFirst({
+            where: {
+              state_code: stateCode,
+            },
+          });
+
+          if (!stateObj) {
+            socket.emit("verification_persistence_failed", {
+              success: false,
+              message: `State '${stateCode}' not found.`,
+            });
+            return;
+          }
+
+          const districtName = String(data?.district ?? "").trim();
+
+          if (!districtName) {
+            socket.emit("verification_persistence_failed", {
+              success: false,
+              message: "District is required.",
+            });
+            return;
+          }
+
+          const district = await prisma.district.findFirst({
+            where: {
+              state_id: stateObj.state_id,
+              OR: [
+                {
+                  district_name: {
+                    equals: districtName,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  district_code: {
+                    equals: districtName,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  district_no: districtName,
+                },
+              ],
+            },
+          });
+
+          if (!district) {
+            socket.emit("verification_persistence_failed", {
+              success: false,
+              message: `District '${districtName}' not found for state '${stateCode}'.`,
+            });
+            return;
+          }
 
           instrument = await prisma.measuringInstrument.create({
             data: {
@@ -557,32 +643,19 @@ export function createServer() {
               address:
                 data?.address || business.geo_address || "Unknown Address",
               pincode: Number(data?.pincode) || 111111,
-              state: data?.state || "N/A",
+
+              state: data?.state || stateCode || "N/A",
+
               lat: Number(data?.lat) || 0,
               long: Number(data?.long) || 0,
               status: "PENDING",
               business_id: business.business_id,
               category_id: category.category_id,
-              district: data?.district,
+              district_id: district.district_id,
               error: data?.error ? Number(data.error) : null,
             },
           });
-
-          console.log("[DATA] MeasuringInstrument created:", {
-            instrumentId: instrument.instrument_id,
-            serialNumber: instrument.serial_number,
-          });
-        } else {
-          console.log("[DATA] MeasuringInstrument already exists:", {
-            instrumentId: instrument.instrument_id,
-            serialNumber: instrument.serial_number,
-          });
         }
-
-        console.log("[DATA] Looking for VerificationApp:", {
-          applicationIdentifier,
-          instrumentId: instrument.instrument_id,
-        });
 
         let application = null;
 
@@ -623,12 +696,6 @@ export function createServer() {
               previous_certificate_url: data?.prevCertificateFileUrl || null,
             },
           });
-
-          console.log("[DATA] VerificationApp created:", {
-            appId: application.app_id,
-            applicationNo: application.application_no,
-            instrumentId: instrument.instrument_id,
-          });
         } else {
           if (data?.manufacturerFileUrl || data?.prevCertificateFileUrl) {
             application = await prisma.verificationApp.update({
@@ -643,12 +710,6 @@ export function createServer() {
               },
             });
           }
-
-          console.log("[DATA] VerificationApp already exists:", {
-            appId: application.app_id,
-            applicationNo: application.application_no,
-            workflowStatus: application.workflow_status,
-          });
         }
 
         const assignedOfficerId = application.assigned_officer_id;
@@ -662,10 +723,13 @@ export function createServer() {
             assignedOfficerId,
           });
 
-          console.log(`[DATA] Application sent to officer room ${officerRoom}`);
-        } else {
           console.log(
-            `[DATA] No assigned officer for application ${application.application_no}`,
+            `[SOCKET] Application data sent to LMO officer room ${officerRoom}:`,
+            {
+              ...data,
+              applicationId: application.application_no,
+              assignedOfficerId,
+            },
           );
         }
 
@@ -678,11 +742,9 @@ export function createServer() {
           businessId: business.business_id,
           assignedOfficerId: application.assigned_officer_id,
         });
-
-        console.log("[DATA] Relational persistence completed successfully.");
       } catch (err) {
         console.error(
-          "[DATA] Error creating verification relational records:",
+          "Error creating verification relational records:",
           err,
         );
 
@@ -766,7 +828,6 @@ export function createServer() {
                 email: `lmo_fallback_${Date.now()}@emaap.gov.in`,
                 mobile: `${Date.now()}`.substring(0, 10),
                 registrationRole: "LMO",
-                jurisdiction_district: "Any",
                 jurisdiction_state: "Any",
                 passwordHash: "dummy",
                 isActive: true,

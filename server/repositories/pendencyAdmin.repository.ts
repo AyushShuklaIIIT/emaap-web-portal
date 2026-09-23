@@ -82,7 +82,7 @@ export const getPendencyApplications = async (query: PendencyQuery) => {
           state: true,
           user: {
             select: {
-              jurisdiction_district: true,
+              jurisdiction_district: { select: { district_name: true } },
             },
           },
         },
@@ -99,7 +99,7 @@ export const getPendencyApplications = async (query: PendencyQuery) => {
           user_id: true,
           name: true,
           email: true,
-          jurisdiction_district: true,
+          jurisdiction_district: { select: { district_name: true } },
           jurisdiction_state: true,
         },
       },
@@ -179,7 +179,7 @@ export const getEligibleGatcs = async (
 
       principal_officer: {
         jurisdiction_state: stateCode,
-        jurisdiction_district: district,
+        jurisdiction_district_id: district,
       },
     },
 
@@ -209,7 +209,7 @@ export const getEligibleLmos = async (stateCode: string, district: string) => {
       user: {
         isActive: true,
         jurisdiction_state: stateCode,
-        jurisdiction_district: district,
+        jurisdiction_district_id: district,
       },
     },
     orderBy: {
@@ -276,24 +276,19 @@ export const getActiveGatcById = async (gatcId: string) => {
   });
 };
 
-export const getLmoById = async (lmoId: string) => {
+export const getLmoById = async (userId: string) => {
   return prisma.lmoOfficer.findFirst({
     where: {
-      user_id: lmoId,
+      user_id: userId,
       user: {
-        registrationRole: RoleType.LMO,
         isActive: true,
+        registrationRole: RoleType.LMO,
       },
     },
-
-    select: {
-      user_id: true,
+    include: {
       user: {
-        select: {
-          name: true,
-          email: true,
+        include: {
           jurisdiction_district: true,
-          jurisdiction_state: true,
         },
       },
     },
@@ -321,6 +316,7 @@ export const getPendencyApplicationById = async (appId: string) => {
       instrument: {
         include: {
           category: true,
+          district: true,
         },
       },
 

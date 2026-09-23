@@ -9,6 +9,35 @@ import { paymentReceiptsData } from "./payment.js";
 import { inspectionRecordsData } from "./inspection.js";
 import { digitalCertificatesData } from "./certificates.js";
 import { AccuracyClass, RoleType } from "../generated/prisma/enums.js";
+import { districts } from "./district.js";
+
+async function getOrCreateDistrict(stateCode: string, districtName: string) {
+  const state = await prisma.state.findUnique({
+    where: { state_code: stateCode },
+  });
+
+  if (!state) return null;
+
+  let district = await prisma.district.findFirst({
+    where: {
+      district_name: districtName,
+      state_id: state.state_id,
+    },
+  });
+
+  if (!district) {
+    district = await prisma.district.create({
+      data: {
+        district_name: districtName,
+        district_code: `${stateCode}_${districtName.toUpperCase().replace(/\s+/g, "_")}`,
+        district_no: `${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        state_id: state.state_id,
+      },
+    });
+  }
+
+  return district;
+}
 
 async function seed() {
   console.log("Begin Seeding States");
@@ -29,8 +58,49 @@ async function seed() {
       },
     });
   }
-
   console.log("States seeded successfully");
+
+  console.log("Begin Seeding Districts");
+
+  const dbStates = await prisma.state.findMany();
+  const stateNoToIdMap = new Map<string, string>();
+
+  for (const s of dbStates) {
+    stateNoToIdMap.set(String(s.state_no), s.state_id);
+  }
+
+  for (const dist of districts) {
+    const stateId = stateNoToIdMap.get(String(dist.state_no));
+    if (!stateId) {
+      console.warn(
+        `Skipping district ${dist.district_name}: State No ${dist.state_no} not found in DB.`,
+      );
+      continue;
+    }
+
+    const uniqueDistrictCode = `${dist.district_no}-${dist.district_code}`;
+
+    await prisma.district.upsert({
+      where: {
+        state_id_district_name: {
+          state_id: stateId,
+          district_name: dist.district_name,
+        },
+      },
+      update: {
+        district_no: dist.district_no,
+        district_code: uniqueDistrictCode,
+      },
+      create: {
+        district_no: dist.district_no,
+        district_code: uniqueDistrictCode,
+        district_name: dist.district_name,
+        state_id: stateId,
+      },
+    });
+  }
+
+  console.log("Districts seeded successfully");
 
   console.log("Begin Seeding Categories");
 
@@ -125,10 +195,25 @@ async function seed() {
       employeeId,
     } = u;
 
+    let district = null;
+
+    if (registrationRole !== "ADMIN") {
+      district = await getOrCreateDistrict(
+        jurisdiction_state,
+        jurisdiction_district || "Default District",
+      );
+
+      if (!district) {
+        throw new Error(
+          `Cannot seed user ${email}: district '${jurisdiction_district}' not found for state '${jurisdiction_state}'.`,
+        );
+      }
+    }
+
     const baseUser = {
       name,
       email,
-      jurisdiction_district,
+      jurisdiction_district_id: district?.district_id ?? null,
       jurisdiction_state,
       fullName,
       mobile,
@@ -140,7 +225,7 @@ async function seed() {
       mobileVerified: true,
     };
 
-    const user_id = u.user_id; // Extract user_id if it exists
+    const user_id = u.user_id;
     let createdUser;
 
     if (registrationRole === "STAKEHOLDER") {
@@ -197,12 +282,14 @@ async function seed() {
           ...bp,
           registration_number: bu.registration_number,
           state_id: state.state_id,
+          district_id: district!.district_id,
         },
         create: {
           ...bp,
           registration_number: bu.registration_number,
           user_id: createdUser.user_id,
           state_id: state.state_id,
+          district_id: district!.district_id,
         },
       });
     } else if ((registrationRole as string) === "GATC_PRINCIPAL") {
@@ -274,7 +361,6 @@ async function seed() {
           ...(gatc_id ? { gatc_id } : {}),
         },
       });
-      console.log(`Seeded GATC Officer: ${email}`);
     } else {
       createdUser = await prisma.user.upsert({
         where: {
@@ -371,7 +457,11 @@ async function seed() {
         email: inst.business_email,
       },
       include: {
-        business_profile: true,
+        business_profile: {
+          include: {
+            state: true,
+          },
+        },
       },
     });
 
@@ -384,6 +474,11 @@ async function seed() {
     if (!user?.business_profile || !category) {
       continue;
     }
+
+    const district = await getOrCreateDistrict(
+      user.business_profile.state.state_code,
+      inst.district || "Default District",
+    );
 
     const data = {
       serial_number: inst.serial_number,
@@ -402,7 +497,7 @@ async function seed() {
       status: inst.status as any,
       business_id: user.business_profile.business_id,
       category_id: category.category_id,
-      district: inst.district,
+      district_id: district!.district_id,
     };
 
     const existing = await prisma.measuringInstrument.findFirst({
@@ -600,58 +695,6 @@ async function seed() {
   }
 
   console.log("Inspections seeded successfully");
-
-  console.log("Begin Seeding Certificates");
-
-  // for (const cert of digitalCertificatesData) {
-  //   const app = await prisma.verificationApp.findUnique({
-  //     where: {
-  //       application_no: cert.application_no,
-  //     },
-  //   });
-
-  //   if (!app) {
-  //     continue;
-  //   }
-
-  //   const inspection = await prisma.inspectionRecord.findFirst({
-  //     where: {
-  //       app_id: app.app_id,
-  //     },
-  //   });
-
-  //   if (!inspection) {
-  //     continue;
-  //   }
-
-  //   await prisma.digitalCertificate.upsert({
-  //     where: {
-  //       certificate_no: cert.certificate_no,
-  //     },
-  //     update: {
-  //       stamping_quarter_code: cert.stamping_quarter_code,
-  //       issue_date: cert.issue_date,
-  //       expiry_date: cert.expiry_date,
-  //       sha256_hash: cert.sha256_hash,
-  //       dynamic_qr_url: cert.dynamic_qr_url,
-  //       rejection_reason: cert.rejection_reason,
-  //       inspection_id: inspection.inspection_id,
-  //       instrument_id: app.instrument_id,
-  //     },
-  //     create: {
-  //       certificate_no: cert.certificate_no,
-  //       stamping_quarter_code: cert.stamping_quarter_code,
-  //       issue_date: cert.issue_date,
-  //       expiry_date: cert.expiry_date,
-  //       sha256_hash: cert.sha256_hash,
-  //       dynamic_qr_url: cert.dynamic_qr_url,
-  //       rejection_reason: cert.rejection_reason,
-  //       inspection_id: inspection.inspection_id,
-  //       instrument_id: app.instrument_id,
-  //     },
-  //   });
-  // }
-
   console.log("Certificates seeded successfully");
   console.log("Constant Data Seeding completed");
 }

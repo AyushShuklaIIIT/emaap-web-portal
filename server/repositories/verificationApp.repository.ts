@@ -220,6 +220,29 @@ export const getVerificationCategoriesByStateCode = async (
   return rules.map((rule) => rule.category);
 };
 
+export const getVerificationDistrictsByStateCode = async (
+  stateCode: string,
+) => {
+  const state = await prisma.state.findUnique({
+    where: { state_code: stateCode },
+  });
+
+  if (!state) {
+    return [];
+  }
+
+  return prisma.district.findMany({
+    where: { state_id: state.state_id },
+    orderBy: { district_name: "asc" },
+    select: {
+      district_id: true,
+      district_no: true,
+      district_code: true,
+      district_name: true,
+    },
+  });
+};
+
 export const getVerificationConditionsByStateAndCategory = async (
   stateCode: string,
   categoryCode: string,
@@ -314,7 +337,7 @@ export const createApplicationTransaction = async (params: {
           accuracy_class: params.instrument.accuracy_class,
           metric: params.instrument.metric,
           address: params.instrument.address,
-          district: params.instrument.district,
+          jurisdiction_district: params.instrument.district,
           pincode: params.instrument.pincode,
           state: params.instrument.state,
           lat: params.instrument.lat,
@@ -336,7 +359,7 @@ export const createApplicationTransaction = async (params: {
           accuracy_class: params.instrument.accuracy_class,
           metric: params.instrument.metric,
           address: params.instrument.address,
-          district: params.instrument.district,
+          district_id: params.instrument.district,
           pincode: params.instrument.pincode,
           state: params.instrument.state,
           lat: params.instrument.lat,

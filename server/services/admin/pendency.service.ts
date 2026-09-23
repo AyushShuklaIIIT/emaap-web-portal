@@ -13,7 +13,6 @@ import {
 } from "../../repositories/pendencyAdmin.repository";
 
 const SLA_DAYS = 15;
-
 const PENDING_STATUSES = new Set(["SUBMITTED", "ALLOCATED"]);
 
 interface PendencyQueueInput {
@@ -45,34 +44,28 @@ interface AdminPendencyItem {
   application_no: string;
   submission_timestamp: string;
   days_pending: number;
-
   business: {
     name: string;
     location: string;
     state_code: string;
   };
-
   instrument: {
     category: string;
     category_code: string;
     serial_number: string;
     model_no: string;
   };
-
   sla: {
     status: "BREACHED" | "WITHIN_SLA";
     label: string;
     days_pending: number;
     note: string | null;
   };
-
   current_assignment: {
     type: "LMO" | "GATC" | null;
     name: string | null;
   };
-
   suggestions: RouteSuggestion[];
-
   action: "APPROVE_ROUTE" | "MANUAL_OVERRIDE" | "WAIT";
 }
 
@@ -88,9 +81,7 @@ const getSlaStatus = (daysPending: number) => {
 
   return {
     status: breached ? ("BREACHED" as const) : ("WITHIN_SLA" as const),
-    label: breached
-      ? `${daysPending} Days Pending`
-      : `${daysPending} Days Pending`,
+    label: `${daysPending} Days Pending`,
     note: breached ? "SLA Breached" : null,
   };
 };
@@ -102,8 +93,10 @@ const calculateDistanceKm = (
   lon2: number,
 ): number => {
   const earthRadiusKm = 6371;
+
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) *
@@ -121,14 +114,14 @@ const findNearestGatcs = async (
   categoryCode: string,
   categoryName: string,
   stateCode: string,
-  district: string,
+  districtId: string,
   instrumentLat: number,
   instrumentLong: number,
 ) => {
   const gatcs = await getEligibleGatcs(
     categoryCode,
     stateCode,
-    district,
+    districtId,
     categoryName,
   );
 
@@ -159,7 +152,7 @@ const findNearestGatcs = async (
 type PendencyApplicationLocation = {
   instrument: {
     accuracy_class: AccuracyClass;
-    district: string;
+    district_id: string;
     category: {
       category_code: string;
       category_name: string;
@@ -169,10 +162,8 @@ type PendencyApplicationLocation = {
   };
   business: {
     state: {
+      state_id: string;
       state_code: string;
-    };
-    user: {
-      jurisdiction_district: string;
     };
   };
 };
@@ -191,7 +182,7 @@ const buildSuggestions = async (application: PendencyApplicationLocation) => {
       instrument.category.category_code,
       instrument.category.category_name,
       businessState.state_code,
-      instrument.district,
+      instrument.district_id,
       instrument.lat,
       instrument.long,
     );
@@ -201,7 +192,7 @@ const buildSuggestions = async (application: PendencyApplicationLocation) => {
 
   const lmos = await getEligibleLmos(
     businessState.state_code,
-    instrument.district,
+    instrument.district_id,
   );
 
   suggestions.push(
@@ -210,7 +201,8 @@ const buildSuggestions = async (application: PendencyApplicationLocation) => {
       lmo_id: lmo.user_id,
       employee_id: lmo.employee_id,
       name: lmo.user.name,
-      jurisdiction_district: lmo.user.jurisdiction_district,
+      jurisdiction_district:
+        lmo.user.jurisdiction_district?.district_name ?? "",
     })),
   );
 
@@ -248,8 +240,10 @@ export const getPendencyQueueService = async ({
 
   for (const application of applications) {
     const daysPending = getDaysPending(application.submission_timestamp);
+
     const sla = getSlaStatus(daysPending);
     const suggestions = await buildSuggestions(application);
+
     let currentAssignment: AdminPendencyItem["current_assignment"] = {
       type: null,
       name: null,
@@ -273,37 +267,31 @@ export const getPendencyQueueService = async ({
         : suggestions.length > 0
           ? "MANUAL_OVERRIDE"
           : "WAIT";
+
     items.push({
       app_id: application.app_id,
       application_no: application.application_no,
       submission_timestamp: application.submission_timestamp.toISOString(),
-
       days_pending: daysPending,
-
       business: {
         name: application.business.trade_name,
         location: application.business.geo_address,
         state_code: application.business.state.state_code,
       },
-
       instrument: {
         category: application.instrument.category.category_name,
         category_code: application.instrument.category.category_code,
         serial_number: application.instrument.serial_number,
         model_no: application.instrument.model_no,
       },
-
       sla: {
         status: sla.status,
         label: sla.label,
         days_pending: daysPending,
         note: sla.note,
       },
-
       current_assignment: currentAssignment,
-
       suggestions,
-
       action,
     });
   }
@@ -330,7 +318,10 @@ export const getPendencyQueueService = async ({
 
 export const approvePendencyRouteService = async (
   appId: string,
-  route: { gatcId?: string; lmoId?: string },
+  route: {
+    gatcId?: string;
+    lmoId?: string;
+  },
 ) => {
   const application = await getPendencyApplicationById(appId);
 
@@ -366,7 +357,7 @@ export const approvePendencyRouteService = async (
     const eligibleGatcs = await getEligibleGatcs(
       application.instrument.category.category_code,
       application.business.state.state_code,
-      application.instrument.district,
+      application.instrument.district_id,
       application.instrument.category.category_name,
     );
 
@@ -404,7 +395,7 @@ export const approvePendencyRouteService = async (
 
   if (
     lmo.user.jurisdiction_state !== application.business.state.state_code ||
-    lmo.user.jurisdiction_district !== application.instrument.district
+    lmo.user.jurisdiction_district_id !== application.instrument.district_id
   ) {
     throw new AppError(
       400,
@@ -433,9 +424,7 @@ export const approvePendencyRouteService = async (
 
 export const manualOverridePendencyRouteService = async (
   appId: string,
-
   assignedType: "LMO" | "GATC",
-
   assignedId: string,
 ) => {
   const application = await getPendencyApplicationById(appId);
@@ -466,10 +455,11 @@ export const manualOverridePendencyRouteService = async (
     }
 
     const categoryCode = application.instrument.category.category_code;
+
     const eligibleGatcs = await getEligibleGatcs(
       categoryCode,
       application.business.state.state_code,
-      application.instrument.district,
+      application.instrument.district_id,
       application.instrument.category.category_name,
     );
 
@@ -491,6 +481,16 @@ export const manualOverridePendencyRouteService = async (
     if (!lmo) {
       throw new AppError(404, "LMO not found");
     }
+
+    if (
+      lmo.user.jurisdiction_state !== application.business.state.state_code ||
+      lmo.user.jurisdiction_district_id !== application.instrument.district_id
+    ) {
+      throw new AppError(
+        400,
+        "Selected LMO is not eligible for this application jurisdiction",
+      );
+    }
   }
 
   const updated = await assignApplication(appId, assignedType, assignedId);
@@ -507,7 +507,6 @@ export const manualOverridePendencyRouteService = async (
       assignedType === "GATC"
         ? (updated.assigned_gatc?.centre_code ?? null)
         : (updated.assigned_officer?.name ?? null),
-
     serial_no: application.instrument.serial_number,
     model_no: application.instrument.model_no,
     previousCertificateUrl: application.previous_certificate_url,
@@ -543,6 +542,7 @@ export const bulkApprovePendencyRoutesService = async (appIds: string[]) => {
       }
 
       const suggestions = await buildSuggestions(application);
+
       const suggestion = suggestions[0];
 
       if (!suggestion) {
@@ -552,8 +552,12 @@ export const bulkApprovePendencyRoutesService = async (appIds: string[]) => {
       const result = await approvePendencyRouteService(
         appId,
         suggestion.type === "GATC"
-          ? { gatcId: suggestion.gatc_id }
-          : { lmoId: suggestion.lmo_id },
+          ? {
+              gatcId: suggestion.gatc_id,
+            }
+          : {
+              lmoId: suggestion.lmo_id,
+            },
       );
 
       results.push({

@@ -11,6 +11,7 @@ import {
   postVerificationAppByBusinessId,
   findFeeRules,
   getVerificationCategoriesByStateCode,
+  getVerificationDistrictsByStateCode,
   getVerificationConditionsByStateAndCategory,
   findUserById,
   findCategoryByCode,
@@ -450,6 +451,16 @@ export const getVerificationCategoriesService = async (stateCode: string) => {
   }
 
   return getVerificationCategoriesByStateCode(stateCode);
+};
+
+export const getVerificationDistrictsService = async (stateCode: string) => {
+  const state = await findStateByCode(stateCode);
+
+  if (!state) {
+    throw new Error(`State '${stateCode}' does not exist`);
+  }
+
+  return getVerificationDistrictsByStateCode(stateCode);
 };
 
 export const getVerificationConditionsService = async (

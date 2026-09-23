@@ -14,7 +14,7 @@ export const adminUsersData: User[] = [
     email: "admin.central@emaap.gov.in",
     mobile: "9000000001",
     registrationRole: "ADMIN",
-    jurisdiction_district: "Central",
+
     jurisdiction_state: "Central",
     password: "admin",
     passwordHash: generateHash("admin"),

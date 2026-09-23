@@ -14,7 +14,7 @@ export interface RouteAssignedPayload {
   instrument_category: string;
   serial_no: string;
   model_no: string;
-  error?: number | null;
+  error?: number;
   timestamp: string;
   previousCertificateUrl: string | null;
   manufacturerCertificateUrl: string | null;

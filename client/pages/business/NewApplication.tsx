@@ -12,7 +12,9 @@ import {
   VerificationFeeQuote,
   CreateVerificationApplicationResponse,
   VerificationCategory,
+  VerificationDistrict,
   getVerificationCategories,
+  getVerificationDistricts,
   getVerificationConditions,
   getVerificationFeeQuote,
   createVerificationApplication,
@@ -94,8 +96,48 @@ export default function NewApplication() {
   const [errorValue, setErrorValue] = useState<number | null>(null);
   const [address, setAddress] = useState("");
   const [district, setDistrict] = useState("");
+  const [availableDistricts, setAvailableDistricts] = useState<
+    VerificationDistrict[]
+  >([]);
+  const [districtLoading, setDistrictLoading] = useState(false);
   const [pincode, setPincode] = useState<number | null>(null);
   const [stateCode, setStateCode] = useState("");
+
+  useEffect(() => {
+    if (!stateCode) {
+      setAvailableDistricts([]);
+      setDistrict("");
+      return;
+    }
+
+    let mounted = true;
+
+    const loadDistricts = async () => {
+      try {
+        setDistrictLoading(true);
+        const districts = await getVerificationDistricts(stateCode);
+
+        if (mounted) {
+          setAvailableDistricts(districts);
+        }
+      } catch (error) {
+        if (mounted) {
+          setAvailableDistricts([]);
+          console.error("Failed to load districts for state:", stateCode, error);
+        }
+      } finally {
+        if (mounted) {
+          setDistrictLoading(false);
+        }
+      }
+    };
+
+    void loadDistricts();
+
+    return () => {
+      mounted = false;
+    };
+  }, [stateCode]);
   const [coordinates, setCoordinates] = useState("");
   const [manufacturerInvoice, setManufacturerInvoice] = useState<File | null>(
     null,
@@ -886,12 +928,26 @@ export default function NewApplication() {
               </FormField>
 
               <FormField label="District">
-                <Input
+                <select
                   value={district}
-                  placeholder="e.g. Mumbai Suburban"
-                  className={fieldClassName}
+                  disabled={!stateCode || districtLoading}
                   onChange={(event) => setDistrict(event.target.value)}
-                />
+                  className={`${fieldClassName} w-full px-3 outline-none`}
+                >
+                  <option value="">
+                    {districtLoading
+                      ? "Loading districts..."
+                      : !stateCode
+                        ? "Select a state first"
+                        : "Select a district"}
+                  </option>
+
+                  {availableDistricts.map((d) => (
+                    <option key={d.district_id} value={d.district_name}>
+                      {d.district_name}
+                    </option>
+                  ))}
+                </select>
               </FormField>
 
               <FormField label="Pincode">

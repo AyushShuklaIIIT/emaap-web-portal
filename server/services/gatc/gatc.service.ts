@@ -229,7 +229,7 @@ export const registerGatcOfficerService = async ({
     mobile: normalizedMobile,
     employeeId: normalizedEmployeeId,
     passwordHash: hashPassword(temporaryPassword),
-    jurisdictionDistrict: principal.jurisdiction_district,
+    jurisdictionDistrict: principal.jurisdiction_district.district_id,
     jurisdictionState: principal.jurisdiction_state,
   });
 

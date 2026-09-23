@@ -7508,263 +7508,233 @@ const feeRules_KA: FeeRuleSeed[] = [
 
 const feeRules_TN: FeeRuleSeed[] = [
   {
-   
     state_code: "TN",
-   
+
     category_code: "BULLION_WEIGHTS",
-   
+
     min_value: 10,
-   
+
     max_value: 10,
-   
+
     unit: "kg",
-   
+
     fee_amount: 60,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "BULLION_WEIGHTS",
-   
+
     min_value: 5,
-   
+
     max_value: 5,
-   
+
     unit: "kg",
-   
+
     fee_amount: 40,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "BULLION_WEIGHTS",
-   
+
     min_value: 1,
-   
+
     max_value: 2,
-   
+
     unit: "kg",
-   
+
     fee_amount: 40,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "BULLION_WEIGHTS",
-   
+
     min_value: 1,
-   
+
     max_value: 500,
-   
+
     unit: "g",
-   
+
     fee_amount: 30,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
 
   {
-   
     state_code: "TN",
-   
+
     category_code: "CARAT_WEIGHTS",
-   
+
     min_value: 0.005,
-   
+
     max_value: 500,
-   
+
     unit: "c",
-   
+
     fee_amount: 40,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
 
   {
-   
     state_code: "TN",
-   
+
     category_code: "CYLINDRICAL_KNOB_WEIGHTS",
-   
+
     min_value: 5,
-   
+
     max_value: 10,
-   
+
     unit: "kg",
-   
+
     fee_amount: 40,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "CYLINDRICAL_KNOB_WEIGHTS",
-   
+
     min_value: 2,
-   
+
     max_value: 2,
-   
+
     unit: "kg",
-   
+
     fee_amount: 30,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "CYLINDRICAL_KNOB_WEIGHTS",
-   
+
     min_value: 1,
-   
+
     max_value: 1,
-   
+
     unit: "kg",
-   
+
     fee_amount: 20,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "CYLINDRICAL_KNOB_WEIGHTS",
-   
+
     min_value: 1,
-   
+
     max_value: 500,
-   
+
     unit: "g",
-   
+
     fee_amount: 10,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
 
   {
-   
     state_code: "TN",
-   
+
     category_code: "SHEET_METAL_WEIGHTS",
-   
+
     min_value: 1,
-   
+
     max_value: 500,
-   
+
     unit: "mg",
-   
+
     fee_amount: 10,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
 
   {
-   
     state_code: "TN",
-   
+
     category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS",
-   
+
     min_value: 50,
-   
+
     max_value: 50,
-   
+
     unit: "kg",
-   
+
     fee_amount: 50,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS",
-   
+
     min_value: 5,
-   
+
     max_value: 20,
-   
+
     unit: "kg",
-   
+
     fee_amount: 40,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS",
-   
+
     min_value: 2,
-   
+
     max_value: 2,
-   
+
     unit: "kg",
-   
+
     fee_amount: 30,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS",
-   
+
     min_value: 1,
-   
+
     max_value: 1,
-   
+
     unit: "kg",
-   
+
     fee_amount: 20,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
   {
-   
     state_code: "TN",
-   
+
     category_code: "IRON_HEXAGONAL_KNOB_PARALLELEPIPED_WEIGHTS",
-   
+
     min_value: 1,
-   
+
     max_value: 500,
-   
+
     unit: "g",
-   
+
     fee_amount: 10,
-   
+
     fee_basis: "PER_PIECE",
- ,
   },
 
   {

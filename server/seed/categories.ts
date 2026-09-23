@@ -413,4 +413,34 @@ export const categories = [
     verification_cycle_months: 12,
   },
 
+
+  {
+    category_code: "GAS_METER",
+    category_name: "Gas meter",
+    accuracy_class: "CLASS_1_5",
+    oiml_standard_ref: "OIML R 137",
+    verification_cycle_months: 12,
+  },
+  {
+    category_code: "MOISTURE_METERS",
+    category_name: "Moisture meters for cereal grains and oil seeds",
+    accuracy_class: "N/A",
+    oiml_standard_ref: "OIML",
+    verification_cycle_months: 12,
+  },
+  {
+    category_code: "RADAR_EQUIPMENT",
+    category_name: "Radar equipment for measuring speed of vehicle",
+    accuracy_class: "N/A",
+    oiml_standard_ref: "OIML R 91",
+    verification_cycle_months: 12,
+  },
+  {
+    category_code: "EVIDENTIAL_BREATH_ANALYZER",
+    category_name: "Evidential Breath Analyzer",
+    accuracy_class: "N/A",
+    oiml_standard_ref: "OIML R 126",
+    verification_cycle_months: 12,
+  },
+
 ];

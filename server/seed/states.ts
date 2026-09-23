@@ -3,7 +3,7 @@ import type { State } from "../types";
 export const states: State[] = [
   { state_code: "AP", state_name: "Andhra Pradesh" },
   { state_code: "AR", state_name: "Arunachal Pradesh" },
-  { state_code: "AS", state_name: "Assam" },
+  { state_code: "AS", state_name: "Assam" }, // Not found rules
   { state_code: "BR", state_name: "Bihar" },
   { state_code: "CG", state_name: "Chhattisgarh" },
   { state_code: "GA", state_name: "Goa" },
@@ -16,7 +16,7 @@ export const states: State[] = [
   { state_code: "MP", state_name: "Madhya Pradesh" },
   { state_code: "MH", state_name: "Maharashtra" },
   { state_code: "MN", state_name: "Manipur" },
-  { state_code: "ML", state_name: "Meghalaya" },
+  { state_code: "ML", state_name: "Meghalaya" }, // Next
   { state_code: "MZ", state_name: "Mizoram" },
   { state_code: "NL", state_name: "Nagaland" },
   { state_code: "OR", state_name: "Odisha" },

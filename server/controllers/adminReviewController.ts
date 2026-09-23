@@ -9,7 +9,9 @@ import { AppError } from "../errors/AppError";
 const querySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
-  role: z.enum(["STAKEHOLDER", "ADMIN", "LMO", "GATC_OPERATOR"]).optional(),
+  role: z
+    .enum(["STAKEHOLDER", "ADMIN", "LMO", "GATC_PRINCIPAL", "GATC_OFFICER"])
+    .optional(),
   state: z.string().trim().min(1).max(100).optional(),
 });
 

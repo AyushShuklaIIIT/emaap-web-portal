@@ -52,7 +52,7 @@ const loginSchema = z.object({
 const roleMap = {
   business: "STAKEHOLDER",
   admin: "ADMIN",
-  gatc: "GATC_OPERATOR",
+  gatc: "GATC_PRINCIPAL",
 } as const;
 
 function getJwtSecret(): string {

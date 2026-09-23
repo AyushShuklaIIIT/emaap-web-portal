@@ -8,7 +8,7 @@ import { verificationAppsData } from "./verificationApp.js";
 import { paymentReceiptsData } from "./payment.js";
 import { inspectionRecordsData } from "./inspection.js";
 import { digitalCertificatesData } from "./certificates.js";
-import { AccuracyClass } from "../generated/prisma/enums.js";
+import { AccuracyClass, RoleType } from "../generated/prisma/enums.js";
 
 async function seed() {
   console.log("Begin Seeding States");
@@ -130,7 +130,7 @@ async function seed() {
       jurisdiction_state,
       fullName,
       mobile,
-      registrationRole,
+      registrationRole: registrationRole as RoleType,
       passwordHash,
       employeeId,
       isActive: true,
@@ -203,7 +203,7 @@ async function seed() {
           state_id: state.state_id,
         },
       });
-    } else if (registrationRole === "GATC_OPERATOR") {
+    } else if ((registrationRole as string) === "GATC_PRINCIPAL") {
       const gu = u as any;
 
       const gc = {
@@ -243,6 +243,36 @@ async function seed() {
           principal_officer_id: createdUser.user_id,
         },
       });
+    } else if ((registrationRole as string) === "GATC_OFFICER") {
+      const gu = u as any;
+      let gatc_id: string | undefined = undefined;
+      if (gu.centre_code) {
+        const gatcCentre = await prisma.gatcCentre.findUnique({
+          where: { centre_code: gu.centre_code },
+        });
+
+        if (gatcCentre) {
+          gatc_id = gatcCentre.gatc_id;
+        } else {
+          console.warn(
+            `Warning: Could not find GATC Centre with code ${gu.centre_code} for officer ${email}`,
+          );
+        }
+      }
+
+      createdUser = await prisma.user.upsert({
+        where: { email },
+        update: {
+          ...baseUser,
+          ...(gatc_id ? { gatc_id } : {}),
+        },
+        create: {
+          ...(user_id ? { user_id } : {}),
+          ...baseUser,
+          ...(gatc_id ? { gatc_id } : {}),
+        },
+      });
+      console.log(`Seeded GATC Officer: ${email}`);
     } else {
       createdUser = await prisma.user.upsert({
         where: {

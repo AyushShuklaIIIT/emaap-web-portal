@@ -1,479 +1,376 @@
-import { FormEvent, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, UploadCloud } from "lucide-react";
+import { useMemo } from "react";
+
+import {
+  Building2,
+  CheckCircle2,
+  CircleDollarSign,
+  Loader2,
+  Users,
+  UserCheck,
+  UserX,
+} from "lucide-react";
+
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
-const scopeCategories = [
-  "Energy Dispensers (CNG, LNG, Petrol)",
-  "Automatic Rail Weighbridges",
-  "Clinical Thermometers",
-  "Standard Weights",
-  "Non-Automatic Weighing Instruments",
-  "Automatic Weighing Instruments",
-  "Vehicle Weighbridges",
-  "Platform Scales",
-  "Retail Weighing Scales",
-  "Industrial Weighing Systems",
-  "Flow Meters",
-  "Water Meters",
-  "Fuel Dispensers",
-  "Gas Cylinders",
-  "Pressure Gauges",
-  "Temperature Sensors",
-  "Length Measuring Instruments",
-  "Area Measuring Instruments",
-  "Volume Measures",
-  "Tanker Trucks",
-  "Taxi Meters",
-  "Clinical Sphygmomanometers",
-  "Weights and Measures Software",
-];
+import { useGatcDashboard } from "@/hooks/useGatc";
 
-const initialScope = [
-  "Energy Dispensers (CNG, LNG, Petrol)",
-  "Automatic Rail Weighbridges",
-  "Clinical Thermometers",
-  "Standard Weights",
-];
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+const formatDate = (value: string) => {
+  return new Date(value).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+  });
+};
+
+const formatLongDate = (value: string) => {
+  return new Date(value).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const getInitials = (name: string) => {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+};
 
 export default function GatcDashboard() {
-  const [appStatus, setAppStatus] = useState<"unauthorized" | "pending">(
-    "unauthorized",
-  );
-  const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedScope, setSelectedScope] = useState(initialScope);
+  const { data, isLoading, isError, error, refetch } = useGatcDashboard();
 
-  const toggleScope = (category: string) => {
-    setSelectedScope((current) =>
-      current.includes(category)
-        ? current.filter((item) => item !== category)
-        : [...current, category],
+  const chartData = useMemo(() => {
+    return (data?.revenue ?? []).map((item) => ({
+      ...item,
+      displayDate: formatDate(item.date),
+    }));
+  }, [data?.revenue]);
+
+  if (isLoading) {
+    return (
+      <DashboardLayout role="gatc">
+        <div className="flex min-h-125 items-center justify-center">
+          <Loader2 className="h-7 w-7 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
     );
-  };
+  }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    
-    // If we are NOT on the final step, the form submission should just 
-    // advance the user to the next step. (Because this ran, we know the 
-    // browser's native HTML validation passed for the current step).
-    if (step < 3) {
-      setStep((prev) => prev + 1);
-      return;
-    }
+  if (isError || !data) {
+    return (
+      <DashboardLayout role="gatc">
+        <div className="flex min-h-125 flex-col items-center justify-center gap-4">
+          <p className="text-sm text-muted-foreground">
+            {error instanceof Error
+              ? error.message
+              : "Unable to load GATC dashboard."}
+          </p>
 
-    // If we reach here, we are on Step 3 and ready for final submission
-    if (selectedScope.length === 0) return; 
-
-    setIsLoading(true);
-    window.setTimeout(() => {
-      setIsLoading(false);
-      setAppStatus("pending");
-    }, 1500);
-  };
+          <Button onClick={() => refetch()}>Retry</Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout role="gatc">
-      {appStatus === "unauthorized" ? (
-        <ApplicationWizard
-          step={step}
-          setStep={setStep}
-          isLoading={isLoading}
-          selectedScope={selectedScope}
-          toggleScope={toggleScope}
-          onSubmit={handleSubmit}
-        />
-      ) : (
-        <PendingStatus />
-      )}
-    </DashboardLayout>
-  );
-}
+      <div className="space-y-6">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm text-muted-foreground">GATC Principal Portal</p>
 
-function ApplicationWizard({
-  step,
-  setStep,
-  isLoading,
-  selectedScope,
-  toggleScope,
-  onSubmit,
-}: Readonly<{
-  step: number;
-  setStep: (step: number) => void;
-  isLoading: boolean;
-  selectedScope: string[];
-  toggleScope: (category: string) => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-}>) {
-  return (
-    <section className="mx-auto max-w-270 rounded-xl border border-[#E0E0E0] bg-white shadow-card">
-      <div className="border-b border-[#E8E9EC] px-5 py-6 sm:px-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-[#FF6F00]">
-          Legal Metrology Compliance Portal
-        </p>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1A1A2E]">
-          GATC Recognition Application &amp; Onboarding
-        </h1>
-        <p className="mt-2 text-sm text-[#5C5C70]">
-          Apply for recognition as a Government Approved Test Centre under the
-          GATC Rules, 2013 and 2026 amendments.
-        </p>
-      </div>
-      <div className="grid grid-cols-3 border-b border-[#E8E9EC] bg-[#F5F7FA] px-5 sm:px-8">
-        {[
-          [1, "Lab Details"],
-          [2, "Technical Infrastructure"],
-          [3, "Scope & Submission"],
-        ].map(([number, label]) => {
-          let statusClassName = "bg-[#E0E0E0] text-[#5C5C70]";
-          if (step > Number(number)) {
-            statusClassName = "bg-[#1E8E3E] text-white";
-          } else if (step === Number(number)) {
-            statusClassName = "bg-[#0B3D91] text-white";
-          }
+          <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
 
-          return (
-            <div
-              key={number}
-              className={`relative flex items-center gap-2 border-b-2 px-1 py-4 text-xs font-bold sm:gap-3 sm:text-sm ${step >= Number(number) ? "border-[#0B3D91] text-[#0B3D91]" : "border-transparent text-[#8A8A98]"}`}
-            >
-              <span
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs ${statusClassName}`}
-              >
-                {step > Number(number) ? <Check className="h-4 w-4" /> : number}
-              </span>
-              <span className="hidden sm:inline">{label}</span>
-            </div>
-          );
-        })}
-      </div>
-      <form onSubmit={onSubmit} className="px-5 py-6 sm:px-8 sm:py-8">
-        
-        {/* React unmounts hidden steps. The browser will naturally only 
-            validate the 'required' inputs that are currently visible on screen. */}
-        {step === 1 && <OrganizationStep />}
-        {step === 2 && <InfrastructureStep />}
-        {step === 3 && (
-          <ScopeStep selectedScope={selectedScope} toggleScope={toggleScope} />
-        )}
-        
-        <div className="mt-8 flex flex-col-reverse justify-between gap-3 border-t border-[#E8E9EC] pt-5 sm:flex-row">
-          <Button
-            type="button" 
-            variant="ghost"
-            disabled={step === 1 || isLoading}
-            onClick={() => setStep(step - 1)} // Previous stays type="button" so it doesn't trigger validation
-            className="gap-2 text-[#0B3D91] hover:bg-[#E3F2FD]"
-          >
-            <ChevronLeft className="h-4 w-4" /> Previous
-          </Button>
-          
-          {step < 3 ? (
-            <Button
-              type="submit" // Changed to submit to trigger HTML validation
-              className="gap-2 bg-[#0B3D91] font-bold text-white hover:bg-[#082f70]"
-            >
-              Continue <ChevronRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              disabled={isLoading || selectedScope.length === 0}
-              className="bg-[#FF6F00] font-bold text-white shadow-none hover:bg-[#E66000]"
-            >
-              {isLoading
-                ? "Submitting Application..."
-                : "Submit Application & Pay Processing Fee"}
-            </Button>
-          )}
-        </div>
-      </form>
-    </section>
-  );
-}
-
-function OrganizationStep() {
-  return (
-    <StepSection
-      title="Organization & Principal Officer"
-      description="Provide the legal identity and qualified officer responsible for the testing centre."
-    >
-      <div className="grid gap-5 md:grid-cols-2">
-        <SelectField
-          label="Organization Type"
-          name="organizationType"
-          options={[
-            "Private Laboratory",
-            "Engineering College",
-            "ITI",
-            "Polytechnic",
-          ]}
-        />
-        <Field
-          label="Registered Laboratory Name"
-          name="laboratoryName"
-          required
-        />
-        <div className="md:col-span-2">
-          <Field label="Registered Address" name="address" required />
-        </div>
-        <Field label="Principal Officer Name" name="officerName" required />
-        <SelectField
-          label="Highest Qualification"
-          name="qualification"
-          options={[
-            "M.Sc Physics",
-            "B.Tech",
-            "B.Sc Physics",
-            "Diploma in Metrology",
-          ]}
-        />
-        <div>
-          <Field
-            label="Years of Metrology Experience"
-            name="experience"
-            type="number"
-            min={3}
-            required
-          />
-          <p className="mt-1.5 text-xs text-[#5C5C70]">
-            Minimum 3 years required by law.
+          <p className="text-sm text-muted-foreground">
+            Monitor your GATC centre, officers, assignments and revenue.
           </p>
         </div>
-      </div>
-    </StepSection>
-  );
-}
 
-function InfrastructureStep() {
-  return (
-    <StepSection
-      title="Technical Infrastructure & Traceability"
-      description="Upload current evidence for accreditation, equipment traceability, and lawful premises use."
-    >
-      <div className="grid gap-5 md:grid-cols-3">
-        <FileField
-          label="NABL Accreditation Certificate"
-          name="nablCertificate"
-        />
-        <FileField
-          label="Equipment Calibration Traceability Proof"
-          name="traceabilityProof"
-        />
-        <FileField
-          label="Premises Ownership / Lease Agreement"
-          name="premisesAgreement"
-        />
-      </div>
-    </StepSection>
-  );
-}
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Total Officers
+                  </p>
 
-function ScopeStep({
-  selectedScope,
-  toggleScope,
-}: Readonly<{
-  selectedScope: string[];
-  toggleScope: (category: string) => void;
-}>) {
-  return (
-    <StepSection
-      title="Requested Scope of Authorization (2026 Rules)"
-      description="Select every category for which your laboratory seeks authorization. The final scope will be assessed during joint inspection."
-    >
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {scopeCategories.map((category) => (
-          <label
-            key={category}
-            className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition-colors ${selectedScope.includes(category) ? "border-[#0B3D91] bg-[#E3F2FD] text-[#0B3D91]" : "border-[#E0E0E0] text-[#1A1A2E] hover:border-[#8A8A98]"}`}
-          >
-            <input
-              type="checkbox"
-              checked={selectedScope.includes(category)}
-              onChange={() => toggleScope(category)}
-              className="mt-0.5 h-4 w-4 accent-[#0B3D91]"
-            />
-            <span>{category}</span>
-          </label>
-        ))}
-      </div>
-      <p className="mt-4 text-xs text-[#5C5C70]">
-        {selectedScope.length} authorization categories selected.
-      </p>
-    </StepSection>
-  );
-}
-
-function PendingStatus() {
-  const timeline = [
-    ["Application Submitted", "Green/Done"],
-    ["Document Verification", "Green/Done"],
-    [
-      "Mandatory Joint Inspection by State & Central Authorities",
-      "Amber/In-Progress",
-    ],
-    ["Final Administrator Approval", "Gray/Pending"],
-  ] as const;
-  return (
-    <section className="mx-auto max-w-270 space-y-6">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-[#FF6F00]">
-          Track Application
-        </p>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight text-[#1A1A2E]">
-          Application Status: Pending Joint Inspection
-        </h1>
-      </div>
-      <div className="rounded-xl border border-[#E0E0E0] bg-white p-5 shadow-card sm:p-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-bold text-[#0B3D91]">
-              GATC Recognition Application
-            </p>
-            <p className="mt-1 text-xs text-[#5C5C70]">
-              Application ID: GATC-APP-2026-0917
-            </p>
-          </div>
-          <span className="rounded-full bg-[#FFF8E1] px-3 py-1.5 text-xs font-bold text-[#F9A825]">
-            Pending Review
-          </span>
-        </div>
-        <div className="space-y-7">
-          {timeline.map(([label, status], index) => {
-            const done = index < 2;
-            const active = index === 2;
-            let markerClassName = "bg-[#E0E0E0] text-[#5C5C70]";
-            if (done) {
-              markerClassName = "bg-[#1E8E3E] text-white";
-            } else if (active) {
-              markerClassName = "bg-[#F9A825] text-white";
-            }
-            let statusClassName = "text-[#8A8A98]";
-            if (done) {
-              statusClassName = "text-[#1E8E3E]";
-            } else if (active) {
-              statusClassName = "text-[#F9A825]";
-            }
-            return (
-              <div key={label} className="relative flex gap-4">
-                {index < timeline.length - 1 && (
-                  <span
-                    className={`absolute left-3.5 top-8 h-full w-0.5 ${done ? "bg-[#1E8E3E]" : "bg-[#E0E0E0]"}`}
-                  />
-                )}
-                <span
-                  className={`z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${markerClassName}`}
-                >
-                  {done ? <Check className="h-4 w-4" /> : index + 1}
-                </span>
-                <div className="pb-1">
-                  <p className="font-bold text-[#1A1A2E]">{label}</p>
-                  <p
-                    className={`mt-1 text-xs font-semibold ${statusClassName}`}
-                  >
-                    {status}
+                  <p className="mt-2 text-3xl font-semibold">
+                    {data.metrics.total_officers}
                   </p>
                 </div>
+
+                <div className="rounded-lg bg-primary/10 p-2.5">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
               </div>
-            );
-          })}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Assigned Officers
+                  </p>
+
+                  <p className="mt-2 text-3xl font-semibold">
+                    {data.metrics.assigned_officers}
+                  </p>
+                </div>
+
+                <div className="rounded-lg bg-primary/10 p-2.5">
+                  <UserCheck className="h-5 w-5 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Free Officers</p>
+
+                  <p className="mt-2 text-3xl font-semibold">
+                    {data.metrics.free_officers}
+                  </p>
+                </div>
+
+                <div className="rounded-lg bg-primary/10 p-2.5">
+                  <UserX className="h-5 w-5 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Revenue</p>
+
+                  <p className="mt-2 text-3xl font-semibold">
+                    {formatCurrency(data.metrics.total_revenue)}
+                  </p>
+                </div>
+
+                <div className="rounded-lg bg-primary/10 p-2.5">
+                  <CircleDollarSign className="h-5 w-5 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Revenue Generated</CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            {chartData.length === 0 ? (
+              <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
+                No successful payment transactions found.
+              </div>
+            ) : (
+              <div className="h-80 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+
+                    <XAxis
+                      dataKey="displayDate"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) =>
+                        `₹${Number(value).toLocaleString("en-IN")}`
+                      }
+                    />
+
+                    <Tooltip
+                      formatter={(value) => formatCurrency(Number(value))}
+                      labelFormatter={(_, payload) => {
+                        const item = payload?.[0]?.payload;
+
+                        return item?.date ? formatLongDate(item.date) : "";
+                      }}
+                    />
+
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      fill="currentColor"
+                      fillOpacity={0.12}
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-col gap-1">
+            <CardTitle>GATC Centre</CardTitle>
+
+            <p className="text-sm text-muted-foreground">
+              {data.gatc.centre_code}
+            </p>
+          </CardHeader>
+
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <p className="text-xs text-muted-foreground">
+                  Approval Certificate
+                </p>
+
+                <p className="mt-1 text-sm font-medium">
+                  {data.gatc.approval_cert_no}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs text-muted-foreground">IND Mark Code</p>
+
+                <p className="mt-1 text-sm font-medium">
+                  {data.gatc.ind_mark_code}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs text-muted-foreground">Status</p>
+
+                <div className="mt-1">
+                  <Badge variant="outline">{data.gatc.status}</Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Officers</CardTitle>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Officers registered by this Principal Officer.
+                </p>
+              </div>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Officer</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Mobile</TableHead>
+                    <TableHead>Employee ID</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+
+                <TableBody>
+                  {data.officers.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="h-32 text-center text-sm text-muted-foreground"
+                      >
+                        No GATC officers have been registered yet.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    data.officers.map((officer) => (
+                      <TableRow key={officer.user_id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                              {getInitials(officer.full_name)}
+                            </div>
+
+                            <div>
+                              <p className="font-medium">{officer.full_name}</p>
+
+                              <p className="text-xs text-muted-foreground">
+                                {officer.is_active ? "Active" : "Inactive"}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell>{officer.email}</TableCell>
+
+                        <TableCell>{officer.mobile}</TableCell>
+
+                        <TableCell>{officer.employee_id ?? "—"}</TableCell>
+
+                        <TableCell>
+                          {officer.status === "ASSIGNED" ? (
+                            <Badge className="gap-1">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Assigned
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">Free</Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      <div className="flex items-start gap-3 rounded-lg bg-[#E3F2FD] p-4 text-sm leading-6 text-[#0B3D91]">
-        <UploadCloud className="mt-1 h-5 w-5 shrink-0" />
-        <p>
-          Your application has been forwarded to the Director of Legal
-          Metrology. A physical joint inspection of your premises will be
-          scheduled shortly.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function StepSection({
-  title,
-  description,
-  children,
-}: Readonly<{
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}>) {
-  return (
-    <section>
-      <h2 className="text-lg font-bold text-[#0B3D91]">{title}</h2>
-      <p className="mt-1 text-sm text-[#5C5C70]">{description}</p>
-      <div className="mt-6">{children}</div>
-    </section>
-  );
-}
-
-function Field({
-  label,
-  name,
-  type = "text",
-  min,
-  required = false,
-}: Readonly<{
-  label: string;
-  name: string;
-  type?: string;
-  min?: number;
-  required?: boolean;
-}>) {
-  return (
-    <label className="block text-sm font-semibold text-[#1A1A2E]">
-      {label}
-      <Input
-        name={name}
-        type={type}
-        min={min}
-        required={required}
-        className="mt-2 h-10 rounded-lg border-[#E0E0E0] shadow-none"
-      />
-    </label>
-  );
-}
-
-function SelectField({
-  label,
-  name,
-  options,
-}: Readonly<{
-  label: string;
-  name: string;
-  options: string[];
-}>) {
-  return (
-    <label className="block text-sm font-semibold text-[#1A1A2E]">
-      {label}
-      <select
-        name={name}
-        required
-        className="mt-2 flex h-10 w-full rounded-lg border border-[#E0E0E0] bg-white px-3 text-sm font-normal outline-none focus:border-[#0B3D91]"
-      >
-        <option value="">Select an option</option>
-        {options.map((option) => (
-          <option key={option}>{option}</option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function FileField({ label, name }: Readonly<{ label: string; name: string }>) {
-  return (
-    <label className="block rounded-lg border border-dashed border-[#8A8A98] bg-[#F5F7FA] p-4 text-sm font-semibold text-[#1A1A2E]">
-      {label}
-      <Input
-        name={name}
-        type="file"
-        required
-        className="mt-3 h-11 bg-white py-2 text-xs shadow-none"
-      />
-    </label>
+    </DashboardLayout>
   );
 }

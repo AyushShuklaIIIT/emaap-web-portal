@@ -1,0 +1,12 @@
+UPDATE "users" AS officer
+SET "gatc_id" = centre."gatc_id"
+FROM "RegistrationApplication" AS application
+JOIN "users" AS principal
+  ON principal."user_id" = application."reviewedBy"
+JOIN "gatcCentres" AS centre
+  ON centre."principal_officer_id" = principal."user_id"
+WHERE officer."user_id" = application."userId"
+  AND officer."registrationRole" = 'GATC_OFFICER'
+  AND officer."gatc_id" IS NULL
+  AND application."role" = 'GATC_OFFICER'
+  AND application."status" = 'APPROVED';

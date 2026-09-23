@@ -88,7 +88,8 @@ enum RoleType {
   LMO
   ADMIN
   LEGAL_OFFICER
-  GATC_OPERATOR
+  GATC_PRINCIPAL
+  GATC_OFFICER
 }
 
 enum StakeholderCategory {
@@ -128,6 +129,8 @@ model User {
   email                 String   @unique
   jurisdiction_district String
   jurisdiction_state    String
+  gatc_id       String?
+  gatc_employer GatcCentre? @relation("GatcOfficers", fields: [gatc_id], references: [gatc_id])
 
   business_profile          BusinessProfile?
   gatc_centres              GatcCentre?               @relation("GatcPrincipal")
@@ -194,6 +197,7 @@ model GatcCentre {
 
   applications      VerificationApp[]
   principal_officer User              @relation("GatcPrincipal", fields: [principal_officer_id], references: [user_id])
+  officers          User[]            @relation("GatcOfficers")
 
   @@map("gatcCentres")
 }

@@ -18,6 +18,7 @@ import { router as adminPendencyRouter } from "./routes/admin/pendency.routes";
 import { router as adminFinancialRouter } from "./routes/admin/financial.routes";
 import { router as adminGatcRouter } from "./routes/admin/gatc.routes";
 import { router as adminMasterDataRouter } from "./routes/admin/masterData.routes";
+import { router as gatcRouter } from "./routes/gatc/gatc.routes";
 import { aadhaarRouter } from "./routes/aadhaar.routes";
 import { authRouter } from "./routes/auth.routes";
 import { registrationRouter } from "./routes/registration.routes";
@@ -232,6 +233,7 @@ export function createServer() {
   app.use("/api/admin/financial", adminFinancialRouter);
   app.use("/api/admin/gatcs", adminGatcRouter);
   app.use("/api/admin/master-data", adminMasterDataRouter);
+  app.use("/api/gatc", gatcRouter);
   app.use("/api/instrument", instrumentRouter);
   app.use("/api/payment", paymentRouter);
   app.use("/api/verification", verificationAppRouter);
@@ -321,7 +323,7 @@ export function createServer() {
             gatc_id: gatcId,
             status: "ACTIVE",
             principal_officer: {
-              registrationRole: "GATC_OPERATOR",
+              registrationRole: "GATC_PRINCIPAL",
               isActive: true,
             },
           },

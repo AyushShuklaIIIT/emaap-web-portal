@@ -19,6 +19,7 @@ import {
   Globe,
   User,
   Menu,
+  UserPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -75,9 +76,14 @@ const NAV: Record<
   ],
   gatc: [
     {
-      label: "Recognition Application",
+      label: "Dashboard",
       href: "/gatc/dashboard",
-      icon: FilePlus2,
+      icon: LayoutDashboard,
+    },
+    {
+      label: "Registration",
+      href: "/gatc/registration",
+      icon: UserPlus,
     },
   ],
 };

@@ -10,7 +10,7 @@ import { randomUUID } from "node:crypto";
 const scrypt = promisify(scryptCallback);
 
 const registrationSchema = z.object({
-  role: z.enum(["STAKEHOLDER", "ADMIN", "LMO", "GATC_OPERATOR"]),
+  role: z.enum(["STAKEHOLDER", "ADMIN", "LMO", "GATC_PRINCIPAL"]),
   category: z
     .enum([
       "MANUFACTURER",
@@ -141,7 +141,7 @@ export const registerUser: RequestHandler = async (req, res) => {
     });
   }
   if (
-    ["ADMIN", "LMO", "GATC_OPERATOR"].includes(input.role) &&
+    ["ADMIN", "LMO", "GATC_PRINCIPAL"].includes(input.role) &&
     !input.employeeId
   ) {
     return res.status(400).json({

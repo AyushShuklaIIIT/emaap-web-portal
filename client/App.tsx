@@ -31,6 +31,9 @@ import RegistrationPage from "./pages/RegistrationPage";
 import { getCurrentUser } from "./lib/current-user";
 
 import { loadWeglot } from "./lib/weglot";
+import GatcRegistration from "./pages/gatc/Registration";
+import GatcSettings from "./pages/gatc/Settings";
+import { ProtectedRoute } from "./components/emaap/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -55,43 +58,60 @@ const App = () => {
               />
 
               <Route path="/socket-test" element={<SocketTest />} />
+              <Route element={<ProtectedRoute allowedRoles={["business"]} />}>
+                <Route
+                  path="/business/dashboard"
+                  element={<BusinessDashboard userId={userId} />}
+                />
+                <Route
+                  path="/business/new-application"
+                  element={<NewApplication />}
+                />
+                <Route
+                  path="/business/application-submitted"
+                  element={<ApplicationSubmitted />}
+                />
+                <Route
+                  path="/business/instruments"
+                  element={<Instruments userId={userId} />}
+                />
+                <Route
+                  path="/business/payments"
+                  element={<Payments userId={userId} />}
+                />
+                <Route path="/business/helpdesk" element={<Helpdesk />} />
+                <Route
+                  path="/business/settings"
+                  element={<BusinessSettings />}
+                />
+                <Route
+                  path="/business/qr-codes"
+                  element={<QRCodes userId={userId} />}
+                />
+              </Route>
+              <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/pendency" element={<Pendency />} />
+                <Route
+                  path="/admin/registrations"
+                  element={<Registrations />}
+                />
+                <Route path="/admin/gatc" element={<Gatc />} />
+                <Route path="/admin/revenue" element={<Revenue />} />
+                <Route path="/admin/master-data" element={<MasterData />} />
+                <Route path="/admin/settings" element={<AdminSettings />} />
+              </Route>
 
-              <Route
-                path="/business/dashboard"
-                element={<BusinessDashboard userId={userId} />}
-              />
-              <Route
-                path="/business/new-application"
-                element={<NewApplication />}
-              />
-              <Route
-                path="/business/application-submitted"
-                element={<ApplicationSubmitted />}
-              />
-              <Route
-                path="/business/instruments"
-                element={<Instruments userId={userId} />}
-              />
-              <Route
-                path="/business/payments"
-                element={<Payments userId={userId} />}
-              />
-              <Route path="/business/helpdesk" element={<Helpdesk />} />
-              <Route path="/business/settings" element={<BusinessSettings />} />
+              <Route element={<ProtectedRoute allowedRoles={["gatc"]} />}>
+                <Route path="/gatc/dashboard" element={<GatcDashboard />} />
 
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/pendency" element={<Pendency />} />
-              <Route path="/admin/registrations" element={<Registrations />} />
-              <Route path="/admin/gatc" element={<Gatc />} />
-              <Route path="/admin/revenue" element={<Revenue />} />
-              <Route path="/admin/master-data" element={<MasterData />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route
+                  path="/gatc/registration"
+                  element={<GatcRegistration />}
+                />
 
-              <Route path="/gatc/dashboard" element={<GatcDashboard />} />
-              <Route
-                path="/business/qr-codes"
-                element={<QRCodes userId={userId} />}
-              />
+                <Route path="/gatc/settings" element={<GatcSettings />} />
+              </Route>
 
               <Route path="*" element={<NotFound />} />
             </Routes>

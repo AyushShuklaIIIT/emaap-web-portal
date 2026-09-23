@@ -5,6 +5,7 @@ import {
   GatcStatus,
   LmoDesignation,
   PaymentMethod,
+  RoleType,
   WorkflowStatus,
 } from "./generated/prisma/enums";
 import { VerificationAppGetPayload } from "./generated/prisma/models";
@@ -20,8 +21,7 @@ export interface User {
   fullName: string;
   email: string;
   mobile: string;
-  registrationRole:
-    "STAKEHOLDER" | "LMO" | "ADMIN" | "LEGAL_OFFICER" | "GATC_OPERATOR";
+  registrationRole: RoleType;
   password?: string;
   passwordHash?: string;
   jurisdiction_district?: string;

@@ -38,7 +38,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Dr. Christopher Nolan",
     email: "principal@delhi-metrology-lab.com",
     mobile: "9000000003",
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "New Delhi",
     jurisdiction_state: "DL",
     password: "memento",
@@ -70,7 +70,7 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "David Lynch",
     email: "director@maha-weights.org",
     mobile: "9000000004",
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Mumbai Suburban",
     jurisdiction_state: "MH",
     password: "bluevelvet",
@@ -102,7 +102,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@pune-metrology.gov.in",
     mobile: "9000000008",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Pune",
     jurisdiction_state: "MH",
     password: "charulata",
@@ -134,7 +134,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@nagpur-metrology.gov.in",
     mobile: "9000000009",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Nagpur",
     jurisdiction_state: "MH",
     password: "cleo",
@@ -161,44 +161,12 @@ export const gatcUsersData: GatcUser[] = [
   },
 
   {
-    name: "Federico Fellini",
-    fullName: "Federico Fellini",
-    email: "principal@nashik-metrology.gov.in",
-    mobile: "9000000010",
-
-    registrationRole: "GATC_OPERATOR",
-    jurisdiction_district: "Nashik",
-    jurisdiction_state: "MH",
-    password: "amarcord",
-    passwordHash: generateHash("amarcord"),
-
-    centre_code: "GATC-MH-005",
-    approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/005",
-    ind_mark_code: "IND/25/05",
-
-    valid_from: new Date("2025-05-01T00:00:00Z"),
-    valid_to: new Date("2030-04-30T00:00:00Z"),
-
-    status: "ACTIVE",
-
-    approved_categories: [
-      "FABRIC_PLASTIC_WOVEN_STEEL_TAPES",
-      "WATER_METER",
-      "BEAM_SCALES_CLASS_C_D",
-      "CLINICAL_THERMOMETER",
-    ],
-
-    lat: 20.0059,
-    long: 73.791,
-  },
-
-  {
     name: "Wong Kar-wai",
     fullName: "Wong Kar-wai",
     email: "principal@aurangabad-metrology.gov.in",
     mobile: "9000000011",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Aurangabad",
     jurisdiction_state: "MH",
     password: "chungking",
@@ -230,7 +198,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@kolhapur-metrology.gov.in",
     mobile: "9000000012",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Kolhapur",
     jurisdiction_state: "MH",
     password: "beau",
@@ -262,7 +230,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@thane-metrology.gov.in",
     mobile: "9000000013",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Thane",
     jurisdiction_state: "MH",
     password: "totoro",
@@ -294,7 +262,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@solapur-metrology.gov.in",
     mobile: "9000000014",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Solapur",
     jurisdiction_state: "MH",
     password: "oldboy",
@@ -325,7 +293,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@kanpur-metrology.gov.in",
     mobile: "9000000015",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Kanpur",
     jurisdiction_state: "UP",
     password: "rashomon",
@@ -357,7 +325,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@lucknow-metrology.gov.in",
     mobile: "9000000016",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Lucknow",
     jurisdiction_state: "UP",
     password: "taxidriver",
@@ -388,7 +356,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@bhopal-metrology.gov.in",
     mobile: "9000000017",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Bhopal",
     jurisdiction_state: "MP",
     password: "parasite",
@@ -420,7 +388,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@jaipur-metrology.gov.in",
     mobile: "9000000018",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Jaipur",
     jurisdiction_state: "RJ",
     password: "magnolia",
@@ -451,7 +419,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@ahmedabad-metrology.gov.in",
     mobile: "9000000019",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Ahmedabad",
     jurisdiction_state: "GJ",
     password: "arrival",
@@ -482,7 +450,7 @@ export const gatcUsersData: GatcUser[] = [
     email: "principal@bangalore-metrology.gov.in",
     mobile: "9000000020",
 
-    registrationRole: "GATC_OPERATOR",
+    registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Bangalore Urban",
     jurisdiction_state: "KA",
     password: "se7en",
@@ -593,7 +561,6 @@ export const lmoUsersData: User[] = [
     passwordHash: generateHash("pulpfiction"),
   },
 ];
-
 export const lmoOfficers: LmoOfficerSeed[] = [
   {
     userId: "lmo12",
@@ -610,9 +577,25 @@ export const lmoOfficers: LmoOfficerSeed[] = [
   },
 ];
 
+export const gatcOfficersData = [
+  {
+    name: "Federico Fellini",
+    fullName: "Federico Fellini",
+    email: "fellini@gmail.com",
+    mobile: "9000000010",
+    registrationRole: "GATC_OFFICER",
+    jurisdiction_district: "Nashik",
+    jurisdiction_state: "MH",
+    password: "eightandahalf",
+    passwordHash: generateHash("eightandahalf"),
+    centre_code: "GATC-UP-010",
+  },
+] as any[];
+
 export const allMockUsers: (User | GatcUser | BusinessUser)[] = [
   ...adminUsersData,
   ...gatcUsersData,
+  ...gatcOfficersData,
   ...businessUsersData,
   ...lmoUsersData,
 ];

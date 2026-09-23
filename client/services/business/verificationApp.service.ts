@@ -24,6 +24,7 @@ export interface VerificationForm {
   manufacturerName: string;
   instrumentSerialNumber: string;
   metric: string;
+  error?: number;
   address: string;
   district: string;
   pincode: number;
@@ -32,6 +33,7 @@ export interface VerificationForm {
   long: number;
   manufacturerFileUrl?: string | null;
   prevCertificateFileUrl?: string | null;
+  selectedCondition?: string;
 }
 
 export type AppType = "INITIAL" | "RE_VERIFICATION";
@@ -76,6 +78,7 @@ export interface CreateVerificationApplicationPayload {
   manufacturerName: string;
   instrumentSerialNumber: string;
   metric: string;
+  error?: number;
   address: string;
   district: string;
   pincode: number;
@@ -86,6 +89,7 @@ export interface CreateVerificationApplicationPayload {
   manufacturerFileUrl?: string | null;
   prevCertificateFileUrl?: string | null;
   applicationId?: string;
+  selectedCondition?: string;
 }
 
 export interface CreateVerificationApplicationResponse {
@@ -198,6 +202,8 @@ export const getVerificationFeeQuote = async (payload: {
   categoryCode: string;
   stateCode: string;
   metric: string;
+  error?: number;
+  selectedCondition?: string;
 }): Promise<VerificationFeeQuote> => {
   const response = await fetch(`${backendUrl}/api/verification/fee-quote`, {
     method: "POST",
@@ -209,6 +215,30 @@ export const getVerificationFeeQuote = async (payload: {
   });
 
   return parseResponse<VerificationFeeQuote>(response);
+};
+
+export const getVerificationCategories = async (
+  stateCode: string,
+): Promise<VerificationCategory[]> => {
+  const response = await fetch(
+    `${backendUrl}/api/verification/categories?stateCode=${encodeURIComponent(stateCode)}`,
+    { credentials: "include" },
+  );
+
+  return parseResponse<VerificationCategory[]>(response);
+};
+
+export const getVerificationConditions = async (
+  stateCode: string,
+  categoryCode: string,
+): Promise<string[]> => {
+  const params = new URLSearchParams({ stateCode, categoryCode });
+  const response = await fetch(
+    `${backendUrl}/api/verification/conditions?${params.toString()}`,
+    { credentials: "include" },
+  );
+
+  return parseResponse<string[]>(response);
 };
 
 // Socket part

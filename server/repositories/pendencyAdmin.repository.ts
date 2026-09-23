@@ -220,7 +220,7 @@ export const getEligibleLmos = async (stateCode: string, district: string) => {
     take: 5,
     select: {
       user_id: true,
-      employee_code: true,
+      employee_id: true,
       user: {
         select: {
           name: true,

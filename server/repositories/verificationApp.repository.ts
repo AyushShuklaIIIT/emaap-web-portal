@@ -196,6 +196,58 @@ export const getVerificationMetadata = async () => {
   };
 };
 
+export const getVerificationCategoriesByStateCode = async (
+  stateCode: string,
+) => {
+  const rules = await prisma.feeRule.findMany({
+    where: { state: { state_code: stateCode } },
+    distinct: ["category_id"],
+    orderBy: { category: { category_name: "asc" } },
+    select: {
+      category: {
+        select: {
+          category_id: true,
+          category_code: true,
+          category_name: true,
+          accuracy_class: true,
+          oiml_standard_ref: true,
+          verification_cycle_months: true,
+        },
+      },
+    },
+  });
+
+  return rules.map((rule) => rule.category);
+};
+
+export const getVerificationConditionsByStateAndCategory = async (
+  stateCode: string,
+  categoryCode: string,
+) => {
+  const rules = await prisma.feeRule.findMany({
+    where: {
+      state: { state_code: stateCode },
+      category: { category_code: categoryCode },
+      condition: { not: null },
+    },
+    select: { condition: true },
+    orderBy: { fee_rule_id: "asc" },
+  });
+
+  return [
+    ...new Set(
+      rules
+        .map((rule) => rule.condition?.trim())
+        .filter(
+          (condition): condition is string =>
+            Boolean(condition) &&
+            !/^MPE\b/i.test(condition) &&
+            !/\b(metric|error)\b/i.test(condition),
+        ),
+    ),
+  ];
+};
+
 export const createApplicationTransaction = async (params: {
   existingInstrumentId?: string;
 
@@ -206,6 +258,7 @@ export const createApplicationTransaction = async (params: {
     manufacturer_name: string;
     accuracy_class: AccuracyClass;
     metric: string;
+    error?: number;
     address: string;
     district: string;
     pincode: number;
@@ -268,6 +321,7 @@ export const createApplicationTransaction = async (params: {
           capacity_unit: params.instrument.capacity_unit,
           category_id: params.instrument.category_id,
           status: InstrumentStatus.PENDING,
+          error: params.instrument.error,
         },
       });
     } else {
@@ -290,6 +344,7 @@ export const createApplicationTransaction = async (params: {
           business_id: params.instrument.business_id,
           category_id: params.instrument.category_id,
           status: InstrumentStatus.PENDING,
+          error: params.instrument.error,
         },
       });
     }

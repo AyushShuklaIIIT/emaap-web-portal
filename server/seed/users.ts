@@ -560,6 +560,22 @@ export const businessUsersData: BusinessUser[] = [
       "Container Freight Terminal 4, Navi Mumbai, Maharashtra 400703",
     state_code: "MH",
   },
+  {
+    name: "Rob Reiner",
+    fullName: "Rob Reiner",
+    email: "rob@gmail.com",
+    mobile: "9000000099",
+    registrationRole: "STAKEHOLDER",
+    jurisdiction_district: "Jaipur",
+    jurisdiction_state: "RJ",
+    password: "standbyme",
+    passwordHash: generateHash("standbyme"),
+    registration_number: "07AAAAA0000A1M1",
+    trade_name: "Princess Hardwares",
+    entity_type: "MANUFACTURER",
+    geo_address: "Plot 42, Okhla Industrial Area, Phase-III, Jaipur, Rajasthan",
+    state_code: "RJ",
+  },
 ];
 
 export const lmoUsersData: User[] = [
@@ -583,7 +599,6 @@ export const lmoOfficers: LmoOfficerSeed[] = [
     userId: "lmo12",
     employee_id: "MP-LMO-0001",
     user_email: "inspector.mp@emaap.gov.in",
-    employee_code: "LMO-001",
     designation: LmoDesignation.INSPECTOR,
     cadre: "Legal Metrology",
     jurisdiction_zone: "Bhopal",

@@ -388,6 +388,11 @@ export const approvePendencyRouteService = async (
       assigned_to: updated.assigned_gatc?.centre_code ?? null,
       business_name: application.business.trade_name,
       instrument_category: application.instrument.category.category_name,
+      serial_no: application.instrument.serial_number,
+      model_no: application.instrument.model_no,
+      previousCertificateUrl: application.previous_certificate_url,
+      manufacturerCertificateUrl: application.manufacturer_certificate_url,
+      error: application.instrument.error,
     };
   }
 
@@ -418,6 +423,11 @@ export const approvePendencyRouteService = async (
     assigned_to: updated.assigned_officer?.name ?? null,
     business_name: application.business.trade_name,
     instrument_category: application.instrument.category.category_name,
+    serial_no: application.instrument.serial_number,
+    model_no: application.instrument.model_no,
+    error: application.instrument.error,
+    previousCertificateUrl: application.previous_certificate_url,
+    manufacturerCertificateUrl: application.manufacturer_certificate_url,
   };
 };
 
@@ -497,6 +507,12 @@ export const manualOverridePendencyRouteService = async (
       assignedType === "GATC"
         ? (updated.assigned_gatc?.centre_code ?? null)
         : (updated.assigned_officer?.name ?? null),
+
+    serial_no: application.instrument.serial_number,
+    model_no: application.instrument.model_no,
+    previousCertificateUrl: application.previous_certificate_url,
+    manufacturerCertificateUrl: application.manufacturer_certificate_url,
+    error: application.instrument.error,
   };
 };
 
@@ -511,6 +527,11 @@ export const bulkApprovePendencyRoutesService = async (appIds: string[]) => {
     instrument_category?: string;
     success: boolean;
     message?: string;
+    serial_no?: string;
+    model_no?: string;
+    previousCertificateUrl?: string | null;
+    manufacturerCertificateUrl?: string | null;
+    error?: number | null;
   }> = [];
 
   for (const appId of appIds) {
@@ -544,6 +565,11 @@ export const bulkApprovePendencyRoutesService = async (appIds: string[]) => {
         business_name: result.business_name,
         instrument_category: result.instrument_category,
         success: true,
+        serial_no: result.serial_no,
+        model_no: result.model_no,
+        previousCertificateUrl: result.previousCertificateUrl,
+        manufacturerCertificateUrl: result.manufacturerCertificateUrl,
+        error: result.error,
       });
     } catch (error) {
       results.push({

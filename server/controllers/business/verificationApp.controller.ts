@@ -241,6 +241,8 @@ export const createVerificationApplication = async (
       paymentMethod,
       district,
       selectedCondition,
+      manufacturerFileUrl,
+      prevCertificateFileUrl,
     } = req.body;
 
     const data = await createVerificationApplicationService({
@@ -259,6 +261,8 @@ export const createVerificationApplication = async (
       long: Number(long),
       payment_method: paymentMethod,
       district,
+      manufacturer_file_url: manufacturerFileUrl,
+      previous_certificate_file_url: prevCertificateFileUrl,
     });
 
     return res.status(201).json({

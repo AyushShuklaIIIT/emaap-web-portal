@@ -401,6 +401,11 @@ export default function NewApplication() {
       return;
     }
 
+    if (appType === "RE_VERIFICATION" && !previousCertificate) {
+      alert("Please upload the previous certificate for re-verification.");
+      return;
+    }
+
     setIsSubmitting(true);
     setUploadWarning(null);
 

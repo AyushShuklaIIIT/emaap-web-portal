@@ -653,6 +653,8 @@ export const createVerificationApplicationService = async (
       instrument_id: instrumentId,
       business_id: business.business_id,
       workflow_status: "SUBMITTED",
+      manufacturer_certificate_url: input.manufacturer_file_url,
+      previous_certificate_url: input.previous_certificate_file_url,
     },
 
     receipt: {

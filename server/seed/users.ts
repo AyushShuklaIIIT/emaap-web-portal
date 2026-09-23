@@ -551,7 +551,7 @@ export const lmoUsersData: User[] = [
     user_id: "lmo12",
     name: "LMO Inspector MP",
     fullName: "Quentin Tarantino",
-    email: "inspector.mp@emaap.gov.in",
+    email: "quentin.mp@emaap.gov.in",
     mobile: "9000000021",
     registrationRole: "LMO",
     jurisdiction_state: "MP",
@@ -564,7 +564,7 @@ export const lmoUsersData: User[] = [
 export const lmoOfficers: LmoOfficerSeed[] = [
   {
     userId: "lmo12",
-    employee_id: "LMO-0001",
+    employee_id: "LMO-001",
     user_email: "quentin.mp@emaap.gov.in",
     designation: LmoDesignation.INSPECTOR,
     cadre: "Legal Metrology",

@@ -41,6 +41,45 @@ const normalizeSerialNumber = (value: unknown): string => {
     .toUpperCase();
 };
 
+const STATE_NUMBERS: Record<string, string> = {
+  AP: "37",
+  AR: "12",
+  AS: "18",
+  BR: "10",
+  CG: "22",
+  GA: "30",
+  GJ: "24",
+  HR: "6",
+  HP: "2",
+  JH: "20",
+  KA: "29",
+  KL: "32",
+  MP: "23",
+  MH: "27",
+  MN: "14",
+  ML: "17",
+  MZ: "15",
+  NL: "13",
+  OR: "21",
+  PB: "3",
+  RJ: "8",
+  SK: "11",
+  TN: "33",
+  TS: "36",
+  TR: "16",
+  UK: "5",
+  UP: "9",
+  WB: "19",
+  AN: "35",
+  CH: "4",
+  DN: "26",
+  DL: "7",
+  JK: "1",
+  LA: "38",
+  LD: "31",
+  PY: "34",
+};
+
 const mapAccuracyClass = (
   ac: unknown,
 ): "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII" => {
@@ -376,6 +415,19 @@ export function createServer() {
         );
 
         const applicationIdentifier = getApplicationIdentifier(data);
+        const applicationType =
+          data?.appType === "RE_VERIFICATION" ? "RE_VERIFICATION" : "INITIAL";
+
+        if (
+          applicationType === "RE_VERIFICATION" &&
+          !data?.prevCertificateFileUrl
+        ) {
+          socket.emit("verification_persistence_failed", {
+            success: false,
+            message: "Previous certificate is required for re-verification.",
+          });
+          return;
+        }
 
         if (!userId || !serialNumber) {
           console.error("[DATA] Missing required fields:", {
@@ -408,6 +460,16 @@ export function createServer() {
             .trim()
             .toUpperCase();
 
+          const stateNo = STATE_NUMBERS[stateCode];
+
+          if (!stateNo) {
+            socket.emit("verification_persistence_failed", {
+              success: false,
+              message: `Invalid state code: ${stateCode}`,
+            });
+            return;
+          }
+
           let stateObj = await prisma.state.findFirst({
             where: {
               state_code: stateCode,
@@ -419,6 +481,7 @@ export function createServer() {
 
             stateObj = await prisma.state.create({
               data: {
+                state_no: stateNo,
                 state_code: stateCode,
                 state_name: String(data?.state ?? "Maharashtra").trim(),
               },
@@ -501,6 +564,7 @@ export function createServer() {
               business_id: business.business_id,
               category_id: category.category_id,
               district: data?.district,
+              error: data?.error ? Number(data.error) : null,
             },
           });
 
@@ -551,13 +615,12 @@ export function createServer() {
           application = await prisma.verificationApp.create({
             data: {
               application_no: applicationIdentifier || `APP-${Date.now()}`,
-              app_type:
-                data?.appType === "RE_VERIFICATION"
-                  ? "RE_VERIFICATION"
-                  : "INITIAL",
+              app_type: applicationType,
               workflow_status: "SUBMITTED",
               instrument_id: instrument.instrument_id,
               business_id: business.business_id,
+              manufacturer_certificate_url: data?.manufacturerFileUrl || null,
+              previous_certificate_url: data?.prevCertificateFileUrl || null,
             },
           });
 
@@ -567,6 +630,20 @@ export function createServer() {
             instrumentId: instrument.instrument_id,
           });
         } else {
+          if (data?.manufacturerFileUrl || data?.prevCertificateFileUrl) {
+            application = await prisma.verificationApp.update({
+              where: { app_id: application.app_id },
+              data: {
+                manufacturer_certificate_url:
+                  data.manufacturerFileUrl ||
+                  application.manufacturer_certificate_url,
+                previous_certificate_url:
+                  data.prevCertificateFileUrl ||
+                  application.previous_certificate_url,
+              },
+            });
+          }
+
           console.log("[DATA] VerificationApp already exists:", {
             appId: application.app_id,
             applicationNo: application.application_no,

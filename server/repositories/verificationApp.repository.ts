@@ -279,6 +279,8 @@ export const createApplicationTransaction = async (params: {
     instrument_id: string;
     business_id: string;
     workflow_status: WorkflowStatus;
+    manufacturer_certificate_url?: string | null;
+    previous_certificate_url?: string | null;
   };
 
   receipt: {
@@ -357,6 +359,9 @@ export const createApplicationTransaction = async (params: {
         instrument_id: instrument.instrument_id,
         business_id: params.application.business_id,
         workflow_status: WorkflowStatus.SUBMITTED,
+        manufacturer_certificate_url:
+          params.application.manufacturer_certificate_url,
+        previous_certificate_url: params.application.previous_certificate_url,
       },
     });
 

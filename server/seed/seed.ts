@@ -20,10 +20,12 @@ async function seed() {
       },
       update: {
         state_name: state.state_name,
+        state_no: state.state_no,
       },
       create: {
         state_code: state.state_code,
         state_name: state.state_name,
+        state_no: state.state_no,
       },
     });
   }

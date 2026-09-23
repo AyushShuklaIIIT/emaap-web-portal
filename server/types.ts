@@ -13,6 +13,7 @@ import { VerificationAppGetPayload } from "./generated/prisma/models";
 export interface State {
   state_code: string;
   state_name: string;
+  state_no: string;
 }
 
 export interface User {
@@ -424,6 +425,8 @@ export interface CreateVerificationApplicationInput {
   long: number;
 
   payment_method: PaymentMethod;
+  manufacturer_file_url?: string | null;
+  previous_certificate_file_url?: string | null;
 }
 
 export interface CreateVerificationApplicationResponse {

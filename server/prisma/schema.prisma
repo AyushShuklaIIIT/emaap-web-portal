@@ -261,6 +261,9 @@ model VerificationApp {
   business_id         String
   assigned_officer_id String?
   assigned_gatc_id    String?
+  manufacturer_certificate_url String?
+  previous_certificate_url String?
+  timestamp               DateTime  @default(now())
 
   receipts         PaymentReceipt?
   inspections      InspectionRecord[]
@@ -367,6 +370,7 @@ model TechnicalSpec {
 model State { // TODO: add revenue split
   state_id   String @id @default(uuid())
   state_code String @unique
+  state_no   String    @unique
   state_name String @unique
 
   fee_rules  FeeRule[]

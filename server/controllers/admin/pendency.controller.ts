@@ -104,6 +104,11 @@ export const approvePendencyRoute = async (req: Request, res: Response) => {
         business_name: result.business_name,
         instrument_category: result.instrument_category,
         timestamp: new Date().toISOString(),
+        serial_no: result.serial_no,
+        model_no: result.model_no,
+        previousCertificateUrl: result.previousCertificateUrl,
+        manufacturerCertificateUrl: result.manufacturerCertificateUrl,
+        error: result.error,
       });
       emitAdminAllocationsUpdate(io, "pendency_route_approved");
     }
@@ -177,6 +182,11 @@ export const manualOverridePendencyRoute = async (
         assigned_to: data.assigned_to,
         business_name: data.business_name,
         instrument_category: data.instrument_category,
+        serial_no: data.serial_no,
+        model_no: data.model_no,
+        previousCertificateUrl: data.previousCertificateUrl,
+        manufacturerCertificateUrl: data.manufacturerCertificateUrl,
+        error: data.error,
         timestamp: new Date().toISOString(),
       });
       emitAdminAllocationsUpdate(io, "pendency_route_manually_overridden");
@@ -259,6 +269,12 @@ export const bulkApprovePendencyRoutes = async (
             assigned_to: result.assigned_to,
             business_name: result.business_name,
             instrument_category: result.instrument_category,
+            serial_no: result.serial_no ?? "",
+            model_no: result.model_no ?? "",
+            previousCertificateUrl: result.previousCertificateUrl ?? null,
+            manufacturerCertificateUrl:
+              result.manufacturerCertificateUrl ?? null,
+            error: result.error ?? null,
             timestamp: new Date().toISOString(),
           });
         }

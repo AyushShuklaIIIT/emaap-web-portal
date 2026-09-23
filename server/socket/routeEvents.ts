@@ -12,7 +12,12 @@ export interface RouteAssignedPayload {
   assigned_to: string | null;
   business_name: string;
   instrument_category: string;
+  serial_no: string;
+  model_no: string;
+  error?: number | null;
   timestamp: string;
+  previousCertificateUrl: string | null;
+  manufacturerCertificateUrl: string | null;
 }
 
 export const emitRouteAssigned = (

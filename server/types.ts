@@ -140,6 +140,7 @@ export interface VerificationForm {
   state: string;
   lat: number;
   long: number;
+  selectedCondition?: string;
 }
 
 export interface Certificate {
@@ -161,8 +162,9 @@ export interface Instrument {
   model_no: string;
   model_approval_no: string | null;
   manufacturer_name: string;
-  accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
+  accuracy_class: AccuracyClass;
   metric: string;
+  error: number | null;
   address: string;
   pincode: number;
   state: string;
@@ -181,7 +183,7 @@ export interface InstrumentCategory {
   category_id: string;
   category_code: string;
   category_name: string;
-  accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
+  accuracy_class: AccuracyClass;
   oiml_standard_ref: string;
   verification_cycle_months: number;
 }
@@ -386,6 +388,8 @@ export interface VerificationFeeQuoteInput {
   category_code: string;
   state_code: string;
   metric: string;
+  error?: number;
+  selected_condition?: string;
 }
 
 export interface VerificationFeeQuoteResponse {
@@ -409,6 +413,8 @@ export interface CreateVerificationApplicationInput {
   instrument_serial_number: string;
 
   metric: string;
+  error?: number;
+  selectedCondition?: string;
 
   address: string;
   pincode: number;
@@ -459,7 +465,6 @@ export interface LmoOfficerSeed {
   userId: string;
   employee_id: string;
   user_email: string;
-  employee_code: string;
   designation: LmoDesignation;
   cadre?: string;
   jurisdiction_zone?: string;

@@ -271,14 +271,14 @@ async function seed() {
 
     if (!user) {
       console.warn(
-        `Skipping LMO officer ${officer.employee_code}: user not found: ${officer.user_email}`,
+        `Skipping LMO officer ${officer.employee_id}: user not found: ${officer.user_email}`,
       );
       continue;
     }
 
     if (user.registrationRole !== "LMO") {
       console.warn(
-        `Skipping LMO officer ${officer.employee_code}: user ${user.email} does not have role LMO`,
+        `Skipping LMO officer ${officer.employee_id}: user ${user.email} does not have role LMO`,
       );
       continue;
     }
@@ -291,7 +291,7 @@ async function seed() {
 
     if (!state) {
       console.warn(
-        `Skipping LMO officer ${officer.employee_code}: state not found: ${officer.state_code}`,
+        `Skipping LMO officer ${officer.employee_id}: state not found: ${officer.state_code}`,
       );
       continue;
     }
@@ -302,7 +302,6 @@ async function seed() {
       },
       update: {
         employee_id: officer.employee_id,
-        employee_code: officer.employee_code,
         designation: officer.designation,
         jurisdiction_zone: officer.jurisdiction_zone,
         assigned_wsl_lab: officer.assigned_wsl_lab,
@@ -314,7 +313,6 @@ async function seed() {
       create: {
         employee_id: officer.employee_id,
         user_id: user.user_id,
-        employee_code: officer.employee_code,
         designation: officer.designation,
         jurisdiction_zone: officer.jurisdiction_zone,
         assigned_wsl_lab: officer.assigned_wsl_lab,
@@ -326,7 +324,7 @@ async function seed() {
     });
 
     console.log(
-      `Seeded LMO officer: ${officer.employee_code} - ${officer.designation}`,
+      `Seeded LMO officer: ${officer.employee_id} - ${officer.designation}`,
     );
   }
 

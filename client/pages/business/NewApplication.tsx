@@ -11,6 +11,9 @@ import { useVerificationMetadata } from "@/hooks/useVerificationMetaData";
 import {
   VerificationFeeQuote,
   CreateVerificationApplicationResponse,
+  VerificationCategory,
+  getVerificationCategories,
+  getVerificationConditions,
   getVerificationFeeQuote,
   createVerificationApplication,
   uploadVerificationDocuments,
@@ -76,10 +79,19 @@ export default function NewApplication() {
   const [currentStep, setCurrentStep] = useState(0);
   const [appType, setAppType] = useState<AppType>("INITIAL");
   const [selectedCategoryCode, setSelectedCategoryCode] = useState("");
+  const [availableCategories, setAvailableCategories] = useState<
+    VerificationCategory[]
+  >([]);
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const [availableConditions, setAvailableConditions] = useState<string[]>([]);
+  const [selectedCondition, setSelectedCondition] = useState("");
+  const [conditionLoading, setConditionLoading] = useState(false);
   const [modelNo, setModelNo] = useState("");
   const [manufacturerName, setManufacturerName] = useState("");
   const [instrumentSerialNumber, setInstrumentSerialNumber] = useState("");
   const [metric, setMetric] = useState("");
+  const [errorValue, setErrorValue] = useState<number | null>(null);
   const [address, setAddress] = useState("");
   const [district, setDistrict] = useState("");
   const [pincode, setPincode] = useState<number | null>(null);
@@ -99,48 +111,94 @@ export default function NewApplication() {
     useState<CreateVerificationApplicationResponse | null>(null);
   const [uploadWarning, setUploadWarning] = useState<string | null>(null);
 
-  const selectedCategory = metadata?.categories.find(
+  const selectedCategory = availableCategories.find(
     (category) => category.category_code === selectedCategoryCode,
   );
 
   useEffect(() => {
-    if (!metadata || stateCode) {
+    if (!stateCode) {
+      setAvailableCategories([]);
+      setCategoryError(null);
       return;
     }
 
-    const currentUser = getCurrentUser() as {
-      jurisdiction_state?: string;
-      jurisdiction_district?: string;
-      stateCode?: string;
-      state?: string;
-    } | null;
+    let mounted = true;
 
-    const userState =
-      currentUser?.jurisdiction_state ||
-      currentUser?.stateCode ||
-      currentUser?.state ||
-      "";
+    const loadCategories = async () => {
+      try {
+        setCategoryLoading(true);
+        setCategoryError(null);
+        const categories = await getVerificationCategories(stateCode);
 
-    const userDistrict = currentUser?.jurisdiction_district || "";
+        if (mounted) {
+          setAvailableCategories(categories);
+        }
+      } catch (error) {
+        if (mounted) {
+          setAvailableCategories([]);
+          setCategoryError(
+            error instanceof Error
+              ? error.message
+              : "Failed to load categories",
+          );
+        }
+      } finally {
+        if (mounted) {
+          setCategoryLoading(false);
+        }
+      }
+    };
 
-    if (userDistrict && !district) {
-      setDistrict(userDistrict);
-    }
+    void loadCategories();
 
-    const matchingState = metadata.states.find(
-      (state) => state.state_code === userState,
-    );
+    return () => {
+      mounted = false;
+    };
+  }, [stateCode]);
 
-    if (matchingState) {
-      setStateCode(matchingState.state_code);
+  useEffect(() => {
+    setAvailableConditions([]);
+    setSelectedCondition("");
 
+    if (!stateCode || !selectedCategoryCode) {
       return;
     }
 
-    if (metadata.states.length > 0) {
-      setStateCode(metadata.states[0].state_code);
-    }
-  }, [district, metadata, stateCode]);
+    let mounted = true;
+
+    const loadConditions = async () => {
+      try {
+        setConditionLoading(true);
+        const conditions = await getVerificationConditions(
+          stateCode,
+          selectedCategoryCode,
+        );
+
+        if (mounted) {
+          setAvailableConditions(conditions);
+        }
+      } catch (error) {
+        if (mounted) {
+          setAvailableConditions([]);
+          alert(
+            error instanceof Error
+              ? error.message
+              : "Failed to load instrument conditions",
+          );
+        }
+      } finally {
+        if (mounted) {
+          setConditionLoading(false);
+        }
+      }
+    };
+
+    void loadConditions();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCategoryCode, stateCode]);
 
   const getLocation = () => {
     if (!navigator.geolocation) {
@@ -194,6 +252,11 @@ export default function NewApplication() {
       return;
     }
 
+    if (availableConditions.length > 0 && !selectedCondition) {
+      alert("Please select the instrument condition.");
+      return;
+    }
+
     if (!manufacturerName.trim()) {
       alert("Please enter the manufacturer name.");
       return;
@@ -211,6 +274,14 @@ export default function NewApplication() {
 
     if (!metric.trim()) {
       alert("Please enter the maximum capacity / flow rate.");
+      return;
+    }
+
+    if (
+      errorValue !== null &&
+      (!Number.isFinite(errorValue) || errorValue < 0)
+    ) {
+      alert("Please enter a valid non-negative measurement error.");
       return;
     }
 
@@ -262,6 +333,8 @@ export default function NewApplication() {
         categoryCode: selectedCategory.category_code,
         stateCode,
         metric,
+        error: errorValue ?? undefined,
+        selectedCondition: selectedCondition || undefined,
       });
 
       setFeeQuote(quote);
@@ -346,6 +419,8 @@ export default function NewApplication() {
         manufacturerName,
         instrumentSerialNumber,
         metric,
+        error: errorValue ?? undefined,
+        selectedCondition: selectedCondition || undefined,
         address,
         district,
         pincode,
@@ -376,12 +451,18 @@ export default function NewApplication() {
     setCurrentStep(0);
     setAppType("INITIAL");
     setSelectedCategoryCode("");
+    setAvailableCategories([]);
+    setAvailableConditions([]);
+    setSelectedCondition("");
     setModelNo("");
     setManufacturerName("");
     setInstrumentSerialNumber("");
     setMetric("");
+    setErrorValue(null);
     setAddress("");
+    setDistrict("");
     setPincode(null);
+    setStateCode("");
     setCoordinates("");
     setManufacturerInvoice(null);
     setPreviousCertificate(null);
@@ -563,6 +644,12 @@ export default function NewApplication() {
               </div>
             )}
 
+            {categoryError && (
+              <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-700">
+                {categoryError}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField label="Application Type">
                 <select
@@ -578,18 +665,44 @@ export default function NewApplication() {
                 </select>
               </FormField>
 
+              <FormField label="State / UT">
+                <select
+                  value={stateCode}
+                  onChange={(event) => {
+                    setStateCode(event.target.value);
+                    setSelectedCategoryCode("");
+                    setSelectedCondition("");
+                    setAvailableCategories([]);
+                    setCategoryError(null);
+                  }}
+                  className={`${fieldClassName} w-full px-3 outline-none`}
+                >
+                  <option value="">Select state first</option>
+
+                  {metadata?.states.map((state) => (
+                    <option key={state.state_id} value={state.state_code}>
+                      {state.state_name} ({state.state_code})
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+
               <FormField label="Instrument Category">
                 <select
                   value={selectedCategoryCode}
-                  disabled={metadataLoading || !metadata}
+                  disabled={!stateCode || categoryLoading || !metadata}
                   onChange={(event) => {
                     setSelectedCategoryCode(event.target.value);
                   }}
                   className={`${fieldClassName} w-full px-3 outline-none`}
                 >
-                  <option value="">Select a category</option>
+                  <option value="">
+                    {categoryLoading
+                      ? "Loading categories..."
+                      : "Select a category"}
+                  </option>
 
-                  {metadata?.categories.map((category) => (
+                  {availableCategories.map((category) => (
                     <option
                       key={category.category_id}
                       value={category.category_code}
@@ -599,6 +712,31 @@ export default function NewApplication() {
                   ))}
                 </select>
               </FormField>
+
+              {availableConditions.length > 0 && (
+                <FormField label="Instrument Condition">
+                  <select
+                    value={selectedCondition}
+                    disabled={conditionLoading}
+                    onChange={(event) =>
+                      setSelectedCondition(event.target.value)
+                    }
+                    className={`${fieldClassName} w-full px-3 outline-none`}
+                  >
+                    <option value="">
+                      {conditionLoading
+                        ? "Loading conditions..."
+                        : "Select an instrument condition"}
+                    </option>
+
+                    {availableConditions.map((condition) => (
+                      <option key={condition} value={condition}>
+                        {condition}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+              )}
 
               <FormField label="Manufacturer Name">
                 <Input
@@ -648,6 +786,22 @@ export default function NewApplication() {
                   placeholder="e.g. 50 kg/min"
                   className={fieldClassName}
                   onChange={(event) => setMetric(event.target.value)}
+                />
+              </FormField>
+
+              <FormField label="Measurement Error">
+                <Input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={errorValue ?? ""}
+                  placeholder="e.g. 0.05"
+                  className={fieldClassName}
+                  onChange={(event) => {
+                    const value = event.target.value;
+
+                    setErrorValue(value === "" ? null : Number(value));
+                  }}
                 />
               </FormField>
             </div>
@@ -724,22 +878,6 @@ export default function NewApplication() {
                   className={fieldClassName}
                   onChange={(event) => setAddress(event.target.value)}
                 />
-              </FormField>
-
-              <FormField label="State / UT">
-                <select
-                  value={stateCode}
-                  onChange={(event) => setStateCode(event.target.value)}
-                  className={`${fieldClassName} w-full px-3 outline-none`}
-                >
-                  <option value="">Select state</option>
-
-                  {metadata?.states.map((state) => (
-                    <option key={state.state_id} value={state.state_code}>
-                      {state.state_name} ({state.state_code})
-                    </option>
-                  ))}
-                </select>
               </FormField>
 
               <FormField label="District">

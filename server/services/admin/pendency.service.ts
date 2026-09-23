@@ -1,4 +1,5 @@
 import { AppError } from "../../errors/AppError";
+import { AccuracyClass } from "../../generated/prisma/enums";
 import {
   getEligibleGatcs,
   getPendencyApplicationById,
@@ -32,7 +33,7 @@ interface GatcRouteSuggestion {
 interface LmoRouteSuggestion {
   type: "LMO";
   lmo_id: string;
-  employee_code: string;
+  employee_id: string;
   name: string;
   jurisdiction_district: string;
 }
@@ -157,7 +158,7 @@ const findNearestGatcs = async (
 
 type PendencyApplicationLocation = {
   instrument: {
-    accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
+    accuracy_class: AccuracyClass;
     district: string;
     category: {
       category_code: string;
@@ -207,7 +208,7 @@ const buildSuggestions = async (application: PendencyApplicationLocation) => {
     ...lmos.map((lmo) => ({
       type: "LMO" as const,
       lmo_id: lmo.user_id,
-      employee_code: lmo.employee_code,
+      employee_id: lmo.employee_id,
       name: lmo.user.name,
       jurisdiction_district: lmo.user.jurisdiction_district,
     })),

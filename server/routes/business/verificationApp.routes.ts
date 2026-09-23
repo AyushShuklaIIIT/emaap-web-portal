@@ -1,6 +1,8 @@
 import express from "express";
 import {
   createVerificationApplication,
+  getVerificationCategories,
+  getVerificationConditions,
   getVerificationApp,
   getVerificationFeeQuote,
   getVerificationMetadata,
@@ -11,6 +13,8 @@ export const router = express.Router();
 
 // /api/verification
 router.get("/metadata", getVerificationMetadata);
+router.get("/categories", getVerificationCategories);
+router.get("/conditions", getVerificationConditions);
 router.post("/fee-quote", getVerificationFeeQuote);
 router.post("/applications", createVerificationApplication);
 router.get("/:userId", getVerificationApp);

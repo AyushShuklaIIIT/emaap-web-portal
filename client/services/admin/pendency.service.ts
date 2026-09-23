@@ -18,7 +18,7 @@ export interface GatcRouteSuggestion {
 export interface LmoRouteSuggestion {
   type: "LMO";
   lmo_id: string;
-  employee_code: string;
+  employee_id: string;
   name: string;
   jurisdiction_district: string;
 }

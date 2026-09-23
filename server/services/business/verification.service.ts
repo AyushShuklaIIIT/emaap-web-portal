@@ -10,6 +10,8 @@ import {
   findActiveVerificationAppByInstrumentId,
   postVerificationAppByBusinessId,
   findFeeRules,
+  getVerificationCategoriesByStateCode,
+  getVerificationConditionsByStateAndCategory,
   findUserById,
   findCategoryByCode,
   findStateByCode,
@@ -166,9 +168,156 @@ const validatePaymentMethod = (paymentMethod: PaymentMethod) => {
   }
 };
 
+const validateErrorValue = (error: number | undefined): number | undefined => {
+  if (error === undefined) {
+    return undefined;
+  }
+
+  if (!Number.isFinite(error) || error < 0) {
+    throw new Error("Error must be a finite non-negative number");
+  }
+
+  return error;
+};
+
+const evaluateCondition = (
+  condition: string | null,
+  metric: number | undefined,
+  error: number | undefined,
+  selectedCondition: string | undefined,
+): boolean => {
+  if (!condition?.trim()) {
+    return true;
+  }
+
+  const expression = condition.trim();
+  const mpeMatch = expression.match(/^MPE\s+([\d.]+)\s*\/\s*([\d.]+)/i);
+
+  if (mpeMatch) {
+    if (metric === undefined || error === undefined) {
+      return true;
+    }
+
+    const numerator = Number(mpeMatch[1]);
+    const denominator = Number(mpeMatch[2]);
+
+    return (
+      Number.isFinite(numerator) &&
+      Number.isFinite(denominator) &&
+      denominator !== 0 &&
+      Math.abs(error) <= Math.abs(metric) * (numerator / denominator)
+    );
+  }
+
+  if (!/\b(metric|error)\b/i.test(expression)) {
+    return expression === selectedCondition;
+  }
+
+  if (!/^[\d\s().<>=!&|+*/%a-z_-]+$/i.test(expression)) {
+    return false;
+  }
+
+  const tokens = expression.match(
+    /(?:metric|error|\d+(?:\.\d+)?)|&&|\|\||<=|>=|==|!=|[().<>+*/%!-]/gi,
+  );
+
+  if (!tokens || tokens.join("") !== expression.replace(/\s+/g, "")) {
+    return false;
+  }
+
+  let position = 0;
+  const values: Record<string, number | undefined> = { metric, error };
+
+  const parseValue = (): number | undefined => {
+    const token = tokens[position++];
+
+    if (!token) {
+      return undefined;
+    }
+
+    if (token.toLowerCase() in values) {
+      return values[token.toLowerCase()];
+    }
+
+    const value = Number(token);
+
+    return Number.isFinite(value) ? value : undefined;
+  };
+
+  const parseComparison = (): boolean => {
+    const left = parseValue();
+    const operator = tokens[position++];
+    const right = parseValue();
+
+    if (left === undefined || right === undefined || !operator) {
+      return false;
+    }
+
+    switch (operator) {
+      case ">":
+        return left > right;
+      case ">=":
+        return left >= right;
+      case "<":
+        return left < right;
+      case "<=":
+        return left <= right;
+      case "==":
+        return left === right;
+      case "!=":
+        return left !== right;
+      default:
+        return false;
+    }
+  };
+
+  const parsePrimary = (): boolean => {
+    if (tokens[position] === "(") {
+      position += 1;
+      const result = parseOr();
+
+      if (tokens[position] !== ")") return false;
+      position += 1;
+      return result;
+    }
+
+    return parseComparison();
+  };
+
+  const parseAnd = (): boolean => {
+    let result = parsePrimary();
+
+    while (tokens[position] === "&&") {
+      position += 1;
+      const next = parsePrimary();
+      result = result && next;
+    }
+
+    return result;
+  };
+
+  function parseOr(): boolean {
+    let result = parseAnd();
+
+    while (tokens[position] === "||") {
+      position += 1;
+      const next = parseAnd();
+      result = result || next;
+    }
+
+    return result;
+  }
+
+  const result = parseOr();
+
+  return position === tokens.length ? result : false;
+};
+
 const calculateFeeFromRules = (
   rules: Awaited<ReturnType<typeof findFeeRules>>,
   metric: string,
+  error?: number,
+  selectedCondition?: string,
 ): VerificationFeeQuoteResponse => {
   if (rules.length === 0) {
     throw new Error(
@@ -183,11 +332,7 @@ const calculateFeeFromRules = (
 
     const max = rule.max_value === null ? null : Number(rule.max_value);
 
-    if (min === null && max === null) {
-      return true;
-    }
-
-    if (metricValue === undefined) {
+    if ((min !== null || max !== null) && metricValue === undefined) {
       return false;
     }
 
@@ -199,7 +344,12 @@ const calculateFeeFromRules = (
       return false;
     }
 
-    return true;
+    return evaluateCondition(
+      rule.condition,
+      metricValue,
+      error,
+      selectedCondition,
+    );
   });
 
   if (applicableRules.length === 0) {
@@ -210,9 +360,17 @@ const calculateFeeFromRules = (
 
   const statutoryFee = Number(rule.fee_amount);
 
-  const additionalFee = Number(rule.additional_fee ?? 0);
+  const configuredAdditionalFee = Number(rule.additional_fee ?? 0);
+  const additionalUnit = Number(rule.additional_unit ?? 0);
+  const additionalUnits =
+    configuredAdditionalFee > 0 &&
+    additionalUnit > 0 &&
+    metricValue !== undefined
+      ? Math.max(0, Math.ceil((metricValue - additionalUnit) / additionalUnit))
+      : 0;
+  const additionalFee = configuredAdditionalFee * additionalUnits;
 
-  const calculatedTotal = statutoryFee + additionalFee;
+  const calculatedTotal = statutoryFee + additionalUnits * additionalFee;
 
   const maximumFee =
     rule.maximum_fee === null ? null : Number(rule.maximum_fee);
@@ -284,6 +442,34 @@ export const getVerificationMetadataService =
     return getVerificationMetadata();
   };
 
+export const getVerificationCategoriesService = async (stateCode: string) => {
+  const state = await findStateByCode(stateCode);
+
+  if (!state) {
+    throw new Error(`State '${stateCode}' does not exist`);
+  }
+
+  return getVerificationCategoriesByStateCode(stateCode);
+};
+
+export const getVerificationConditionsService = async (
+  stateCode: string,
+  categoryCode: string,
+) => {
+  const state = await findStateByCode(stateCode);
+  const category = await findCategoryByCode(categoryCode);
+
+  if (!state) {
+    throw new Error(`State '${stateCode}' does not exist`);
+  }
+
+  if (!category) {
+    throw new Error(`Instrument category '${categoryCode}' does not exist`);
+  }
+
+  return getVerificationConditionsByStateAndCategory(stateCode, categoryCode);
+};
+
 export const getVerificationFeeQuoteService = async (
   input: VerificationFeeQuoteInput,
 ): Promise<VerificationFeeQuoteResponse> => {
@@ -295,7 +481,12 @@ export const getVerificationFeeQuoteService = async (
 
   const rules = await findFeeRules(state.state_id, category.category_id);
 
-  return calculateFeeFromRules(rules, input.metric);
+  return calculateFeeFromRules(
+    rules,
+    input.metric,
+    input.error,
+    input.selected_condition,
+  );
 };
 
 export const createVerificationApplicationService = async (
@@ -316,6 +507,8 @@ export const createVerificationApplicationService = async (
   if (!input.metric?.trim()) {
     throw new Error("Maximum capacity / flow rate is required");
   }
+
+  const error = validateErrorValue(input.error);
 
   if (!input.address?.trim()) {
     throw new Error("Installation address is required");
@@ -341,7 +534,12 @@ export const createVerificationApplicationService = async (
 
   const rules = await findFeeRules(state.state_id, category.category_id);
 
-  const fee = calculateFeeFromRules(rules, input.metric);
+  const fee = calculateFeeFromRules(
+    rules,
+    input.metric,
+    error,
+    input.selectedCondition,
+  );
 
   const existingInstrument = await findInstrumentBySerialNumber(
     input.instrument_serial_number.trim(),
@@ -434,6 +632,7 @@ export const createVerificationApplicationService = async (
       manufacturer_name: input.manufacturer_name.trim(),
       accuracy_class: normalizeAccuracyClass(category.accuracy_class),
       metric: input.metric.trim(),
+      error,
       address: input.address.trim(),
       district: input.district.trim(),
       pincode: input.pincode,

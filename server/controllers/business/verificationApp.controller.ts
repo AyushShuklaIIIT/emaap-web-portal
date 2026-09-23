@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { VerificationForm } from "../../types";
 import {
   createVerificationApplicationService,
+  getVerificationCategoriesService,
+  getVerificationConditionsService,
   getVerificationAppService,
   getVerificationFeeQuoteService,
   getVerificationMetadataService,
@@ -122,15 +124,83 @@ export const getVerificationMetadata = async (_req: Request, res: Response) => {
   }
 };
 
+export const getVerificationCategories = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const stateCode = String(req.query.stateCode ?? "")
+      .trim()
+      .toUpperCase();
+
+    if (!stateCode) {
+      return res
+        .status(400)
+        .json({ success: false, message: "stateCode is required" });
+    }
+
+    const data = await getVerificationCategoriesService(stateCode);
+
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    const message = getErrorMessage(error);
+
+    return res
+      .status(getErrorStatus(message))
+      .json({ success: false, message });
+  }
+};
+
+export const getVerificationConditions = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const stateCode = String(req.query.stateCode ?? "")
+      .trim()
+      .toUpperCase();
+    const categoryCode = String(req.query.categoryCode ?? "").trim();
+
+    if (!stateCode || !categoryCode) {
+      return res.status(400).json({
+        success: false,
+        message: "stateCode and categoryCode are required",
+      });
+    }
+
+    const data = await getVerificationConditionsService(
+      stateCode,
+      categoryCode,
+    );
+
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    const message = getErrorMessage(error);
+
+    return res
+      .status(getErrorStatus(message))
+      .json({ success: false, message });
+  }
+};
+
 export const getVerificationFeeQuote = async (req: Request, res: Response) => {
   try {
-    const { userId, categoryCode, stateCode, metric } = req.body;
+    const {
+      userId,
+      categoryCode,
+      stateCode,
+      metric,
+      error,
+      selectedCondition,
+    } = req.body;
 
     const data = await getVerificationFeeQuoteService({
       user_id: userId,
       category_code: categoryCode,
       state_code: stateCode,
       metric,
+      error: error === undefined || error === "" ? undefined : Number(error),
+      selected_condition: selectedCondition,
     });
 
     return res.status(200).json({
@@ -162,6 +232,7 @@ export const createVerificationApplication = async (
       manufacturerName,
       instrumentSerialNumber,
       metric,
+      error,
       address,
       pincode,
       stateCode,
@@ -169,6 +240,7 @@ export const createVerificationApplication = async (
       long,
       paymentMethod,
       district,
+      selectedCondition,
     } = req.body;
 
     const data = await createVerificationApplicationService({
@@ -179,6 +251,7 @@ export const createVerificationApplication = async (
       manufacturer_name: manufacturerName,
       instrument_serial_number: instrumentSerialNumber,
       metric,
+      error: error === undefined || error === "" ? undefined : Number(error),
       address,
       pincode: Number(pincode),
       state_code: stateCode,

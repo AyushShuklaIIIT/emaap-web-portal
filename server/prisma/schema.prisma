@@ -29,6 +29,9 @@ enum AccuracyClass {
   CLASS_II
   CLASS_III
   CLASS_IIII
+  CLASS_M1
+  CLASS_XIII
+  CLASS_0_5
 }
 
 enum InstrumentStatus {
@@ -221,7 +224,7 @@ model MeasuringInstrument {
   state                String
   lat                  Float
   long                 Float
-  error                Float? // Seed update types
+  error                Float? 
 
   capacity_value       Decimal?             @db.Decimal(12, 3)
   capacity_unit        String?
@@ -479,7 +482,6 @@ model GeneratedCertificate {
 model LmoOfficer {
   employee_id             String         @unique
   user_id                 String         @unique  @id
-  employee_code           String         @unique // remove and fix this 
   designation             LmoDesignation @default(INSPECTOR)
   
   

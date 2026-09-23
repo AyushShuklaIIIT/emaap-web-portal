@@ -609,7 +609,7 @@ export default function Pendency() {
                                       <p className="mt-1 pl-7 text-[11px] text-[#3564A3]">
                                         {suggestion.type === "GATC"
                                           ? `${suggestion.distance_km} km away`
-                                          : `LMO - ${suggestion.employee_code} (${suggestion.jurisdiction_district})`}
+                                          : `LMO - ${suggestion.employee_id} (${suggestion.jurisdiction_district})`}
                                       </p>
                                     </div>
 

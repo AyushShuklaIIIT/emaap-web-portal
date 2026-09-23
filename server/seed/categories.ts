@@ -386,7 +386,8 @@ export const categories = [
   },
   {
     category_code: "CONTINUOUS_TOTALIZING_AUTOMATIC_WEIGHING_INSTRUMENTS",
-    category_name: "Continuous totalizing automatic weighing Instruments (Belt Weighers)",
+    category_name:
+      "Continuous totalizing automatic weighing Instruments (Belt Weighers)",
     accuracy_class: "CLASS_III",
     oiml_standard_ref: "OIML R 50",
     verification_cycle_months: 12,
@@ -412,7 +413,6 @@ export const categories = [
     oiml_standard_ref: "OIML R 117",
     verification_cycle_months: 12,
   },
-
 
   {
     category_code: "GAS_METER",

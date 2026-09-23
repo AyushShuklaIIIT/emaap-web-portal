@@ -582,23 +582,23 @@ export const lmoUsersData: User[] = [
   {
     user_id: "lmo12",
     name: "LMO Inspector MP",
-    fullName: "LMO Inspector Madhya Pradesh",
+    fullName: "Quentin Tarantino",
     email: "inspector.mp@emaap.gov.in",
     mobile: "9000000021",
     registrationRole: "LMO",
     jurisdiction_state: "MP",
     jurisdiction_district: "Bhopal",
     employeeId: "LMO-001",
-    password: "whatup1234",
-    passwordHash: generateHash("whatup1234"),
+    password: "pulpfiction",
+    passwordHash: generateHash("pulpfiction"),
   },
 ];
 
 export const lmoOfficers: LmoOfficerSeed[] = [
   {
     userId: "lmo12",
-    employee_id: "MP-LMO-0001",
-    user_email: "inspector.mp@emaap.gov.in",
+    employee_id: "LMO-0001",
+    user_email: "quentin.mp@emaap.gov.in",
     designation: LmoDesignation.INSPECTOR,
     cadre: "Legal Metrology",
     jurisdiction_zone: "Bhopal",

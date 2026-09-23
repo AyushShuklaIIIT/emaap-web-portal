@@ -1,4 +1,13 @@
-export const categories = [
+interface CategorySeed {
+  category_code: string;
+  category_name: string;
+  accuracy_class: string;
+  oiml_standard_ref: string;
+  isApprovedForGatc: boolean;
+  verification_cycle_months: number;
+}
+
+export const categories: CategorySeed[] = [
   {
     category_code: "BULLION_WEIGHTS",
     category_name: "Bullion Weights",
@@ -511,12 +520,14 @@ export const categories = [
     category_name: "Energy Meter",
     oiml_standard_ref: "OIML R 46",
     verification_cycle_months: 12,
+    accuracy_class: "N_A",
     isApprovedForGatc: true,
   },
   {
     category_code: "LOAD_CELL",
     category_name: "Load Cell",
     oiml_standard_ref: "OIML R 60",
+    accuracy_class: "N_A",
     verification_cycle_months: 12,
     isApprovedForGatc: true,
   },
@@ -524,6 +535,7 @@ export const categories = [
     category_code: "MULTI_DIMENSIONAL_MEASURING_INSTRUMENTS",
     category_name: "Multi-dimensional measuring instruments",
     verification_cycle_months: 12,
+    accuracy_class: "N_A",
     oiml_standard_ref: "OIML R 129",
     isApprovedForGatc: true,
   },

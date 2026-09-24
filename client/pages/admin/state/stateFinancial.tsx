@@ -22,13 +22,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useFinancialReport } from "@/hooks/useAdminFinancial";
+import { useStateAdminFinancial } from "@/hooks/useStateAdminFinancial";
+import { useStateAdminGatcs } from "@/hooks/useStateAdminDashboard";
 import {
   FinancialTransaction,
   RevenueTrend,
 } from "@/services/admin/financial.service";
 
-export default function Revenue() {
+export default function StateFinancial() {
   const {
     data,
     filters,
@@ -43,10 +44,12 @@ export default function Revenue() {
     setApplicationType,
     setWorkflowStatus,
     setPaymentStatus,
+    setDistrict,
+    setGatc,
 
     exportReport,
     refetch,
-  } = useFinancialReport();
+  } = useStateAdminFinancial();
 
   const [searchInput, setSearchInput] = useState("");
 
@@ -59,6 +62,27 @@ export default function Revenue() {
   const [paymentFilter, setPaymentFilter] = useState("");
 
   const [workflowFilter, setWorkflowFilter] = useState("");
+
+  const [districtFilter, setDistrictFilter] = useState("");
+  const [gatcFilter, setGatcFilter] = useState("");
+
+  const { gatcs } = useStateAdminGatcs("All");
+
+  const uniqueDistricts = useMemo(() => {
+    const districts = new Set<string>();
+    gatcs.forEach((g) => districts.add(g.district || "Unassigned"));
+    return Array.from(districts).sort();
+  }, [gatcs]);
+
+  const gatcOptions = useMemo(() => {
+    let options = gatcs;
+    if (districtFilter) {
+      options = options.filter(
+        (g) => (g.district || "Unassigned") === districtFilter
+      );
+    }
+    return options;
+  }, [gatcs, districtFilter]);
 
   const handleSearch = () => {
     search(searchInput);
@@ -98,8 +122,21 @@ export default function Revenue() {
     );
   };
 
+  const handleDistrictFilter = (value: string) => {
+    setDistrictFilter(value);
+    setDistrict(value || "");
+    // Reset GATC when district changes
+    setGatcFilter("");
+    setGatc("");
+  };
+
+  const handleGatcFilter = (value: string) => {
+    setGatcFilter(value);
+    setGatc(value || "");
+  };
+
   return (
-    <DashboardLayout role="admin">
+    <DashboardLayout role="state-admin">
       <section className="mx-auto max-w-330 rounded-xl border border-[#E0E0E0] bg-white p-4 shadow-card sm:p-7">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <h1 className="text-xl font-bold tracking-tight text-[#1A1A2E] sm:text-2xl">
@@ -128,6 +165,32 @@ export default function Revenue() {
                 className="h-10 w-37.5 rounded-lg border-[#E0E0E0] text-sm"
               />
             </div>
+
+            <select
+              value={districtFilter}
+              onChange={(event) => handleDistrictFilter(event.target.value)}
+              className="h-10 max-w-40 rounded-lg border border-[#E0E0E0] bg-white px-3 text-sm text-[#1A1A2E] outline-none"
+            >
+              <option value="">District: All</option>
+              {uniqueDistricts.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={gatcFilter}
+              onChange={(event) => handleGatcFilter(event.target.value)}
+              className="h-10 max-w-40 rounded-lg border border-[#E0E0E0] bg-white px-3 text-sm text-[#1A1A2E] outline-none"
+            >
+              <option value="">GATC: All</option>
+              {gatcOptions.map((g) => (
+                <option key={g.gatc_id} value={g.gatc_id}>
+                  {g.lab_name || g.centre_code}
+                </option>
+              ))}
+            </select>
 
             <select
               value={applicationFilter}

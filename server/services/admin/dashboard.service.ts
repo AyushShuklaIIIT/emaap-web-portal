@@ -90,7 +90,9 @@ const getCurrentFinancialYear = (): string => {
   return `${startYear}-${startYear + 1}`;
 };
 
-const getFinancialYearRange = (financialYear?: string): FinancialYearRange => {
+export const getFinancialYearRange = (
+  financialYear?: string,
+): FinancialYearRange => {
   const resolvedFinancialYear = financialYear ?? getCurrentFinancialYear();
 
   const match = /^(\d{4})-(\d{4})$/.exec(resolvedFinancialYear);
@@ -137,7 +139,7 @@ const getPendencySeverity = (rate: number): "HIGH" | "MEDIUM" | "NORMAL" => {
   return "NORMAL";
 };
 
-const getMonthRanges = (startYear: number, endYear: number) => {
+export const getMonthRanges = (startYear: number, endYear: number) => {
   const months = [
     { month: "Apr", index: 3 },
     { month: "May", index: 4 },
@@ -166,9 +168,9 @@ const getMonthRanges = (startYear: number, endYear: number) => {
   });
 };
 
-const round = (value: number) => Math.round(value * 100) / 100;
+export const round = (value: number) => Math.round(value * 100) / 100;
 
-const calculateDistanceKm = (
+export const calculateDistanceKm = (
   lat1: number,
   lon1: number,
   lat2: number,

@@ -100,6 +100,10 @@ export default function Index() {
       storeCurrentUser({ ...result.data, role });
       if (role === "admin") {
         localStorage.setItem("emaap_admin_user_id", result.data.userId);
+        if (result.data.jurisdictionState && result.data.jurisdictionState !== "Central") {
+          window.location.href = "/state-admin/dashboard";
+          return;
+        }
       } else {
         localStorage.removeItem("emaap_admin_user_id");
       }

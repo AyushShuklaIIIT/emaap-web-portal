@@ -44,7 +44,7 @@ import { Badge } from "@/components/ui/badge";
 import { notifications } from "@/lib/emaap-data";
 import { getCurrentUser } from "@/lib/current-user";
 
-type Role = "business" | "admin" | "gatc";
+type Role = "business" | "admin" | "gatc" | "state-admin";
 
 const NAV: Record<
   Role,
@@ -84,6 +84,24 @@ const NAV: Record<
       label: "Registration",
       href: "/gatc/registration",
       icon: UserPlus,
+    },
+  ],
+  "state-admin": [
+    {
+      label: "Overview",
+      href: "/state-admin/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      label: "Pendency Queue",
+      href: "/state-admin/pendency",
+      icon: ListChecks,
+    },
+
+    {
+      label: "Revenue Reports",
+      href: "/state-admin/revenue",
+      icon: BarChart3,
     },
   ],
 };

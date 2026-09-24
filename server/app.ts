@@ -18,6 +18,7 @@ import { router as adminPendencyRouter } from "./routes/admin/pendency.routes";
 import { router as adminFinancialRouter } from "./routes/admin/financial.routes";
 import { router as adminGatcRouter } from "./routes/admin/gatc.routes";
 import { router as adminMasterDataRouter } from "./routes/admin/masterData.routes";
+import { router as adminStateDashboardRouter } from "./routes/admin/state/stateAdmin.routes";
 import { router as gatcRouter } from "./routes/gatc/gatc.routes";
 import { aadhaarRouter } from "./routes/aadhaar.routes";
 import { authRouter } from "./routes/auth.routes";
@@ -272,6 +273,7 @@ export function createServer() {
   app.use("/api/admin/financial", adminFinancialRouter);
   app.use("/api/admin/gatcs", adminGatcRouter);
   app.use("/api/admin/master-data", adminMasterDataRouter);
+  app.use("/api/state-admin", adminStateDashboardRouter);
   app.use("/api/gatc", gatcRouter);
   app.use("/api/instrument", instrumentRouter);
   app.use("/api/payment", paymentRouter);
@@ -743,10 +745,7 @@ export function createServer() {
           assignedOfficerId: application.assigned_officer_id,
         });
       } catch (err) {
-        console.error(
-          "Error creating verification relational records:",
-          err,
-        );
+        console.error("Error creating verification relational records:", err);
 
         socket.emit("verification_persistence_failed", {
           success: false,

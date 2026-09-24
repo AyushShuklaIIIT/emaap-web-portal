@@ -2,26 +2,24 @@ import { prisma } from "../lib/prisma";
 import { createCertificateSignature } from "../services/qr-payload.service";
 
 export const getCertificatesByBusinessId = async (businessId: string) => {
+  const now = new Date(); // Current date/time
+
   const certs = await prisma.digitalCertificate.findMany({
     where: {
-      instrument: {
-        business_id: businessId,
-      },
-      expiry: {
-        gt: new Date(),
-      },
-    },
-
-    include: {
-      instrument: {
-        include: {
-          category: true,
+      OR: [
+        {
+          rejection_reason: null,
         },
-      },
-    },
 
-    orderBy: {
-      issue_date: "desc",
+        {
+          rejection_reason: {
+            not: null,
+          },
+          expiry_date: {
+            gt: now,
+          },
+        },
+      ],
     },
   });
 

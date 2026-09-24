@@ -14,22 +14,22 @@ import { useAdminRealtime } from "@/hooks/useAdminRealtime";
 
 const DEFAULT_FINANCIAL_YEAR = "2026-2027";
 
-const formatCurrencyCrore = (amount: number): string => {
+export const formatCurrencyCrore = (amount: number): string => {
   return `₹${amount}`;
 };
 
-const formatNumber = (value: number): string => {
+export const formatNumber = (value: number): string => {
   return value.toLocaleString("en-IN");
 };
 
-const formatCompactNumber = (value: number): string => {
+export const formatCompactNumber = (value: number): string => {
   return new Intl.NumberFormat("en-IN", {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
 };
 
-const getYtdMonthCount = (financialYear: string): number => {
+export const getYtdMonthCount = (financialYear: string): number => {
   const match = /^(\d{4})-(\d{4})$/.exec(financialYear);
 
   if (!match) {
@@ -58,7 +58,7 @@ const getYtdMonthCount = (financialYear: string): number => {
   return 0;
 };
 
-const getChartPoints = (values: number[], maxValue: number): string => {
+export const getChartPoints = (values: number[], maxValue: number): string => {
   if (values.length === 0) {
     return "";
   }
@@ -80,7 +80,7 @@ const getChartPoints = (values: number[], maxValue: number): string => {
     .join(" ");
 };
 
-const getChartCirclePoints = (values: number[], maxValue: number) => {
+export const getChartCirclePoints = (values: number[], maxValue: number) => {
   if (values.length === 0) {
     return [];
   }
@@ -106,7 +106,7 @@ const getChartCirclePoints = (values: number[], maxValue: number) => {
   });
 };
 
-const getPendencyBarColor = (
+export const getPendencyBarColor = (
   severity: "HIGH" | "MEDIUM" | "NORMAL",
 ): string => {
   switch (severity) {
@@ -124,7 +124,7 @@ const getPendencyBarColor = (
   }
 };
 
-const formatDistance = (distance: number | null): string => {
+export const formatDistance = (distance: number | null): string => {
   if (distance === null) {
     return "";
   }

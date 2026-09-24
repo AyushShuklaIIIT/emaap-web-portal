@@ -34,6 +34,7 @@ import { loadWeglot } from "./lib/weglot";
 import GatcRegistration from "./pages/gatc/Registration";
 import GatcSettings from "./pages/gatc/Settings";
 import { ProtectedRoute } from "./components/emaap/ProtectedRoute";
+import StateAdminDashboard from "./pages/admin/state/stateAdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -100,6 +101,13 @@ const App = () => {
                 <Route path="/admin/revenue" element={<Revenue />} />
                 <Route path="/admin/master-data" element={<MasterData />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
+              </Route>
+
+              <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+                <Route
+                  path="/state-admin/dashboard"
+                  element={<StateAdminDashboard />}
+                />
               </Route>
 
               <Route element={<ProtectedRoute allowedRoles={["gatc"]} />}>

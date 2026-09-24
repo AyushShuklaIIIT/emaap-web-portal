@@ -267,4 +267,11 @@ export const notifications = {
       tone: "warning" as const,
     },
   ],
+  "state-admin": [
+    {
+      title: "Make sure to drink water",
+      time: "4 day ago",
+      tone: "warning" as const,
+    },
+  ],
 };

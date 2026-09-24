@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import {
   type GstinBusinessData,
 } from "@/components/registration/GstinVerificationInput";
 import { INDIAN_STATES } from "@/lib/states";
+import { districts } from "../../../server/seed/district";
 
 export type SupportedRegistrationRole =
   "STAKEHOLDER" | "ADMIN" | "LMO" | "GATC_OPERATOR";
@@ -53,6 +54,13 @@ export function RoleFormRenderer({
   onFileSelected,
   onGstinVerified,
 }: RoleFormRendererProps) {
+  const filteredDistricts = useMemo(() => {
+    if (!values.jurisdictionState || values.jurisdictionState === "Central") return [];
+    const stateObj = INDIAN_STATES.find(s => s.state_name === values.jurisdictionState);
+    if (!stateObj) return [];
+    return districts.filter(d => String(d.state_no) === String(stateObj.state_no));
+  }, [values.jurisdictionState]);
+
   if (section === "demographic") {
     return (
       <div className="grid gap-4 sm:grid-cols-2">
@@ -178,38 +186,53 @@ export function RoleFormRenderer({
                 />
               </Field>
             )}
-            <Field
-              label={
-                role === "ADMIN"
-                  ? "Designation"
-                  : "Station / district jurisdiction"
-              }
-              hint={
-                role === "ADMIN"
-                  ? "Enter your official designation."
-                  : "Enter the station, district, or jurisdiction name."
-              }
-            >
-              <Input
-                value={
-                  role === "ADMIN"
-                    ? values.designation
-                    : values.jurisdictionDistrict
-                }
-                onChange={(event) =>
-                  onChange(
-                    role === "ADMIN" ? "designation" : "jurisdictionDistrict",
-                    event.target.value,
-                  )
-                }
-              />
-            </Field>
+            {role === "ADMIN" ? (
+              <Field
+                label="Designation"
+                hint="Enter your official designation."
+              >
+                <Input
+                  value={values.designation}
+                  onChange={(event) =>
+                    onChange("designation", event.target.value)
+                  }
+                />
+              </Field>
+            ) : (
+              <Field
+                label="District jurisdiction"
+                hint="Select the district jurisdiction."
+              >
+                <select
+                  className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
+                  value={values.jurisdictionDistrict}
+                  onChange={(event) =>
+                    onChange("jurisdictionDistrict", event.target.value)
+                  }
+                  disabled={!values.jurisdictionState}
+                >
+                  <option value="">
+                    {!values.jurisdictionState ? "Select state first" : "Select district"}
+                  </option>
+                  {filteredDistricts.map((d) => (
+                    <option key={d.district_no} value={d.district_name}>
+                      {d.district_name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
 
             <Field label="Jurisdiction state">
               <select
                 className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
                 value={values.jurisdictionState}
-                onChange={(event) => onChange("jurisdictionState", event.target.value)}
+                onChange={(event) => {
+                  onChange("jurisdictionState", event.target.value);
+                  if (role !== "ADMIN") {
+                    onChange("jurisdictionDistrict", "");
+                  }
+                }}
               >
                 <option value="">Select state</option>
                 {role === "ADMIN" && (
@@ -237,20 +260,45 @@ export function RoleFormRenderer({
           </Field>
         )}
         {role === "STAKEHOLDER" && (
-          <Field label="Jurisdiction state">
-            <select
-              className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
-              value={values.jurisdictionState}
-              onChange={(event) => onChange("jurisdictionState", event.target.value)}
-            >
-              <option value="">Select state</option>
-              {INDIAN_STATES.map((state) => (
-                <option key={state.state_code} value={state.state_name}>
-                  {state.state_name}
+          <>
+            <Field label="Jurisdiction state">
+              <select
+                className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
+                value={values.jurisdictionState}
+                onChange={(event) => {
+                  onChange("jurisdictionState", event.target.value);
+                  onChange("jurisdictionDistrict", "");
+                }}
+              >
+                <option value="">Select state</option>
+                {INDIAN_STATES.map((state) => (
+                  <option key={state.state_code} value={state.state_name}>
+                    {state.state_name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field label="Jurisdiction district">
+              <select
+                className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
+                value={values.jurisdictionDistrict}
+                onChange={(event) =>
+                  onChange("jurisdictionDistrict", event.target.value)
+                }
+                disabled={!values.jurisdictionState}
+              >
+                <option value="">
+                  {!values.jurisdictionState ? "Select state first" : "Select district"}
                 </option>
-              ))}
-            </select>
-          </Field>
+                {filteredDistricts.map((d) => (
+                  <option key={d.district_no} value={d.district_name}>
+                    {d.district_name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </>
         )}
       </div>
     );

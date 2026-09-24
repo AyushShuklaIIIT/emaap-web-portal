@@ -78,7 +78,7 @@ export default function Index() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ mobile: phone, password, role }),
       });
-      const result = await response.json() as {
+      const result = (await response.json()) as {
         success?: boolean;
         error?: string;
         data?: {
@@ -100,7 +100,10 @@ export default function Index() {
       storeCurrentUser({ ...result.data, role });
       if (role === "admin") {
         localStorage.setItem("emaap_admin_user_id", result.data.userId);
-        if (result.data.jurisdictionState && result.data.jurisdictionState !== "Central") {
+        if (
+          result.data.jurisdictionState &&
+          result.data.jurisdictionState !== "Central"
+        ) {
           window.location.href = "/state-admin/dashboard";
           return;
         }
@@ -109,7 +112,9 @@ export default function Index() {
       }
       window.location.href = ROLE_ROUTE[role];
     } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : "Unable to log in");
+      setError(
+        loginError instanceof Error ? loginError.message : "Unable to log in",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -201,17 +206,29 @@ export default function Index() {
               className="mt-6"
             >
               <TabsList className="grid h-auto w-full grid-cols-3">
-                <TabsTrigger className="min-w-0 px-2 py-2 text-xs sm:text-sm" value="business">Business</TabsTrigger>
-                <TabsTrigger className="min-w-0 px-2 py-2 text-xs sm:text-sm" value="admin">Admin</TabsTrigger>
-                <TabsTrigger className="min-w-0 px-2 py-2 text-xs sm:text-sm" value="gatc">LMO/GATC</TabsTrigger>
+                <TabsTrigger
+                  className="min-w-0 px-2 py-2 text-xs sm:text-sm"
+                  value="business"
+                >
+                  Business
+                </TabsTrigger>
+                <TabsTrigger
+                  className="min-w-0 px-2 py-2 text-xs sm:text-sm"
+                  value="admin"
+                >
+                  Admin
+                </TabsTrigger>
+                <TabsTrigger
+                  className="min-w-0 px-2 py-2 text-xs sm:text-sm"
+                  value="gatc"
+                >
+                  GATC
+                </TabsTrigger>
               </TabsList>
 
               {(["business", "admin", "gatc"] as Role[]).map((r) => (
                 <TabsContent key={r} value={r} className="mt-6">
-                  <form
-                    onSubmit={handleLogin}
-                    className="flex flex-col gap-4"
-                  >
+                  <form onSubmit={handleLogin} className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
                       <Label htmlFor={`phone-${r}`}>
                         Registered Mobile Number
@@ -297,7 +314,6 @@ export default function Index() {
           </div>
         </div>
       </div>
-
     </div>
   );
 }

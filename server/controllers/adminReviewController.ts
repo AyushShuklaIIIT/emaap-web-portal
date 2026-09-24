@@ -199,6 +199,35 @@ export const approveRegistration: RequestHandler = catchAsync(
         });
       }
 
+      if (application.role === "LMO") {
+        const stateObj = await transaction.state.findFirst({
+          where: {
+            OR: [
+              { state_code: application.user.jurisdiction_state },
+              { state_name: application.user.jurisdiction_state },
+            ],
+          },
+        });
+
+        if (!stateObj) {
+          throw new AppError(
+            400,
+            "LMO does not have a valid jurisdiction state",
+          );
+        }
+        if (!application.user.employeeId) {
+          throw new AppError(400, "LMO does not have an employee ID");
+        }
+
+        await transaction.lmoOfficer.create({
+          data: {
+            employee_id: application.user.employeeId,
+            user_id: application.user.user_id,
+            state_id: stateObj.state_id,
+          },
+        });
+      }
+
       const user = await transaction.user.update({
         where: { user_id: application.userId },
         data: { isActive: true },

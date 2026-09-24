@@ -19,6 +19,14 @@ const rejectionSchema = z.object({
   rejectionReason: z.string().trim().min(1).max(2000),
 });
 
+const approvePayloadSchema = z.object({
+  ind_mark_code: z.string().trim().min(1).optional(),
+  approval_cert_no: z.string().trim().min(1).optional(),
+  centre_code: z.string().trim().min(1).optional(),
+  valid_from: z.coerce.date().optional(),
+  valid_to: z.coerce.date().optional(),
+});
+
 export const listPendingRegistrations: RequestHandler = catchAsync(
   async (req, res) => {
     const parsed = querySchema.safeParse(req.query);
@@ -93,6 +101,12 @@ export const approveRegistration: RequestHandler = catchAsync(
         .status(400)
         .json({ success: false, error: "Invalid application ID" });
 
+    const parsedBody = approvePayloadSchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      return res.status(400).json({ success: false, error: "Invalid payload details" });
+    }
+    const body = parsedBody.data;
+
     const { prisma } = await import("../lib/prisma");
     const approved = await prisma.$transaction(async (transaction) => {
       const application = await transaction.registrationApplication.findUnique({
@@ -105,6 +119,26 @@ export const approveRegistration: RequestHandler = catchAsync(
         throw new AppError(409, "Registration is already approved");
       if (application.status === "REJECTED")
         throw new AppError(409, "Rejected registrations cannot be approved");
+
+      const isGatc = application.role === "GATC_PRINCIPAL" || application.role === "GATC_OFFICER" || (application.role as string) === "GATC_PRINCIPAL";
+      if (isGatc) {
+        if (!body.ind_mark_code || !body.approval_cert_no || !body.centre_code || !body.valid_from || !body.valid_to) {
+          throw new AppError(400, "GATC attributes and validity dates are required for approval");
+        }
+        await transaction.gatcCentre.create({
+          data: {
+            centre_code: body.centre_code,
+            approval_cert_no: body.approval_cert_no,
+            ind_mark_code: body.ind_mark_code,
+            valid_from: body.valid_from,
+            valid_to: body.valid_to,
+            status: "ACTIVE",
+            lat: application.lat ?? 0,
+            long: application.long ?? 0,
+            principal_officer_id: application.userId,
+          },
+        });
+      }
 
       const user = await transaction.user.update({
         where: { user_id: application.userId },

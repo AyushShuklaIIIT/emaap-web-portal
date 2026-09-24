@@ -421,6 +421,8 @@ model RegistrationApplication {
   reviewedBy      String?
   reviewedAt      DateTime?
   submittedAt     DateTime          @default(now())
+  lat             Float?
+  long            Float?
 
   user     User  @relation("RegistrationApplicant", fields: [userId], references: [user_id])
   reviewer User? @relation("RegistrationReviewer", fields: [reviewedBy], references: [user_id])

@@ -43,6 +43,8 @@ const registrationSchema = z.object({
   employeeId: z.string().trim().min(1).max(100).optional(),
   jurisdictionDistrict: z.string().trim().min(1).max(100).optional(),
   jurisdictionState: z.string().trim().min(1).max(100).optional(),
+  lat: z.coerce.number().optional(),
+  long: z.coerce.number().optional(),
 });
 
 const allowedMimeTypes = new Set([
@@ -153,6 +155,15 @@ export const registerUser: RequestHandler = async (req, res) => {
   try {
     await verifyIdentifiers(input);
     const { prisma } = await import("../lib/prisma");
+
+    let districtId: string | undefined = undefined;
+    if (input.jurisdictionDistrict) {
+      const d = await prisma.district.findFirst({
+        where: { district_name: input.jurisdictionDistrict }
+      });
+      if (d) districtId = d.district_id;
+    }
+
     const existing = await prisma.user.findFirst({
       where: { OR: [{ email: input.email }, { mobile: input.mobile }] },
       select: {
@@ -200,7 +211,7 @@ export const registerUser: RequestHandler = async (req, res) => {
               gstin: input.gstin,
               pan: input.pan,
               employeeId: input.employeeId,
-              jurisdiction_district: input.jurisdictionDistrict ?? "PENDING",
+              jurisdiction_district_id: districtId,
               jurisdiction_state: input.jurisdictionState ?? "PENDING",
               isActive: false,
               emailVerified: false,
@@ -212,6 +223,8 @@ export const registerUser: RequestHandler = async (req, res) => {
               userId: updatedUser.user_id,
               role: input.role,
               status: "OTP_PENDING",
+              lat: input.lat,
+              long: input.long,
             },
           });
           if (files.length > 0) {
@@ -267,7 +280,7 @@ export const registerUser: RequestHandler = async (req, res) => {
           gstin: input.gstin,
           pan: input.pan,
           employeeId: input.employeeId,
-          jurisdiction_district: input.jurisdictionDistrict ?? "PENDING",
+          jurisdiction_district_id: districtId,
           jurisdiction_state: input.jurisdictionState ?? "PENDING",
           isActive: false,
         },
@@ -278,6 +291,8 @@ export const registerUser: RequestHandler = async (req, res) => {
           userId: createdUser.user_id,
           role: input.role,
           status: "OTP_PENDING",
+          lat: input.lat,
+          long: input.long,
         },
       });
 

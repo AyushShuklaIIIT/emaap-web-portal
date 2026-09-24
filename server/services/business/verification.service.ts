@@ -424,12 +424,6 @@ const validateApplicationContext = async (
     throw new Error(`State '${stateCode}' does not exist`);
   }
 
-  if (business.state_code !== state.state_id) {
-    throw new Error(
-      "The selected state must match the business registered state",
-    );
-  }
-
   return {
     user,
     business,

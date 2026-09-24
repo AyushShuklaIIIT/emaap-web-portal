@@ -380,7 +380,7 @@ export default function RegistrationPage() {
                         }
                       >
                         <option value="">Select LMO or GATC</option>
-                        <option value="LMO">LMO</option>
+                        <option value="LMO">LMO</option>x
                         <option value="GATC_PRINCIPAL">GATC</option>
                       </select>
                     </div>

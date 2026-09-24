@@ -109,16 +109,22 @@ export function RoleFormRenderer({
                 }
               />
             </Field>
-            <Field label="Legal business name">
+            <Field
+              label="Legal business name"
+            >
               <Input
                 value={values.legalBusinessName}
+                placeholder="Will be filled in next step using GSTIN"
                 readOnly
                 disabled={Boolean(values.legalBusinessName)}
               />
             </Field>
-            <Field label="Trade name">
+            <Field
+              label="Trade name"
+            >
               <Input
                 value={values.tradeName}
+                placeholder="Will be filled in next step using GSTIN"
                 readOnly
                 disabled={Boolean(values.tradeName)}
               />

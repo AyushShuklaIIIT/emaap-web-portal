@@ -1,0 +1,44 @@
+export interface State {
+  state_no: string;
+  state_code: string;
+  state_name: string;
+}
+
+export const INDIAN_STATES: State[] = [
+  { state_no: "37", state_code: "AP", state_name: "Andhra Pradesh" },
+  { state_no: "12", state_code: "AR", state_name: "Arunachal Pradesh" },
+  { state_no: "18", state_code: "AS", state_name: "Assam" },
+  { state_no: "10", state_code: "BR", state_name: "Bihar" },
+  { state_no: "22", state_code: "CG", state_name: "Chhattisgarh" },
+  { state_no: "30", state_code: "GA", state_name: "Goa" },
+  { state_no: "24", state_code: "GJ", state_name: "Gujarat" },
+  { state_no: "06", state_code: "HR", state_name: "Haryana" },
+  { state_no: "02", state_code: "HP", state_name: "Himachal Pradesh" },
+  { state_no: "20", state_code: "JH", state_name: "Jharkhand" },
+  { state_no: "29", state_code: "KA", state_name: "Karnataka" },
+  { state_no: "32", state_code: "KL", state_name: "Kerala" },
+  { state_no: "23", state_code: "MP", state_name: "Madhya Pradesh" },
+  { state_no: "27", state_code: "MH", state_name: "Maharashtra" },
+  { state_no: "14", state_code: "MN", state_name: "Manipur" },
+  { state_no: "17", state_code: "ML", state_name: "Meghalaya" },
+  { state_no: "15", state_code: "MZ", state_name: "Mizoram" },
+  { state_no: "13", state_code: "NL", state_name: "Nagaland" },
+  { state_no: "21", state_code: "OR", state_name: "Odisha" },
+  { state_no: "03", state_code: "PB", state_name: "Punjab" },
+  { state_no: "08", state_code: "RJ", state_name: "Rajasthan" },
+  { state_no: "11", state_code: "SK", state_name: "Sikkim" },
+  { state_no: "33", state_code: "TN", state_name: "Tamil Nadu" },
+  { state_no: "36", state_code: "TS", state_name: "Telangana" },
+  { state_no: "16", state_code: "TR", state_name: "Tripura" },
+  { state_no: "05", state_code: "UK", state_name: "Uttarakhand" },
+  { state_no: "09", state_code: "UP", state_name: "Uttar Pradesh" },
+  { state_no: "19", state_code: "WB", state_name: "West Bengal" },
+  { state_no: "35", state_code: "AN", state_name: "Andaman and Nicobar Islands" },
+  { state_no: "04", state_code: "CH", state_name: "Chandigarh" },
+  { state_no: "26", state_code: "DN", state_name: "Dadra and Nagar Haveli and Daman and Diu" },
+  { state_no: "07", state_code: "DL", state_name: "Delhi" },
+  { state_no: "01", state_code: "JK", state_name: "Jammu and Kashmir" },
+  { state_no: "38", state_code: "LA", state_name: "Ladakh" },
+  { state_no: "31", state_code: "LD", state_name: "Lakshadweep" },
+  { state_no: "34", state_code: "PY", state_name: "Puducherry" }
+];

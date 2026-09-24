@@ -34,6 +34,7 @@ interface RegistrationFormData extends RoleFormValues {
   businessAddress: string;
   departmentName: string;
   designation: string;
+  jurisdictionDistrict: string;
   jurisdictionState: string;
   otpSessionId: string;
   mobileOtp: string;
@@ -91,6 +92,7 @@ const initialFormData: RegistrationFormData = {
   businessAddress: "",
   departmentName: "",
   designation: "",
+  jurisdictionDistrict: "",
   jurisdictionState: "",
   otpSessionId: "",
   mobileOtp: "",
@@ -446,12 +448,16 @@ export default function RegistrationPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={currentStep === 0 || isSubmitting}
-                  onClick={() =>
-                    setCurrentStep((step) => Math.max(0, step - 1))
-                  }
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    if (currentStep === 0) {
+                      navigate("/");
+                    } else {
+                      setCurrentStep((step) => Math.max(0, step - 1));
+                    }
+                  }}
                 >
-                  Back
+                  {currentStep === 0 ? "Back to Login" : "Back"}
                 </Button>
                 {currentStep < 3 ? (
                   <Button

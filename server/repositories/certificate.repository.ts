@@ -6,11 +6,13 @@ export const getCertificatesByBusinessId = async (businessId: string) => {
 
   const certs = await prisma.digitalCertificate.findMany({
     where: {
+      instrument: {
+        business_id: businessId,
+      },
       OR: [
         {
           rejection_reason: null,
         },
-
         {
           rejection_reason: {
             not: null,
@@ -20,6 +22,13 @@ export const getCertificatesByBusinessId = async (businessId: string) => {
           },
         },
       ],
+    },
+    include: {
+      instrument: {
+        include: {
+          category: true,
+        },
+      },
     },
   });
 

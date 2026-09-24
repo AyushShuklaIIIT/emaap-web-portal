@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-type RoleFilter = "ALL" | "STAKEHOLDER" | "ADMIN" | "INSPECTOR" | "GATC_OPERATOR";
+type RoleFilter = "ALL" | "STAKEHOLDER" | "ADMIN" | "INSPECTOR" | "GATC_PRINCIPAL";
 
 interface RegistrationDocument {
   id: string;
@@ -46,7 +46,7 @@ const roleLabels: Record<Exclude<RoleFilter, "ALL">, string> = {
   STAKEHOLDER: "Stakeholder",
   ADMIN: "Admin", 
   INSPECTOR: "LMO",
-  GATC_OPERATOR: "GATC",
+  GATC_PRINCIPAL: "GATC",
 };
 
 export function AdminApprovalPanel() {
@@ -58,6 +58,12 @@ export function AdminApprovalPanel() {
   const [rejecting, setRejecting] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [actionError, setActionError] = useState<string>();
+  
+  const [indMarkCode, setIndMarkCode] = useState("");
+  const [approvalCertNo, setApprovalCertNo] = useState("");
+  const [centreCode, setCentreCode] = useState("");
+  const [validFrom, setValidFrom] = useState("");
+  const [validTo, setValidTo] = useState("");
 
   const loadQueue = useCallback(async () => {
     const query = new URLSearchParams({ page: "1", pageSize: "50" });
@@ -91,9 +97,30 @@ export function AdminApprovalPanel() {
   const approve = async () => {
     if (!selected) return;
     setActionError(undefined);
+    
+    let payload = undefined;
+    if (selected.role === "GATC_PRINCIPAL") {
+      if (!indMarkCode || !approvalCertNo || !centreCode || !validFrom || !validTo) {
+        setActionError("Please provide all required GATC centre attributes and dates.");
+        return;
+      }
+      payload = { 
+        ind_mark_code: indMarkCode, 
+        approval_cert_no: approvalCertNo, 
+        centre_code: centreCode,
+        valid_from: new Date(validFrom).toISOString(),
+        valid_to: new Date(validTo).toISOString(),
+      };
+    }
+    
     try {
-      await request({ endpoint: `/api/v1/admin/registrations/${selected.id}/approve`, method: "POST", headers: adminHeaders() });
+      await request({ endpoint: `/api/v1/admin/registrations/${selected.id}/approve`, method: "POST", headers: adminHeaders(), data: payload });
       setSelected(null);
+      setIndMarkCode("");
+      setApprovalCertNo("");
+      setCentreCode("");
+      setValidFrom("");
+      setValidTo("");
       await loadQueue();
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "Unable to approve registration");
@@ -132,7 +159,7 @@ export function AdminApprovalPanel() {
             <option value="STAKEHOLDER">Stakeholder</option>
             <option value="ADMIN">Admin</option>
             <option value="INSPECTOR">LMO</option>
-            <option value="GATC_OPERATOR">GATC</option>
+            <option value="GATC_PRINCIPAL">GATC</option>
           </select>
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -172,6 +199,32 @@ export function AdminApprovalPanel() {
               <Detail label="Business" value={selected.user.businessName} />
               <Detail label="Jurisdiction" value={selected.user.jurisdiction_state} />
               <div><p className="text-xs font-medium text-muted-foreground">Application ID</p><p className="break-all text-sm">{selected.id}</p></div>
+              
+              {selected.role === "GATC_PRINCIPAL" && (
+                <div className="space-y-4 rounded-lg border border-primary/20 bg-primary/5 p-4 mt-4">
+                  <h3 className="font-semibold text-sm text-primary">GATC Statutory Identifiers</h3>
+                  <div className="space-y-2">
+                    <Label>Identification Mark Code <span className="text-destructive">*</span></Label>
+                    <Input placeholder="IND/25/01" value={indMarkCode} onChange={e => setIndMarkCode(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Approval Certificate Number <span className="text-destructive">*</span></Label>
+                    <Input placeholder="GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/002" value={approvalCertNo} onChange={e => setApprovalCertNo(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Centre Code <span className="text-destructive">*</span></Label>
+                    <Input placeholder="GATC-MH-002" value={centreCode} onChange={e => setCentreCode(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Valid From <span className="text-destructive">*</span></Label>
+                    <Input type="date" value={validFrom} onChange={e => setValidFrom(e.target.value)} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Valid To <span className="text-destructive">*</span></Label>
+                    <Input type="date" value={validTo} onChange={e => setValidTo(e.target.value)} />
+                  </div>
+                </div>
+              )}
             </div>
             <DocumentPreview documents={selected.user.uploadedDocs} />
           </div>}

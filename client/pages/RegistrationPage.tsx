@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, ShieldCheck, UserRound } from "lucide-react";
+import { Check, ShieldCheck, UserRound, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -14,7 +14,7 @@ import { DualOtpModal } from "@/components/registration/DualOtpModal";
 import type { GstinBusinessData } from "@/components/registration/GstinVerificationInput";
 
 type Role = "STAKEHOLDER" | "ADMIN" | "LMO_GATC";
-type StaffRole = "LMO" | "GATC_OPERATOR";
+type StaffRole = "LMO" | "GATC_PRINCIPAL";
 
 interface RegistrationFormData extends RoleFormValues {
   fullName: string;
@@ -39,6 +39,8 @@ interface RegistrationFormData extends RoleFormValues {
   otpSessionId: string;
   mobileOtp: string;
   emailOtp: string;
+  lat: number | null;
+  long: number | null;
 }
 
 interface RegistrationResponse {
@@ -97,6 +99,8 @@ const initialFormData: RegistrationFormData = {
   otpSessionId: "",
   mobileOtp: "",
   emailOtp: "",
+  lat: null,
+  long: null,
 };
 
 export default function RegistrationPage() {
@@ -156,6 +160,27 @@ export default function RegistrationPage() {
     }));
   };
 
+  const getLocation = () => {
+    if (!navigator.geolocation) {
+      setRegistrationError("Geolocation is not supported by your browser.");
+      return;
+    }
+    setRegistrationError(undefined);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData((current) => ({
+          ...current,
+          lat: position.coords.latitude,
+          long: position.coords.longitude,
+        }));
+      },
+      (error) => {
+        console.error(error);
+        setRegistrationError("Unable to get your location. Please allow location access.");
+      }
+    );
+  };
+
   const canContinue = () => {
     if (currentStep === 0) return selectedRole !== null;
     if (currentStep === 1) {
@@ -169,7 +194,8 @@ export default function RegistrationPage() {
         (selectedRole === "STAKEHOLDER"
           ? formData.businessName.trim().length >= 2 &&
             Boolean(formData.category)
-          : Boolean(resolvedRole) && formData.employeeId.trim().length >= 1),
+          : Boolean(resolvedRole) && formData.employeeId.trim().length >= 1) &&
+        (resolvedRole === "GATC_PRINCIPAL" ? formData.lat !== null && formData.long !== null : true)
       );
     }
 
@@ -187,8 +213,8 @@ export default function RegistrationPage() {
       const payload = new FormData();
       payload.append("role", resolvedRole);
       Object.entries(formData).forEach(([key, value]) => {
-        if (!["otpSessionId", "mobileOtp", "emailOtp"].includes(key) && value) {
-          payload.append(key, value);
+        if (!["otpSessionId", "mobileOtp", "emailOtp"].includes(key) && value !== null && value !== "") {
+          payload.append(key, String(value));
         }
       });
       Object.entries(uploadedFiles).forEach(([field, file]) => {
@@ -355,7 +381,7 @@ export default function RegistrationPage() {
                       >
                         <option value="">Select LMO or GATC</option>
                         <option value="LMO">LMO</option>
-                        <option value="GATC_OPERATOR">GATC</option>
+                        <option value="GATC_PRINCIPAL">GATC</option>
                       </select>
                     </div>
                   )}
@@ -369,6 +395,31 @@ export default function RegistrationPage() {
                       onFileSelected={handleFileSelected}
                       onGstinVerified={handleGstinVerified}
                     />
+                  )}
+                  {resolvedRole === "GATC_PRINCIPAL" && (
+                    <div className="rounded-lg border border-[#E0E0E0] p-4 bg-white">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-[#1A1A2E]">Test Centre Location</p>
+                          <p className="text-xs text-[#5C5C70]">Capture the exact coordinates of the GATC.</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant={formData.lat !== null && formData.long !== null ? "default" : "outline"}
+                          size="sm"
+                          onClick={getLocation}
+                          className="w-full sm:w-auto"
+                        >
+                          <MapPin className="mr-2 h-4 w-4" />
+                          {formData.lat !== null && formData.long !== null ? "Location Captured" : "Capture Location"}
+                        </Button>
+                      </div>
+                      {formData.lat !== null && formData.long !== null && (
+                        <p className="mt-2 text-xs font-medium text-green-600">
+                          Coordinates: {formData.lat}, {formData.long}
+                        </p>
+                      )}
+                    </div>
                   )}
                   {registrationError && (
                     <p

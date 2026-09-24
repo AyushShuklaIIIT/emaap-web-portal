@@ -11,7 +11,7 @@ import { INDIAN_STATES } from "@/lib/states";
 import { districts } from "../../../server/seed/district";
 
 export type SupportedRegistrationRole =
-  "STAKEHOLDER" | "ADMIN" | "LMO" | "GATC_OPERATOR";
+  "STAKEHOLDER" | "ADMIN" | "LMO" | "GATC_PRINCIPAL";
 
 export interface RoleFormValues {
   fullName: string;
@@ -173,7 +173,7 @@ export function RoleFormRenderer({
           </>
         ) : (
           <>
-            {role !== "GATC_OPERATOR" && (
+            {role !== "GATC_PRINCIPAL" && (
               <Field
                 label="Department name"
                 hint="Use the official department name; letters, numbers, spaces, and punctuation are allowed."
@@ -367,31 +367,31 @@ export function RoleFormRenderer({
       />
       <DocumentUploadField
         docType={
-          role === "GATC_OPERATOR" ? "gazetteDutyOrder" : "authorizationLetter"
+          role === "GATC_PRINCIPAL" ? "gazetteDutyOrder" : "authorizationLetter"
         }
         label={
-          role === "GATC_OPERATOR"
+          role === "GATC_PRINCIPAL"
             ? "Duty authorization order"
             : "Authorization / nomination letter"
         }
         allowedTypes={["pdf", "jpg", "png"]}
         selectedFile={
           files[
-            role === "GATC_OPERATOR"
+            role === "GATC_PRINCIPAL"
               ? "gazetteDutyOrder"
               : "authorizationLetter"
           ]
         }
         onFileSelected={(file) =>
           onFileSelected(
-            role === "GATC_OPERATOR"
+            role === "GATC_PRINCIPAL"
               ? "gazetteDutyOrder"
               : "authorizationLetter",
             file,
           )
         }
       />
-      {role === "GATC_OPERATOR" && (
+      {role === "GATC_PRINCIPAL" && (
         <DocumentUploadField
           docType="gatcLicense"
           label="GATC License"

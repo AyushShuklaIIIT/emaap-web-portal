@@ -36,6 +36,7 @@ import GatcSettings from "./pages/gatc/Settings";
 import { ProtectedRoute } from "./components/emaap/ProtectedRoute";
 import StateAdminDashboard from "./pages/admin/state/stateAdminDashboard";
 import StateFinancial from "./pages/admin/state/stateFinancial";
+import StateAdminPendency from "./pages/admin/state/stateAdminPendency";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,10 @@ const App = () => {
                 <Route
                   path="/state-admin/revenue"
                   element={<StateFinancial />}
+                />
+                <Route
+                  path="/state-admin/pendency"
+                  element={<StateAdminPendency />}
                 />
               </Route>
 

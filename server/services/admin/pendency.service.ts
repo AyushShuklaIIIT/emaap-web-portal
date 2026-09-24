@@ -69,14 +69,14 @@ interface AdminPendencyItem {
   action: "APPROVE_ROUTE" | "MANUAL_OVERRIDE" | "WAIT";
 }
 
-const getDaysPending = (submissionTimestamp: Date): number => {
+export const getDaysPending = (submissionTimestamp: Date): number => {
   const now = new Date();
   const diffMs = now.getTime() - submissionTimestamp.getTime();
 
   return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 };
 
-const getSlaStatus = (daysPending: number) => {
+export const getSlaStatus = (daysPending: number) => {
   const breached = daysPending > SLA_DAYS;
 
   return {
@@ -86,7 +86,7 @@ const getSlaStatus = (daysPending: number) => {
   };
 };
 
-const calculateDistanceKm = (
+export const calculateDistanceKm = (
   lat1: number,
   lon1: number,
   lat2: number,
@@ -168,7 +168,9 @@ type PendencyApplicationLocation = {
   };
 };
 
-const buildSuggestions = async (application: PendencyApplicationLocation) => {
+export const buildSuggestions = async (
+  application: PendencyApplicationLocation,
+) => {
   const instrument = application.instrument;
   const businessState = application.business.state;
 

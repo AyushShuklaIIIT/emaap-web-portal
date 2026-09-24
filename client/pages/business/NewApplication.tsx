@@ -1,6 +1,6 @@
 import { FormEvent, type ReactNode, useEffect, useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,6 +72,7 @@ function FormField({ label, children }: FormFieldProps) {
 }
 
 export default function NewApplication() {
+  const navigate = useNavigate();
   const {
     data: metadata,
     isLoading: metadataLoading,
@@ -149,8 +150,6 @@ export default function NewApplication() {
   const [feeQuote, setFeeQuote] = useState<VerificationFeeQuote | null>(null);
   const [isQuoting, setIsQuoting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submissionResult, setSubmissionResult] =
-    useState<CreateVerificationApplicationResponse | null>(null);
   const [uploadWarning, setUploadWarning] = useState<string | null>(null);
 
   const selectedCategory = availableCategories.find(
@@ -480,7 +479,15 @@ export default function NewApplication() {
         applicationId: uploadResult.applicationId,
       });
 
-      setSubmissionResult(result);
+      navigate("/business/application-submitted", {
+        state: {
+          applicationId: result.applicationNo,
+          applicationType: result.applicationType,
+          categoryName: result.category.categoryName,
+          receiptNo: result.payment.receiptNo,
+          totalAmount: feeQuote?.totalAmount ?? result.payment.totalAmount,
+        },
+      });
     } catch (error) {
       console.error("Application submission failed:", error);
 
@@ -515,99 +522,8 @@ export default function NewApplication() {
     setPreviousCertificate(null);
     setPaymentMethod("UPI");
     setFeeQuote(null);
-    setSubmissionResult(null);
     setUploadWarning(null);
   };
-
-  if (submissionResult) {
-    return (
-      <DashboardLayout role="business">
-        <section className="mx-auto max-w-200 rounded-xl border border-[#E0E0E0] bg-white p-5 text-center shadow-card sm:p-10">
-          <div className="mb-6 flex justify-center">
-            <div className="rounded-full bg-[#E8F5E9] p-4">
-              <CheckCircle2 className="h-12 w-12 text-[#1E8E3E]" />
-            </div>
-          </div>
-
-          <h1 className="mb-2 text-3xl font-bold text-[#1A1A2E]">
-            Application Submitted
-          </h1>
-
-          <p className="mx-auto max-w-xl text-[#5C5C70]">
-            Your verification application has been submitted successfully.
-          </p>
-
-          <div className="mx-auto mt-8 max-w-lg rounded-lg border border-[#E0E0E0] bg-[#F5F7FA] p-6 text-left">
-            <div className="mb-4">
-              <p className="text-xs font-bold uppercase text-[#5C5C70]">
-                Application Number
-              </p>
-
-              <p className="mt-1 font-semibold text-[#1A1A2E]">
-                {submissionResult.applicationNo}
-              </p>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-xs font-bold uppercase text-[#5C5C70]">
-                Application Type
-              </p>
-
-              <p className="mt-1 font-semibold text-[#1A1A2E]">
-                {submissionResult.applicationType === "RE_VERIFICATION"
-                  ? "Re-verification"
-                  : "Initial Verification"}
-              </p>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-xs font-bold uppercase text-[#5C5C70]">
-                Instrument Category
-              </p>
-
-              <p className="mt-1 font-semibold text-[#1A1A2E]">
-                {submissionResult.category.categoryName}
-              </p>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-xs font-bold uppercase text-[#5C5C70]">
-                Receipt Number
-              </p>
-
-              <p className="mt-1 font-semibold text-[#1A1A2E]">
-                {submissionResult.payment.receiptNo}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-bold uppercase text-[#5C5C70]">
-                Amount Paid
-              </p>
-
-              <p className="mt-1 text-xl font-bold text-[#1E8E3E]">
-                ₹{formatCurrency(submissionResult.payment.totalAmount)}
-              </p>
-            </div>
-          </div>
-
-          {uploadWarning && (
-            <div className="mx-auto mt-6 max-w-lg rounded-lg bg-amber-50 p-4 text-left text-sm text-amber-800">
-              {uploadWarning}
-            </div>
-          )}
-
-          <Button
-            className="mt-8 bg-[#0B3D91] hover:bg-[#082b66]"
-            onClick={resetApplication}
-          >
-            Start Another Application
-          </Button>
-        </section>
-      </DashboardLayout>
-    );
-  }
-
   return (
     <DashboardLayout role="business">
       <section className="mx-auto max-w-280 rounded-xl border border-[#E0E0E0] bg-white shadow-card">

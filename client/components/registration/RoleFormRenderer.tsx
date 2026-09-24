@@ -7,6 +7,7 @@ import {
   GstinVerificationInput,
   type GstinBusinessData,
 } from "@/components/registration/GstinVerificationInput";
+import { INDIAN_STATES } from "@/lib/states";
 
 export type SupportedRegistrationRole =
   "STAKEHOLDER" | "ADMIN" | "LMO" | "GATC_OPERATOR";
@@ -29,6 +30,7 @@ export interface RoleFormValues {
   employeeId: string;
   departmentName: string;
   designation: string;
+  jurisdictionDistrict: string;
   jurisdictionState: string;
 }
 
@@ -163,17 +165,19 @@ export function RoleFormRenderer({
           </>
         ) : (
           <>
-            <Field
-              label="Department name"
-              hint="Use the official department name; letters, numbers, spaces, and punctuation are allowed."
-            >
-              <Input
-                value={values.departmentName}
-                onChange={(event) =>
-                  onChange("departmentName", event.target.value)
-                }
-              />
-            </Field>
+            {role !== "GATC_OPERATOR" && (
+              <Field
+                label="Department name"
+                hint="Use the official department name; letters, numbers, spaces, and punctuation are allowed."
+              >
+                <Input
+                  value={values.departmentName}
+                  onChange={(event) =>
+                    onChange("departmentName", event.target.value)
+                  }
+                />
+              </Field>
+            )}
             <Field
               label={
                 role === "ADMIN"
@@ -190,15 +194,33 @@ export function RoleFormRenderer({
                 value={
                   role === "ADMIN"
                     ? values.designation
-                    : values.jurisdictionState
+                    : values.jurisdictionDistrict
                 }
                 onChange={(event) =>
                   onChange(
-                    role === "ADMIN" ? "designation" : "jurisdictionState",
+                    role === "ADMIN" ? "designation" : "jurisdictionDistrict",
                     event.target.value,
                   )
                 }
               />
+            </Field>
+
+            <Field label="Jurisdiction state">
+              <select
+                className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
+                value={values.jurisdictionState}
+                onChange={(event) => onChange("jurisdictionState", event.target.value)}
+              >
+                <option value="">Select state</option>
+                {role === "ADMIN" && (
+                  <option value="Central">Central</option>
+                )}
+                {INDIAN_STATES.map((state) => (
+                  <option key={state.state_code} value={state.state_name}>
+                    {state.state_name}
+                  </option>
+                ))}
+              </select>
             </Field>
           </>
         )}
@@ -216,12 +238,18 @@ export function RoleFormRenderer({
         )}
         {role === "STAKEHOLDER" && (
           <Field label="Jurisdiction state">
-            <Input
+            <select
+              className="h-10 w-full rounded-md border border-[#E0E0E0] bg-white px-3 text-sm"
               value={values.jurisdictionState}
-              onChange={(event) =>
-                onChange("jurisdictionState", event.target.value)
-              }
-            />
+              onChange={(event) => onChange("jurisdictionState", event.target.value)}
+            >
+              <option value="">Select state</option>
+              {INDIAN_STATES.map((state) => (
+                <option key={state.state_code} value={state.state_name}>
+                  {state.state_name}
+                </option>
+              ))}
+            </select>
           </Field>
         )}
       </div>
@@ -315,6 +343,15 @@ export function RoleFormRenderer({
           )
         }
       />
+      {role === "GATC_OPERATOR" && (
+        <DocumentUploadField
+          docType="gatcLicense"
+          label="GATC License"
+          allowedTypes={["pdf"]}
+          selectedFile={files.gatcLicense}
+          onFileSelected={(file) => onFileSelected("gatcLicense", file)}
+        />
+      )}
     </div>
   );
 }

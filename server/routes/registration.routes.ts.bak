@@ -46,5 +46,5 @@ registrationRouter.use((error: unknown, _req: express.Request, res: express.Resp
         : "Only PDF, JPEG, and PNG files are allowed",
     });
   }
-  console.error("REGISTRATION ERROR:", error); return res.status(500).json({ error: String(error), details: error });
+  console.error("REGISTRATION ERROR:", error); return next(error);
 });

@@ -129,13 +129,17 @@ export function DashboardLayout({
       ? "Business User"
       : role === "admin"
         ? "Administrator"
-        : "LMO / GATC User");
+        : role === "state-admin"
+          ? "State Adminstrator"
+          : "LMO / GATC User");
   const roleDescription =
     role === "business"
       ? "Business User"
       : role === "admin"
         ? "Administrator"
-        : "LMO / GATC User";
+        : role === "state-admin"
+          ? "State Adminstrator"
+          : "LMO / GATC User";
   const initials = displayName
     .split(/\s+/)
     .map((part) => part[0])

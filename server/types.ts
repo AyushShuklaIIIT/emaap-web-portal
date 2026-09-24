@@ -18,6 +18,7 @@ export interface State {
 
 export interface User {
   user_id?: string;
+  address?: string | null;
   name: string;
   fullName: string;
   email: string;
@@ -39,6 +40,7 @@ export interface GatcUser extends User {
   status: "ACTIVE" | "SUSPENDED" | "REVOKED";
   approved_categories: string[];
   lat: number;
+  address?: string | null;
   long: number;
 }
 
@@ -46,7 +48,7 @@ export interface BusinessUser extends User {
   registration_number: string;
   trade_name: string;
   entity_type: "MANUFACTURER" | "DEALER" | "USER";
-  geo_address: string;
+  geo_address?: string | null;
   state_code: string;
 }
 
@@ -136,7 +138,7 @@ export interface VerificationForm {
   manufacturerName: string;
   instrumentSerialNumber: string;
   metric: string;
-  address: string;
+  address?: string | null;
   pincode: number;
   state: string;
   lat: number;
@@ -166,7 +168,7 @@ export interface Instrument {
   accuracy_class: AccuracyClass;
   metric: string;
   error: number | null;
-  address: string;
+  address?: string | null;
   pincode: number;
   state: string;
   lat: number;
@@ -417,7 +419,7 @@ export interface CreateVerificationApplicationInput {
   error?: number;
   selectedCondition?: string;
 
-  address: string;
+  address?: string | null;
   pincode: number;
   state_code: string;
 

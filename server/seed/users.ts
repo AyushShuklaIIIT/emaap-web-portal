@@ -143,7 +143,6 @@ export const gatcUsersData: GatcUser[] = [
     centre_code: "GATC-MH-004",
     approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/004",
     ind_mark_code: "IND/25/04",
-
     valid_from: new Date("2025-04-01T00:00:00Z"),
     valid_to: new Date("2030-03-31T00:00:00Z"),
 
@@ -171,7 +170,6 @@ export const gatcUsersData: GatcUser[] = [
     jurisdiction_state: "MH",
     password: "chungking",
     passwordHash: generateHash("chungking"),
-
     centre_code: "GATC-MH-006",
     approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/006",
     ind_mark_code: "IND/25/06",
@@ -203,7 +201,6 @@ export const gatcUsersData: GatcUser[] = [
     jurisdiction_state: "MH",
     password: "beau",
     passwordHash: generateHash("beau"),
-
     centre_code: "GATC-MH-007",
     approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/007",
     ind_mark_code: "IND/25/07",
@@ -267,7 +264,6 @@ export const gatcUsersData: GatcUser[] = [
     jurisdiction_state: "MH",
     password: "oldboy",
     passwordHash: generateHash("oldboy"),
-
     centre_code: "GATC-MH-009",
     approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/27/2025/009",
     ind_mark_code: "IND/25/09",
@@ -298,7 +294,6 @@ export const gatcUsersData: GatcUser[] = [
     jurisdiction_state: "UP",
     password: "rashomon",
     passwordHash: generateHash("rashomon"),
-
     centre_code: "GATC-UP-010",
     approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/09/2025/010",
     ind_mark_code: "IND/25/10",
@@ -334,7 +329,6 @@ export const gatcUsersData: GatcUser[] = [
     centre_code: "GATC-UP-011",
     approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/09/2025/011",
     ind_mark_code: "IND/25/11",
-
     valid_from: new Date("2025-03-01T00:00:00Z"),
     valid_to: new Date("2030-02-28T00:00:00Z"),
 
@@ -361,7 +355,6 @@ export const gatcUsersData: GatcUser[] = [
     jurisdiction_state: "MP",
     password: "parasite",
     passwordHash: generateHash("parasite"),
-
     centre_code: "GATC-MP-012",
     approval_cert_no: "GOI/GOVERNMENT APPROVED TEST CENTRE/23/2025/012",
     ind_mark_code: "IND/25/12",
@@ -387,7 +380,6 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Paul Thomas Anderson",
     email: "principal@jaipur-metrology.gov.in",
     mobile: "9000000018",
-
     registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Jaipur",
     jurisdiction_state: "RJ",
@@ -418,7 +410,6 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "Denis Villeneuve",
     email: "principal@ahmedabad-metrology.gov.in",
     mobile: "9000000019",
-
     registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Ahmedabad",
     jurisdiction_state: "GJ",
@@ -449,7 +440,6 @@ export const gatcUsersData: GatcUser[] = [
     fullName: "David Fincher",
     email: "principal@bangalore-metrology.gov.in",
     mobile: "9000000020",
-
     registrationRole: "GATC_PRINCIPAL",
     jurisdiction_district: "Bangalore Urban",
     jurisdiction_state: "KA",
@@ -561,6 +551,7 @@ export const lmoUsersData: User[] = [
     passwordHash: generateHash("pulpfiction"),
   },
 ];
+
 export const lmoOfficers: LmoOfficerSeed[] = [
   {
     userId: "lmo12",

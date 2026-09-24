@@ -191,7 +191,7 @@ export const approveRegistration: RequestHandler = catchAsync(
               application.user.fullName ||
               "Default Business",
             entity_type: entityType,
-            geo_address: application.user.address || "Registered Address",
+            geo_address: "Registered Address",
             state_id: stateObj.state_id,
             district_id: application.user.jurisdiction_district_id,
             user_id: application.user.user_id,

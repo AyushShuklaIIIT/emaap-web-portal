@@ -9,7 +9,7 @@ import {
 export const useStateAdminFinancial = () => {
   const [filters, setFilters] = useState<StateAdminFinancialFilters>({
     startDate: "2026-04-01",
-    endDate: "2026-09-05",
+    endDate: new Date().toISOString().split("T")[0],
     page: 1,
     limit: 10,
   });

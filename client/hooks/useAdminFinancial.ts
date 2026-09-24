@@ -11,7 +11,7 @@ const DEFAULT_LIMIT = 10;
 export const useFinancialReport = () => {
   const [filters, setFilters] = useState<FinancialReportFilters>({
     startDate: "2026-04-01",
-    endDate: "2026-09-05",
+    endDate: new Date().toISOString().split("T")[0],
     page: 1,
     limit: DEFAULT_LIMIT,
   });

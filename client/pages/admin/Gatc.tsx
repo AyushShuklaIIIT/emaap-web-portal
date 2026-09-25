@@ -1,14 +1,10 @@
 import { useState } from "react";
-
 import { Loader2, Search, X } from "lucide-react";
-
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
-
 import { useToast } from "@/hooks/use-toast";
-
 import { Button } from "@/components/ui/button";
-
 import { Input } from "@/components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 import {
   Dialog,
@@ -35,6 +31,8 @@ import {
 } from "@/services/admin/gatc.service";
 
 export default function Gatc() {
+  const navigate = useNavigate();
+
   const {
     dashboard,
 
@@ -49,7 +47,6 @@ export default function Gatc() {
 
     search,
 
-    createGatc,
     updateStatus,
     getGatcProfile,
 
@@ -60,8 +57,6 @@ export default function Gatc() {
   } = useGatc();
 
   const { toast } = useToast();
-
-  const [isAuthorizeOpen, setIsAuthorizeOpen] = useState(false);
 
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -127,49 +122,6 @@ export default function Gatc() {
     }
   };
 
-  const handleCreateGatc = async () => {
-    const payload: CreateGatcPayload = {
-      centre_code: "GATC-MH-99",
-
-      approval_cert_no: "CERT-MH-2026-099",
-
-      ind_mark_code: "MH-IND-099",
-
-      valid_from: "2026-09-21T00:00:00.000Z",
-
-      valid_to: "2027-09-20T23:59:59.000Z",
-
-      approved_categories: ["ENERGY_DISPENSING", "WEIGHBRIDGES"],
-
-      lat: 18.5204,
-      long: 73.8567,
-
-      principal_officer_id: "REPLACE_WITH_USER_ID",
-    };
-
-    try {
-      setIsSubmitting(true);
-
-      const created = await createGatc(payload);
-
-      setIsAuthorizeOpen(false);
-
-      toast({
-        title: "GATC authorization approved",
-        description: `${created.centre_code} was successfully created.`,
-      });
-    } catch (error) {
-      toast({
-        title: "Failed to authorize GATC",
-        description:
-          error instanceof Error ? error.message : "Something went wrong.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <DashboardLayout role="admin">
       <section className="mx-auto max-w-330 overflow-hidden rounded-xl border border-[#E0E0E0] bg-white shadow-card">
@@ -181,7 +133,7 @@ export default function Gatc() {
           </h1>
 
           <Button
-            onClick={() => setIsAuthorizeOpen(true)}
+            onClick={() => navigate("/register")}
             className="h-10 w-fit rounded-lg bg-[#FF6F00] px-4 font-bold text-white shadow-none hover:bg-[#E66000]"
           >
             + Authorize New GATC
@@ -365,54 +317,6 @@ export default function Gatc() {
           </div>
         </div>
       </section>
-
-      {/* AUTHORIZE GATC DIALOG */}
-
-      <Dialog open={isAuthorizeOpen} onOpenChange={setIsAuthorizeOpen}>
-        <DialogContent className="bg-white sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-[#1A1A2E]">
-              Authorize New GATC
-            </DialogTitle>
-
-            <DialogDescription>
-              Create a new authorized testing centre.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="rounded-lg bg-[#FFF3E0] p-4 text-sm text-[#1A1A2E]">
-            Connect this dialog to your actual GATC authorization form. The
-            backend POST endpoint is already wired through
-            <code className="mx-1 rounded bg-white px-1">createGatc()</code>
-            in the hook.
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              disabled={isSubmitting}
-              onClick={() => setIsAuthorizeOpen(false)}
-              className="text-[#D32F2F]"
-            >
-              Cancel
-            </Button>
-
-            <Button
-              disabled={isSubmitting}
-              onClick={handleCreateGatc}
-              className="bg-[#FF6F00] font-bold text-white shadow-none hover:bg-[#E66000]"
-            >
-              {isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-
-              {isSubmitting ? "Creating..." : "Approve & Issue GATC ID"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* PROFILE DIALOG */}
 
       <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto bg-white sm:max-w-2xl">

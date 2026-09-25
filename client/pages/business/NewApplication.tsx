@@ -818,7 +818,7 @@ export default function NewApplication() {
               <FormField label="Accuracy Class">
                 <Input
                   value={
-                    selectedCategoryCode
+                    selectedCategory
                       ? getAccuracyLabel(selectedCategory.accuracy_class)
                       : ""
                   }

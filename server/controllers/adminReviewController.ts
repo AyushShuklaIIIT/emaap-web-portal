@@ -25,6 +25,7 @@ const approvePayloadSchema = z.object({
   centre_code: z.string().trim().min(1).optional(),
   valid_from: z.coerce.date().optional(),
   valid_to: z.coerce.date().optional(),
+  approved_categories: z.array(z.string()).default([]),
 });
 
 export const listPendingRegistrations: RequestHandler = catchAsync(
@@ -122,10 +123,27 @@ export const approveRegistration: RequestHandler = catchAsync(
       if (application.status === "REJECTED")
         throw new AppError(409, "Rejected registrations cannot be approved");
 
+      const stateObj = await transaction.state.findFirst({
+        where: {
+          OR: [
+            { state_code: application.user.jurisdiction_state },
+            { state_name: application.user.jurisdiction_state },
+          ],
+        },
+      });
+
       const isGatc =
         application.role === "GATC_PRINCIPAL" ||
         application.role === "GATC_OFFICER" ||
         (application.role as string) === "GATC_PRINCIPAL";
+
+      if (isGatc && !stateObj) {
+        throw new AppError(
+          400,
+          "GATC does not have a valid jurisdiction state",
+        );
+      }
+
       if (isGatc) {
         if (
           !body.ind_mark_code ||
@@ -150,6 +168,7 @@ export const approveRegistration: RequestHandler = catchAsync(
             lat: application.lat ?? 0,
             long: application.long ?? 0,
             principal_officer_id: application.userId,
+            approved_categories: body.approved_categories ?? [],
           },
         });
       }
@@ -230,7 +249,10 @@ export const approveRegistration: RequestHandler = catchAsync(
 
       const user = await transaction.user.update({
         where: { user_id: application.userId },
-        data: { isActive: true },
+        data: {
+          isActive: true,
+          ...(stateObj ? { jurisdiction_state: stateObj.state_code } : {}),
+        },
         select: {
           user_id: true,
           email: true,

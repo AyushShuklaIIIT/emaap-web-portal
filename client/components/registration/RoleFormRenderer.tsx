@@ -55,10 +55,15 @@ export function RoleFormRenderer({
   onGstinVerified,
 }: RoleFormRendererProps) {
   const filteredDistricts = useMemo(() => {
-    if (!values.jurisdictionState || values.jurisdictionState === "Central") return [];
-    const stateObj = INDIAN_STATES.find(s => s.state_name === values.jurisdictionState);
+    if (!values.jurisdictionState || values.jurisdictionState === "Central")
+      return [];
+    const stateObj = INDIAN_STATES.find(
+      (s) => s.state_code === values.jurisdictionState,
+    );
     if (!stateObj) return [];
-    return districts.filter(d => String(d.state_no) === String(stateObj.state_no));
+    return districts.filter(
+      (d) => String(d.state_no) === String(stateObj.state_no),
+    );
   }, [values.jurisdictionState]);
 
   if (section === "demographic") {
@@ -119,9 +124,7 @@ export function RoleFormRenderer({
                 }
               />
             </Field>
-            <Field
-              label="Legal business name"
-            >
+            <Field label="Legal business name">
               <Input
                 value={values.legalBusinessName}
                 placeholder="Will be filled in next step using GSTIN"
@@ -129,9 +132,7 @@ export function RoleFormRenderer({
                 disabled={Boolean(values.legalBusinessName)}
               />
             </Field>
-            <Field
-              label="Trade name"
-            >
+            <Field label="Trade name">
               <Input
                 value={values.tradeName}
                 placeholder="Will be filled in next step using GSTIN"
@@ -212,7 +213,9 @@ export function RoleFormRenderer({
                   disabled={!values.jurisdictionState}
                 >
                   <option value="">
-                    {!values.jurisdictionState ? "Select state first" : "Select district"}
+                    {!values.jurisdictionState
+                      ? "Select state first"
+                      : "Select district"}
                   </option>
                   {filteredDistricts.map((d) => (
                     <option key={d.district_no} value={d.district_name}>
@@ -235,11 +238,9 @@ export function RoleFormRenderer({
                 }}
               >
                 <option value="">Select state</option>
-                {role === "ADMIN" && (
-                  <option value="Central">Central</option>
-                )}
+                {role === "ADMIN" && <option value="Central">Central</option>}
                 {INDIAN_STATES.map((state) => (
-                  <option key={state.state_code} value={state.state_name}>
+                  <option key={state.state_code} value={state.state_code}>
                     {state.state_name}
                   </option>
                 ))}
@@ -272,7 +273,7 @@ export function RoleFormRenderer({
               >
                 <option value="">Select state</option>
                 {INDIAN_STATES.map((state) => (
-                  <option key={state.state_code} value={state.state_name}>
+                  <option key={state.state_code} value={state.state_code}>
                     {state.state_name}
                   </option>
                 ))}
@@ -289,7 +290,9 @@ export function RoleFormRenderer({
                 disabled={!values.jurisdictionState}
               >
                 <option value="">
-                  {!values.jurisdictionState ? "Select state first" : "Select district"}
+                  {!values.jurisdictionState
+                    ? "Select state first"
+                    : "Select district"}
                 </option>
                 {filteredDistricts.map((d) => (
                   <option key={d.district_no} value={d.district_name}>

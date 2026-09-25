@@ -11,13 +11,16 @@ import { prisma } from "../../../lib/prisma";
 // Helper to extract state code from authenticated user
 const getStateCodeFromAuth = async (req: Request): Promise<string> => {
   const reqUser = (req as any).user;
+
   if (!reqUser || !reqUser.user_id) {
     throw new AppError(401, "Authentication required");
   }
 
   const user = await prisma.user.findUnique({
     where: { user_id: reqUser.user_id },
-    select: { jurisdiction_state: true },
+    select: {
+      jurisdiction_state: true,
+    },
   });
 
   if (
@@ -30,7 +33,24 @@ const getStateCodeFromAuth = async (req: Request): Promise<string> => {
       "Access denied: User is not mapped to a valid state jurisdiction",
     );
   }
-  return user.jurisdiction_state;
+
+  const state = await prisma.state.findFirst({
+    where: {
+      OR: [
+        { state_code: user.jurisdiction_state },
+        { state_name: user.jurisdiction_state },
+      ],
+    },
+    select: {
+      state_code: true,
+    },
+  });
+
+  if (!state) {
+    throw new AppError(403, "Access denied: Invalid state jurisdiction");
+  }
+
+  return state.state_code;
 };
 
 export const getStateAdminDashboard = async (req: Request, res: Response) => {
@@ -113,7 +133,7 @@ export const getStateAdminGatcsList = async (req: Request, res: Response) => {
   try {
     const stateCode = await getStateCodeFromAuth(req);
     const district = req.query.district as string | undefined;
-    
+
     const gatcs = await getStateAdminGatcsService(stateCode, district);
 
     return res.status(200).json({ success: true, data: gatcs });

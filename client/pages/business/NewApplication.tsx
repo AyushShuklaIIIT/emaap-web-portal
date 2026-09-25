@@ -164,7 +164,7 @@ export default function NewApplication() {
   const [uploadWarning, setUploadWarning] = useState<string | null>(null);
 
   useEffect(() => {
-    if (location.state?.receiptId && currentUser?.userId) {
+    if (location.state?.receiptId && currentUser?.userId && metadata) {
       const fetchReceipt = async () => {
         try {
           const receipt = await getPaymentReceipt(
@@ -183,7 +183,17 @@ export default function NewApplication() {
           setMetric(receipt.application.instrument.metric);
           setAddress(receipt.application.instrument.address);
           setPincode(receipt.application.instrument.pincode);
-          setStateCode(receipt.application.instrument.state);
+          setCoordinates(`${receipt.application.instrument.lat}, ${receipt.application.instrument.long}`);
+          if (receipt.application.instrument.district?.district_name) {
+            setDistrict(receipt.application.instrument.district.district_name);
+          }
+
+          const stateNameOrCode = receipt.application.instrument.state;
+          const matchedState = metadata.states.find(
+            s => s.state_name.toLowerCase() === stateNameOrCode.toLowerCase() || 
+                 s.state_code.toLowerCase() === stateNameOrCode.toLowerCase()
+          );
+          setStateCode(matchedState ? matchedState.state_code : stateNameOrCode);
 
           setFeeQuote({
             statutoryFee: receipt.statutory_fee,
@@ -194,14 +204,14 @@ export default function NewApplication() {
             maximumFee: null,
           });
 
-          setCurrentStep(2);
+          setCurrentStep(1);
         } catch (e) {
           console.error("Failed to load receipt", e);
         }
       };
       fetchReceipt();
     }
-  }, [location.state?.receiptId, currentUser?.userId]);
+  }, [location.state?.receiptId, currentUser?.userId, metadata]);
 
   const selectedCategory = availableCategories.find(
     (category) => category.category_code === selectedCategoryCode,

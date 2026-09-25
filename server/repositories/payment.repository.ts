@@ -43,6 +43,7 @@ export const getPaymentReceiptById = async (
           instrument: {
             include: {
               category: true,
+              district: true,
             },
           },
         },
@@ -60,11 +61,25 @@ export const createPaymentReceiptRepo = async (params: {
   statutory_fee: number;
   app_id: string;
 }) => {
+  await prisma.verificationApp.update({
+    where: {
+      app_id: params.app_id,
+    },
+    data: {
+      workflow_status: "SUBMITTED",
+    },
+  });
+
   return prisma.paymentReceipt.upsert({
     where: {
       app_id: params.app_id,
     },
-    update: {},
+    update: {
+      transaction_id: params.transaction_id,
+      transaction_date: new Date(),
+      payment_method: params.payment_method,
+      payment_status: "SUCCESS",
+    },
     create: {
       receipt_id: params.receipt_id,
       receipt_no: params.receipt_no,

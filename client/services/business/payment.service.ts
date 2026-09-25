@@ -88,6 +88,9 @@ export interface PaymentReceiptDetails {
         oiml_standard_ref: string;
         verification_cycle_months: number;
       };
+      district?: {
+        district_name: string;
+      };
     };
   };
 }

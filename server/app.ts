@@ -279,7 +279,6 @@ export function createServer() {
   app.use("/api/instrument", instrumentRouter);
   app.use("/api/payment", paymentRouter);
   app.use("/api/verification", requireAuth, verificationAppRouter);
-  app.use("/api/certificates", requireAuth, certificateRouter);
   app.use("/api/gateway", gatewayRouter);
   app.use("/api/v1/gateway/aadhaar", aadhaarRouter);
   app.use("/api/v1/gateway/gstn", gstnRouter);
@@ -700,42 +699,21 @@ export function createServer() {
             },
           });
         } else {
-          if (data?.manufacturerFileUrl || data?.prevCertificateFileUrl) {
-            application = await prisma.verificationApp.update({
-              where: { app_id: application.app_id },
-              data: {
-                manufacturer_certificate_url:
-                  data.manufacturerFileUrl ||
-                  application.manufacturer_certificate_url,
-                previous_certificate_url:
-                  data.prevCertificateFileUrl ||
-                  application.previous_certificate_url,
-              },
-            });
-          }
-        }
-
-        const assignedOfficerId = application.assigned_officer_id;
-
-        if (assignedOfficerId) {
-          const officerRoom = getOfficerRoom(assignedOfficerId);
-
-          io.to(officerRoom).emit("message", {
-            ...data,
-            applicationId: application.application_no,
-            assignedOfficerId,
-          });
-
-          console.log(
-            `[SOCKET] Application data sent to LMO officer room ${officerRoom}:`,
-            {
-              ...data,
-              applicationId: application.application_no,
-              assignedOfficerId,
+          application = await prisma.verificationApp.update({
+            where: { app_id: application.app_id },
+            data: {
+              workflow_status: "SUBMITTED",
+              manufacturer_certificate_url:
+                data?.manufacturerFileUrl ||
+                application.manufacturer_certificate_url,
+              previous_certificate_url:
+                data?.prevCertificateFileUrl ||
+                application.previous_certificate_url,
             },
-          );
+          });
         }
 
+        // LMO / GATC is notified only when admin clicks "Approve Route".
         socket.emit("verification_persisted", {
           success: true,
           applicationId: application.app_id,
@@ -1504,17 +1482,17 @@ export function createServer() {
         });
       }
 
-      currentY -= 40;
-
-      page.drawText("Live Physical Seal Evidence:", {
-        x: 50,
-        y: currentY,
-        size: 14,
-        font: boldFont,
-        color: navyBlue,
-      });
-
       if (cert.sealImageUrls && cert.sealImageUrls.length > 0) {
+        currentY -= 40;
+
+        page.drawText("Live Physical Evidence:", {
+          x: 50,
+          y: currentY,
+          size: 14,
+          font: boldFont,
+          color: navyBlue,
+        });
+
         for (let i = 0; i < cert.sealImageUrls.length; i++) {
           let imageUrl = cert.sealImageUrls[i];
 
@@ -1562,7 +1540,7 @@ export function createServer() {
 
               currentY = height - 50;
 
-              page.drawText("Live Physical Seal Evidence (Continued):", {
+              page.drawText("Live Physical Evidence (Continued):", {
                 x: 50,
                 y: currentY,
                 size: 14,
@@ -1658,6 +1636,8 @@ export function createServer() {
       });
     }
   });
+
+  app.use("/api/certificates", requireAuth, certificateRouter);
 
   return {
     app,

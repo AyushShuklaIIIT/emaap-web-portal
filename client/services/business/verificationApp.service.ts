@@ -197,7 +197,9 @@ export const postVerificationApp = async (
 
 export const getVerificationMetadata =
   async (): Promise<VerificationMetadata> => {
-    const response = await api.get<{ data: VerificationMetadata }>("/verification/metadata");
+    const response = await api.get<{ data: VerificationMetadata }>(
+      "/verification/metadata",
+    );
     return response.data.data;
   };
 
@@ -209,21 +211,28 @@ export const getVerificationFeeQuote = async (payload: {
   error?: number;
   selectedCondition?: string;
 }): Promise<VerificationFeeQuote> => {
-  const response = await api.post<{ data: VerificationFeeQuote }>("/verification/fee-quote", payload);
+  const response = await api.post<{ data: VerificationFeeQuote }>(
+    "/verification/fee-quote",
+    payload,
+  );
   return response.data.data;
 };
 
 export const getVerificationCategories = async (
   stateCode: string,
 ): Promise<VerificationCategory[]> => {
-  const response = await api.get<{ data: VerificationCategory[] }>(`/verification/categories?stateCode=${encodeURIComponent(stateCode)}`);
+  const response = await api.get<{ data: VerificationCategory[] }>(
+    `/verification/categories?stateCode=${encodeURIComponent(stateCode)}`,
+  );
   return response.data.data;
 };
 
 export const getVerificationDistricts = async (
   stateCode: string,
 ): Promise<VerificationDistrict[]> => {
-  const response = await api.get<{ data: VerificationDistrict[] }>(`/verification/districts?stateCode=${encodeURIComponent(stateCode)}`);
+  const response = await api.get<{ data: VerificationDistrict[] }>(
+    `/verification/districts?stateCode=${encodeURIComponent(stateCode)}`,
+  );
   return response.data.data;
 };
 
@@ -232,7 +241,9 @@ export const getVerificationConditions = async (
   categoryCode: string,
 ): Promise<string[]> => {
   const params = new URLSearchParams({ stateCode, categoryCode });
-  const response = await api.get<{ data: string[] }>(`/verification/conditions?${params.toString()}`);
+  const response = await api.get<{ data: string[] }>(
+    `/verification/conditions?${params.toString()}`,
+  );
   return response.data.data;
 };
 
@@ -284,6 +295,8 @@ export const uploadVerificationDocuments = async (
 export const createVerificationApplication = (
   payload: CreateVerificationApplicationPayload,
 ): Promise<CreateVerificationApplicationResponse> => {
+  console.log("createVerificationApplication in verificationApp.service.ts");
+
   return new Promise((resolve, reject) => {
     const socket = createVerificationSocket();
 

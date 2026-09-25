@@ -21,7 +21,7 @@ interface Certificate {
   tokenHash?: string | null;
 }
 
-const CertificateContent = ({
+export const CertificateContent = ({
   certificate,
   isPdf = false,
 }: {
@@ -118,12 +118,12 @@ const CertificateContent = ({
         )}
       </div>
 
-      {/* Live Seal Evidence */}
-      <div>
-        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-          Live Physical Seal Evidence
-        </h3>
-        {mainImageSrc ? (
+      {/* Live Evidence — only rendered when images exist */}
+      {certificate.sealImageUrls && certificate.sealImageUrls.length > 0 && (
+        <div>
+          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            Live Physical Evidence
+          </h3>
           <div className="rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50 p-2">
             <img
               src={
@@ -136,12 +136,8 @@ const CertificateContent = ({
               className="w-full max-h-100 object-contain rounded"
             />
           </div>
-        ) : (
-          <div className="h-48 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 text-gray-400 text-sm">
-            No seal image available
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="mt-12 pt-6 border-t text-center">
         <p className="text-xs text-gray-400">

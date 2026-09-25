@@ -38,11 +38,16 @@ import { ProtectedRoute } from "./components/emaap/ProtectedRoute";
 import StateAdminDashboard from "./pages/admin/state/stateAdminDashboard";
 import StateFinancial from "./pages/admin/state/stateFinancial";
 import StateAdminPendency from "./pages/admin/state/stateAdminPendency";
+import { useEffect } from "react";
+import { api } from "./lib/api";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Try to get dynamic user from localStorage, fallback to empty string if not logged in
+  useEffect(() => {
+    api.get("/ping").catch(console.error);
+  }, []);
+
   const currentUser = getCurrentUser();
   const userId = currentUser?.userId || "";
 

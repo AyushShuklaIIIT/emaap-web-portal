@@ -28,6 +28,7 @@ export const requireAuth: RequestHandler = (req, res, next) => {
 
     return res.status(401).json({ success: false, error: "Invalid token" });
   } catch (error) {
+    console.error("JWT Verification Error:", error);
     return res
       .status(401)
       .json({ success: false, error: "Authentication failed" });

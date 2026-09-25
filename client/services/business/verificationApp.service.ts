@@ -197,12 +197,8 @@ export const postVerificationApp = async (
 
 export const getVerificationMetadata =
   async (): Promise<VerificationMetadata> => {
-    const response = await fetch(`${backendUrl}/api/verification/metadata`, {
-      method: "GET",
-      credentials: "include",
-    });
-
-    return parseResponse<VerificationMetadata>(response);
+    const response = await api.get<{ data: VerificationMetadata }>("/verification/metadata");
+    return response.data.data;
   };
 
 export const getVerificationFeeQuote = async (payload: {
@@ -213,38 +209,22 @@ export const getVerificationFeeQuote = async (payload: {
   error?: number;
   selectedCondition?: string;
 }): Promise<VerificationFeeQuote> => {
-  const response = await fetch(`${backendUrl}/api/verification/fee-quote`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(payload),
-  });
-
-  return parseResponse<VerificationFeeQuote>(response);
+  const response = await api.post<{ data: VerificationFeeQuote }>("/verification/fee-quote", payload);
+  return response.data.data;
 };
 
 export const getVerificationCategories = async (
   stateCode: string,
 ): Promise<VerificationCategory[]> => {
-  const response = await fetch(
-    `${backendUrl}/api/verification/categories?stateCode=${encodeURIComponent(stateCode)}`,
-    { credentials: "include" },
-  );
-
-  return parseResponse<VerificationCategory[]>(response);
+  const response = await api.get<{ data: VerificationCategory[] }>(`/verification/categories?stateCode=${encodeURIComponent(stateCode)}`);
+  return response.data.data;
 };
 
 export const getVerificationDistricts = async (
   stateCode: string,
 ): Promise<VerificationDistrict[]> => {
-  const response = await fetch(
-    `${backendUrl}/api/verification/districts?stateCode=${encodeURIComponent(stateCode)}`,
-    { credentials: "include" },
-  );
-
-  return parseResponse<VerificationDistrict[]>(response);
+  const response = await api.get<{ data: VerificationDistrict[] }>(`/verification/districts?stateCode=${encodeURIComponent(stateCode)}`);
+  return response.data.data;
 };
 
 export const getVerificationConditions = async (
@@ -252,12 +232,8 @@ export const getVerificationConditions = async (
   categoryCode: string,
 ): Promise<string[]> => {
   const params = new URLSearchParams({ stateCode, categoryCode });
-  const response = await fetch(
-    `${backendUrl}/api/verification/conditions?${params.toString()}`,
-    { credentials: "include" },
-  );
-
-  return parseResponse<string[]>(response);
+  const response = await api.get<{ data: string[] }>(`/verification/conditions?${params.toString()}`);
+  return response.data.data;
 };
 
 // Socket part
@@ -454,16 +430,12 @@ export const generatePaymentReceiptAPI = async (
   statutoryFee: number,
   totalAmount: number,
 ) => {
-  const response = await fetch(`${backendUrl}/api/verification/receipt`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ appId, paymentMethod, statutoryFee }),
-    credentials: "include",
+  const response = await api.post("/verification/receipt", {
+    appId,
+    paymentMethod,
+    statutoryFee,
+    totalAmount,
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to generate payment receipt");
-  }
-
-  return response.json();
+  return response.data;
 };

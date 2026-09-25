@@ -27,6 +27,7 @@ import { adminReviewRouter } from "./routes/admin-review.routes";
 import { gstnRouter } from "./routes/gstn.routes";
 import { panRouter } from "./routes/pan.routes";
 import { nswsRouter } from "./routes/nsws.routes";
+import { requireAuth } from "./middleware/require-auth";
 import { getGatcRoom, getOfficerRoom } from "./socket/routeEvents";
 
 import { correlationIdMiddleware } from "./middleware/correlation-id";
@@ -267,7 +268,7 @@ export function createServer() {
   app.use(express.urlencoded({ extended: true }));
 
   app.use("/api", uploadRouter);
-  app.use("/api/dashboard", dashboardRouter);
+  app.use("/api/dashboard", requireAuth, dashboardRouter);
   app.use("/api/admin", adminDashboardRouter);
   app.use("/api/admin/pendency", adminPendencyRouter);
   app.use("/api/admin/financial", adminFinancialRouter);
@@ -277,8 +278,8 @@ export function createServer() {
   app.use("/api/gatc", gatcRouter);
   app.use("/api/instrument", instrumentRouter);
   app.use("/api/payment", paymentRouter);
-  app.use("/api/verification", verificationAppRouter);
-  app.use("/api/certificates", certificateRouter);
+  app.use("/api/verification", requireAuth, verificationAppRouter);
+  app.use("/api/certificates", requireAuth, certificateRouter);
   app.use("/api/gateway", gatewayRouter);
   app.use("/api/v1/gateway/aadhaar", aadhaarRouter);
   app.use("/api/v1/gateway/gstn", gstnRouter);

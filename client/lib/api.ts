@@ -20,3 +20,18 @@ api.interceptors.request.use(
     return Promise.reject(error);
   },
 );
+
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("emaap_auth_token");
+      localStorage.removeItem("emaap_role");
+      localStorage.removeItem("emaap_current_user");
+      window.location.href = "/";
+    }
+    return Promise.reject(error);
+  }
+);

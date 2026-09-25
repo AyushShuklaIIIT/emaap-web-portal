@@ -1,5 +1,6 @@
 import { Download, IndianRupee } from "lucide-react";
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,7 @@ const formatPaymentStatus = (status: "PENDING" | "SUCCESS" | "FAILED") => {
 };
 
 export default function Payments({ userId }: { userId: string }) {
+  const navigate = useNavigate();
   const { data, isLoading, isError } = usePaymentDashboard(userId);
 
   const totalPaidYtd = data?.total_paid_ytd ?? 0;
@@ -150,7 +152,7 @@ export default function Payments({ userId }: { userId: string }) {
                   </div>
 
                   <div className="flex shrink-0 flex-col items-start gap-1.5 lg:items-end">
-                    <Button className="h-10 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]">
+                    <Button onClick={() => navigate("/business/new-application", { state: { receiptId: payment.receipt_id } })} className="h-10 rounded-lg bg-[#FF6F00] px-5 font-bold text-white shadow-none hover:bg-[#E66000]">
                       Pay Now
                     </Button>
 
@@ -257,6 +259,7 @@ export default function Payments({ userId }: { userId: string }) {
                           {transaction.payment_status === "SUCCESS" ? (
                             <Button
                               variant="ghost"
+                              onClick={() => window.open(`/business/receipt-print/${transaction.receipt_id}`, "_blank")}
                               className="h-9 gap-1.5 px-2 text-xs font-semibold text-[#0B3D91] hover:bg-primary/5 hover:text-[#0B3D91]"
                             >
                               <Download className="h-4 w-4" />

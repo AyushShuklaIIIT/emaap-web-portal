@@ -13,6 +13,7 @@ import NewApplication from "./pages/business/NewApplication";
 import ApplicationSubmitted from "./pages/business/ApplicationSubmitted";
 import Instruments from "./pages/business/Instruments";
 import Payments from "./pages/business/Payments";
+import PrintReceipt from "./pages/business/PrintReceipt";
 import Helpdesk from "./pages/business/Helpdesk";
 import BusinessSettings from "./pages/business/Settings";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -81,6 +82,10 @@ const App = () => {
                 <Route
                   path="/business/payments"
                   element={<Payments userId={userId} />}
+                />
+                <Route
+                  path="/business/receipt-print/:receiptId"
+                  element={<PrintReceipt />}
                 />
                 <Route path="/business/helpdesk" element={<Helpdesk />} />
                 <Route

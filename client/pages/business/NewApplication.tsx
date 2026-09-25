@@ -1,12 +1,16 @@
 import { FormEvent, type ReactNode, useEffect, useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { DashboardLayout } from "@/components/emaap/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { AppType, PaymentMethod } from "@/services/business/payment.service";
+import {
+  AppType,
+  PaymentMethod,
+  getPaymentReceipt,
+} from "@/services/business/payment.service";
 import { useVerificationMetadata } from "@/hooks/useVerificationMetaData";
 import {
   VerificationFeeQuote,
@@ -19,6 +23,7 @@ import {
   getVerificationFeeQuote,
   createVerificationApplication,
   uploadVerificationDocuments,
+  generatePaymentReceiptAPI,
 } from "@/services/business/verificationApp.service";
 import { getCurrentUser } from "@/lib/current-user";
 
@@ -73,6 +78,8 @@ function FormField({ label, children }: FormFieldProps) {
 
 export default function NewApplication() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentUser = getCurrentUser();
   const {
     data: metadata,
     isLoading: metadataLoading,
@@ -155,6 +162,46 @@ export default function NewApplication() {
   const [isQuoting, setIsQuoting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadWarning, setUploadWarning] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (location.state?.receiptId && currentUser?.userId) {
+      const fetchReceipt = async () => {
+        try {
+          const receipt = await getPaymentReceipt(
+            currentUser.userId,
+            location.state.receiptId,
+          );
+          setAppType(receipt.application.app_type);
+          setSelectedCategoryCode(
+            receipt.application.instrument.category.category_code,
+          );
+          setModelNo(receipt.application.instrument.model_no);
+          setManufacturerName(receipt.application.instrument.manufacturer_name);
+          setInstrumentSerialNumber(
+            receipt.application.instrument.serial_number,
+          );
+          setMetric(receipt.application.instrument.metric);
+          setAddress(receipt.application.instrument.address);
+          setPincode(receipt.application.instrument.pincode);
+          setStateCode(receipt.application.instrument.state);
+
+          setFeeQuote({
+            statutoryFee: receipt.statutory_fee,
+            additionalFee: receipt.adjusting_charges + receipt.carriage_charges,
+            totalAmount: receipt.total_amount,
+            feeBasis: "From Previous Receipt",
+            condition: null,
+            maximumFee: null,
+          });
+
+          setCurrentStep(2);
+        } catch (e) {
+          console.error("Failed to load receipt", e);
+        }
+      };
+      fetchReceipt();
+    }
+  }, [location.state?.receiptId, currentUser?.userId]);
 
   const selectedCategory = availableCategories.find(
     (category) => category.category_code === selectedCategoryCode,
@@ -363,8 +410,6 @@ export default function NewApplication() {
       return;
     }
 
-    const currentUser = getCurrentUser();
-
     if (!currentUser?.userId) {
       alert("User not found. Please log in again.");
       return;
@@ -405,8 +450,6 @@ export default function NewApplication() {
       return;
     }
 
-    const currentUser = getCurrentUser();
-
     if (!currentUser?.userId) {
       alert("User not found. Please log in again.");
       return;
@@ -424,9 +467,9 @@ export default function NewApplication() {
       return;
     }
 
-    const location = parseCoordinates();
+    const parsedLocation = parseCoordinates();
 
-    if (!location) {
+    if (!parsedLocation) {
       alert("Invalid location coordinates.");
       return;
     }
@@ -455,6 +498,31 @@ export default function NewApplication() {
     setUploadWarning(null);
 
     try {
+      if (location.state?.receiptId && feeQuote) {
+        // Skip application creation and just mark payment as success
+        const receipt = await getPaymentReceipt(
+          currentUser.userId,
+          location.state.receiptId,
+        );
+        await generatePaymentReceiptAPI(
+          receipt.application.app_id,
+          paymentMethod,
+          feeQuote.statutoryFee,
+          feeQuote.totalAmount,
+        );
+
+        navigate("/business/application-submitted", {
+          state: {
+            applicationId: receipt.application.application_no,
+            applicationType: receipt.application.app_type,
+            categoryName: receipt.application.instrument.category.category_name,
+            receiptNo: receipt.receipt_no,
+            totalAmount: feeQuote.totalAmount,
+          },
+        });
+        return;
+      }
+
       const uploadResult = await uploadVerificationDocuments(
         manufacturerInvoice,
         previousCertificate,
@@ -475,8 +543,8 @@ export default function NewApplication() {
         district,
         pincode,
         stateCode,
-        lat: location.latitude,
-        long: location.longitude,
+        lat: parsedLocation.latitude,
+        long: parsedLocation.longitude,
         paymentMethod,
         manufacturerFileUrl: uploadResult.manufacturerFileUrl,
         prevCertificateFileUrl: uploadResult.prevCertificateFileUrl,

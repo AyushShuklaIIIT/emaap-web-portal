@@ -95,6 +95,20 @@ nswsRouter.post("/webhook", async (req, res) => {
         data: {
           state_code: stateCode,
           state_name: stateCode,
+          state_no: stateCode,
+        }
+      });
+    }
+
+
+    let districtRecord = await prisma.district.findFirst({ where: { district_name: district, state_id: state!.state_id } });
+    if (!districtRecord) {
+      districtRecord = await prisma.district.create({
+        data: {
+          district_name: district,
+          state_id: state!.state_id,
+          district_code: district,
+          district_no: district,
         }
       });
     }
@@ -112,7 +126,7 @@ nswsRouter.post("/webhook", async (req, res) => {
             registrationRole: "STAKEHOLDER",
             passwordHash: "sso-nsws-no-password",
             jurisdiction_state: stateCode,
-            jurisdiction_district: district,
+            jurisdiction_district_id: districtRecord!.district_id,
             isActive: true, // Pre-verified via NSWS
             pan: maskedPan,
             gstin: maskedGstin,
@@ -134,6 +148,7 @@ nswsRouter.post("/webhook", async (req, res) => {
             entity_type: entityType,
             geo_address: geoAddress,
             state_id: state!.state_id,
+            district_id: districtRecord!.district_id,
             user_id: user.user_id,
           }
         });

@@ -561,7 +561,7 @@ export function createServer() {
               accuracy_class: mapAccuracyClass(data?.accuracyClass),
               oiml_standard_ref: "OIML-R76",
               verification_cycle_months: 12,
-              isApprovedForGatc: data?.isApprovedForGatc,
+              isApprovedForGatc: data?.isApprovedForGatc ?? false,
             },
           });
         }

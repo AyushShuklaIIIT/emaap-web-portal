@@ -1,11 +1,10 @@
 import { defineConfig } from "vite";
 import path from "node:path";
 
-// Server build configuration
 export default defineConfig({
   build: {
     lib: {
-      entry: path.resolve(__dirname, "server/server.ts"),
+      entry: path.resolve(import.meta.dirname, "server/server.ts"),
       name: "server",
       fileName: "production",
       formats: ["es"],
@@ -15,7 +14,6 @@ export default defineConfig({
     ssr: true,
     rollupOptions: {
       external: [
-        // Node.js built-ins
         "fs",
         "path",
         "url",
@@ -29,24 +27,29 @@ export default defineConfig({
         "buffer",
         "querystring",
         "child_process",
-        // External dependencies that should not be bundled
         "express",
         "cors",
         "multer",
         "socket.io",
+        "cloudinary",
+        "multer-storage-cloudinary",
+        "jsonwebtoken",
       ],
       output: {
         format: "es",
         entryFileNames: "[name].mjs",
       },
     },
-    minify: false, // Keep readable for debugging
+    rolldownOptions: {
+      external: ["cloudinary", "multer-storage-cloudinary", "jsonwebtoken"],
+    },
+    minify: false,
     sourcemap: true,
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./client"),
-      "@shared": path.resolve(__dirname, "./shared"),
+      "@": path.resolve(import.meta.dirname, "./client"),
+      "@shared": path.resolve(import.meta.dirname, "./shared"),
     },
   },
   define: {

@@ -1029,10 +1029,6 @@ export function createServer() {
               verificationSignature: finalCertPayload.verificationSignature,
               status: finalCertPayload.status,
               tokenHash: finalCertPayload.token_hash || null,
-              accuracy_class: data.accuracy_class || data.accuracyClass || null,
-              inspection_details: data.inspection_details || data.inspectionDetails || null,
-              test_values: data.test_values || data.testValues || null,
-              serial_no: data.serial_no || data.serialNo || instrument.serial_number,
             },
           });
 
@@ -1079,10 +1075,6 @@ export function createServer() {
               rejection_reason: isRejected
                 ? "Failed Checklist (Warning)"
                 : null,
-              accuracy_class: data.accuracy_class || data.accuracyClass || null,
-              inspection_details: data.inspection_details || data.inspectionDetails || null,
-              test_values: data.test_values || data.testValues || null,
-              serial_no: data.serial_no || data.serialNo || instrument.serial_number,
             },
           });
 
@@ -1151,7 +1143,7 @@ export function createServer() {
   });
 
   app.get("/api/ping", (_req, res) => {
-    const ping = process.env.PING_MESSAGE ?? "ping";
+    const ping = "ping";
 
     res.json({
       message: ping,
@@ -1206,10 +1198,6 @@ export function createServer() {
                 ? "FAILED_CHECKLIST"
                 : "APPROVED_CHECKLIST",
               tokenHash: null,
-              accuracy_class: digitalCertificate.accuracy_class,
-              inspection_details: digitalCertificate.inspection_details,
-              test_values: digitalCertificate.test_values,
-              serial_no: digitalCertificate.serial_no,
             }
           : null);
 

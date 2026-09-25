@@ -293,8 +293,8 @@ model PaymentReceipt {
   due_date          DateTime?
 
   statutory_fee     Float
-  carriage_charges  Float
-  adjusting_charges Float
+  carriage_charges  Float?
+  adjusting_charges Float?
   total_amount      Float
   govt_share        Float
   gatc_share        Float

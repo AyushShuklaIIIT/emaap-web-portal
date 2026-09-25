@@ -97,16 +97,17 @@ export interface CreateVerificationApplicationPayload {
   prevCertificateFileUrl?: string | null;
   applicationId?: string;
   selectedCondition?: string;
+
+  statuatory_fee: number;
+  carriage_charges: number;
+  adjusting_charges: number;
 }
 
 export interface CreateVerificationApplicationResponse {
   applicationId: string;
   applicationNo: string;
-
   instrumentId: string;
-
   workflowStatus: "SUBMITTED" | "ALLOCATED" | "CERTIFIED" | "REJECTED";
-
   applicationType: AppType;
 
   payment: {
@@ -339,7 +340,7 @@ export const createVerificationApplication = (
 
     socket.on(
       "verification_persisted",
-      (data: VerificationPersistenceResponse) => {
+      async (data: VerificationPersistenceResponse) => {
         if (settled) {
           return;
         }
@@ -349,47 +350,70 @@ export const createVerificationApplication = (
           return;
         }
 
-        settled = true;
-        cleanup();
+        try {
+          const receiptResult = await generatePaymentReceiptAPI(
+            data.applicationId,
+            payload.paymentMethod,
+            payload.statuatory_fee,
+            payload.statuatory_fee +
+              payload.adjusting_charges +
+              payload.carriage_charges,
+          );
 
-        resolve({
-          applicationId: data.applicationId,
-          applicationNo: data.applicationNo,
-          instrumentId: data.instrumentId,
-          workflowStatus: "SUBMITTED",
-          applicationType: payload.appType,
+          settled = true;
+          cleanup();
 
-          payment: {
-            receiptId: "",
-            receiptNo: "",
-            transactionId: null,
-            paymentMethod: payload.paymentMethod,
-            paymentStatus: "PENDING",
-            totalAmount: 0,
-          },
+          resolve({
+            applicationId: data.applicationId,
+            applicationNo: data.applicationNo,
+            instrumentId: data.instrumentId,
+            workflowStatus: "SUBMITTED",
+            applicationType: payload.appType,
 
-          category: {
-            categoryId: "",
-            categoryCode: payload.categoryCode,
-            categoryName: "",
-            accuracyClass: "",
-          },
+            payment: {
+              receiptId: receiptResult.data?.receipt_id || "TEMP-ID",
+              receiptNo: receiptResult.data?.receipt_no || "TEMP-NO",
+              transactionId: receiptResult.data?.transaction_id || null,
+              paymentMethod: payload.paymentMethod,
+              paymentStatus: "SUCCESS",
+              totalAmount:
+                payload.carriage_charges +
+                payload.adjusting_charges +
+                payload.statuatory_fee,
+            },
 
-          state: {
-            stateId: "",
-            stateCode: payload.stateCode,
-            stateName: "",
-          },
+            category: {
+              categoryId: "",
+              categoryCode: payload.categoryCode,
+              categoryName: "",
+              accuracyClass: "",
+            },
 
-          fee: {
-            statutoryFee: 0,
-            additionalFee: 0,
-            totalAmount: 0,
-            feeBasis: "",
-            condition: null,
-            maximumFee: null,
-          },
-        });
+            state: {
+              stateId: "",
+              stateCode: payload.stateCode,
+              stateName: "",
+            },
+
+            fee: {
+              statutoryFee: payload.statuatory_fee,
+              additionalFee: payload.adjusting_charges || 0,
+              totalAmount:
+                payload.statuatory_fee +
+                  payload.adjusting_charges +
+                  payload.carriage_charges || 0,
+              feeBasis: "",
+              condition: null,
+              maximumFee: null,
+            },
+          });
+        } catch (error) {
+          fail(
+            new Error(
+              "Application was created, but failed to generate payment receipt.",
+            ),
+          );
+        }
       },
     );
 
@@ -422,4 +446,24 @@ export const createVerificationApplication = (
       }
     });
   });
+};
+
+export const generatePaymentReceiptAPI = async (
+  appId: string,
+  paymentMethod: string,
+  statutoryFee: number,
+  totalAmount: number,
+) => {
+  const response = await fetch(`${backendUrl}/api/verification/receipt`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ appId, paymentMethod, statutoryFee }),
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to generate payment receipt");
+  }
+
+  return response.json();
 };

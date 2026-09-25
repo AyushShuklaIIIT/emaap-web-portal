@@ -124,7 +124,11 @@ export default function NewApplication() {
       } catch (error) {
         if (mounted) {
           setAvailableDistricts([]);
-          console.error("Failed to load districts for state:", stateCode, error);
+          console.error(
+            "Failed to load districts for state:",
+            stateCode,
+            error,
+          );
         }
       } finally {
         if (mounted) {
@@ -477,6 +481,9 @@ export default function NewApplication() {
         manufacturerFileUrl: uploadResult.manufacturerFileUrl,
         prevCertificateFileUrl: uploadResult.prevCertificateFileUrl,
         applicationId: uploadResult.applicationId,
+        statuatory_fee: feeQuote?.totalAmount,
+        adjusting_charges: 0,
+        carriage_charges: 0,
       });
 
       navigate("/business/application-submitted", {

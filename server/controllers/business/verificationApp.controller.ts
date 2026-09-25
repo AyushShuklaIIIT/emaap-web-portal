@@ -11,6 +11,9 @@ import {
   postVerificationAppService,
 } from "../../services/business/verification.service";
 import { AppError } from "../../errors/AppError";
+import { createPaymentReceiptRepo } from "../../repositories/payment.repository";
+import { randomUUID } from "node:crypto";
+import { PaymentMethod } from "../../generated/prisma/enums";
 
 export const getVerificationApp = async (req: Request, res: Response) => {
   try {
@@ -152,10 +155,7 @@ export const getVerificationCategories = async (
   }
 };
 
-export const getVerificationDistricts = async (
-  req: Request,
-  res: Response,
-) => {
+export const getVerificationDistricts = async (req: Request, res: Response) => {
   try {
     const stateCode = String(req.query.stateCode ?? "")
       .trim()
@@ -307,5 +307,35 @@ export const createVerificationApplication = async (
       success: false,
       message,
     });
+  }
+};
+
+export const generatePaymentReceiptEndpoint = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { appId, paymentMethod, statutoryFee, totalAmount } = req.body;
+
+    if (!appId) {
+      return res.status(400).json({ success: false, message: "Missing appId" });
+    }
+
+    const receipt = await createPaymentReceiptRepo({
+      receipt_id: randomUUID(),
+      receipt_no: `RCPT-${Date.now()}`,
+      transaction_id: `TXN-${randomUUID().slice(0, 12)}`,
+      payment_method: (paymentMethod as PaymentMethod) || "UPI",
+      statutory_fee: statutoryFee || 0,
+      total_amount: totalAmount || 0,
+      app_id: appId,
+    });
+
+    return res.status(201).json({ success: true, data: receipt });
+  } catch (error) {
+    console.error("Error generating receipt:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error generating receipt" });
   }
 };

@@ -8,6 +8,7 @@ import {
   getVerificationFeeQuote,
   getVerificationMetadata,
   postVerificationApp,
+  generatePaymentReceiptEndpoint,
 } from "../../controllers/business/verificationApp.controller";
 
 export const router = express.Router();
@@ -19,6 +20,7 @@ router.get("/districts", getVerificationDistricts);
 router.get("/conditions", getVerificationConditions);
 router.post("/fee-quote", getVerificationFeeQuote);
 router.post("/applications", createVerificationApplication);
+router.post("/receipt", generatePaymentReceiptEndpoint);
 router.get("/:userId", getVerificationApp);
 router.post("/:userId", postVerificationApp);
 export default router;

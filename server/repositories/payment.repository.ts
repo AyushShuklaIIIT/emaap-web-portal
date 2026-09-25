@@ -1,3 +1,4 @@
+import { PaymentMethod } from "../generated/prisma/enums";
 import { prisma } from "../lib/prisma";
 
 export const getPaymentReceiptsByBusinessId = async (businessId: string) => {
@@ -46,6 +47,39 @@ export const getPaymentReceiptById = async (
           },
         },
       },
+    },
+  });
+};
+
+export const createPaymentReceiptRepo = async (params: {
+  receipt_id: string;
+  receipt_no: string;
+  transaction_id: string;
+  payment_method: PaymentMethod;
+  total_amount: number;
+  statutory_fee: number;
+  app_id: string;
+}) => {
+  return prisma.paymentReceipt.upsert({
+    where: {
+      app_id: params.app_id,
+    },
+    update: {},
+    create: {
+      receipt_id: params.receipt_id,
+      receipt_no: params.receipt_no,
+      transaction_id: params.transaction_id,
+      transaction_date: new Date(),
+      payment_method: params.payment_method,
+      due_date: null,
+      statutory_fee: params.statutory_fee,
+      carriage_charges: 0,
+      adjusting_charges: 0,
+      total_amount: params.total_amount,
+      govt_share: params.total_amount * 0.3,
+      gatc_share: params.total_amount * 0.7,
+      payment_status: "SUCCESS",
+      app_id: params.app_id,
     },
   });
 };

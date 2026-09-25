@@ -1,6 +1,19 @@
 import { useEffect, useState } from "react";
-import { Cloud, CloudDownload, FileText, Loader2, ShieldCheck, CheckCircle2 } from "lucide-react";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Cloud,
+  CloudDownload,
+  FileText,
+  Loader2,
+  ShieldCheck,
+  CheckCircle2,
+} from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +41,9 @@ export function DigilockerVaultDrawer({
   const { request } = useGatewayApi();
   const [isConnected, setIsConnected] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
-  const [availableDocuments, setAvailableDocuments] = useState<DigilockerDoc[]>([]);
+  const [availableDocuments, setAvailableDocuments] = useState<DigilockerDoc[]>(
+    [],
+  );
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string>();
@@ -84,9 +99,24 @@ export function DigilockerVaultDrawer({
         setAuthLoading(false);
         setIsConnected(true);
         setAvailableDocuments([
-          { uri: "in.gov.uidai-aadhaar-123", name: "Aadhaar Card", type: "AADHAAR", date: "2023-01-15" },
-          { uri: "in.gov.incometax-pan-456", name: "PAN Verification Record", type: "PAN", date: "2022-11-20" },
-          { uri: "in.gov.mca-incorporation-789", name: "Certificate of Incorporation", type: "CIN", date: "2020-05-10" },
+          {
+            uri: "in.gov.uidai-aadhaar-123",
+            name: "Aadhaar Card",
+            type: "AADHAAR",
+            date: "2023-01-15",
+          },
+          {
+            uri: "in.gov.incometax-pan-456",
+            name: "PAN Verification Record",
+            type: "PAN",
+            date: "2022-11-20",
+          },
+          {
+            uri: "in.gov.mca-incorporation-789",
+            name: "Certificate of Incorporation",
+            type: "CIN",
+            date: "2020-05-10",
+          },
         ]);
       }, 1500);
       return;
@@ -97,10 +127,16 @@ export function DigilockerVaultDrawer({
         endpoint: "/api/v1/gateway/digilocker/auth-url",
         method: "GET",
       });
-      
-      const popup = window.open(authUrl, "DigilockerAuth", "width=500,height=700,status=yes,scrollbars=yes");
+
+      const popup = window.open(
+        authUrl,
+        "DigilockerAuth",
+        "width=500,height=700,status=yes,scrollbars=yes",
+      );
       if (!popup) {
-        throw new Error("Popup blocked. Please allow popups to connect DigiLocker.");
+        throw new Error(
+          "Popup blocked. Please allow popups to connect DigiLocker.",
+        );
       }
     } catch (err: any) {
       setAuthLoading(false);
@@ -110,7 +146,7 @@ export function DigilockerVaultDrawer({
 
   const toggleSelection = (uri: string) => {
     setSelectedDocs((prev) =>
-      prev.includes(uri) ? prev.filter((id) => id !== uri) : [...prev, uri]
+      prev.includes(uri) ? prev.filter((id) => id !== uri) : [...prev, uri],
     );
   };
 
@@ -123,7 +159,9 @@ export function DigilockerVaultDrawer({
     if (import.meta.env.VITE_MOCK_MODE === "true") {
       setTimeout(() => {
         setIsSyncing(false);
-        const imported = availableDocuments.filter(d => selectedDocs.includes(d.uri));
+        const imported = availableDocuments.filter((d) =>
+          selectedDocs.includes(d.uri),
+        );
         onImportSuccess(imported);
         onOpenChange(false);
       }, 2000);
@@ -136,8 +174,10 @@ export function DigilockerVaultDrawer({
         method: "POST",
         data: { docUris: selectedDocs },
       });
-      
-      const imported = availableDocuments.filter(d => selectedDocs.includes(d.uri));
+
+      const imported = availableDocuments.filter((d) =>
+        selectedDocs.includes(d.uri),
+      );
       onImportSuccess(imported);
       onOpenChange(false);
     } catch (err: any) {
@@ -148,7 +188,12 @@ export function DigilockerVaultDrawer({
   };
 
   return (
-    <Sheet open={open} onOpenChange={(val) => { if (!isSyncing && !authLoading) onOpenChange(val); }}>
+    <Sheet
+      open={open}
+      onOpenChange={(val) => {
+        if (!isSyncing && !authLoading) onOpenChange(val);
+      }}
+    >
       <SheetContent className="w-full sm:max-w-md flex flex-col gap-0 p-0">
         <div className="p-6 pb-4 border-b">
           <SheetHeader>
@@ -157,7 +202,8 @@ export function DigilockerVaultDrawer({
               DigiLocker Vault
             </SheetTitle>
             <SheetDescription>
-              Securely import your government-issued verified credentials directly from DigiLocker.
+              Securely import your government-issued verified credentials
+              directly from DigiLocker.
             </SheetDescription>
           </SheetHeader>
         </div>
@@ -171,19 +217,25 @@ export function DigilockerVaultDrawer({
               <div className="space-y-2">
                 <h3 className="font-semibold text-lg">Connect your Account</h3>
                 <p className="text-sm text-muted-foreground px-4">
-                  Link your DigiLocker to seamlessly pull verified documents like Aadhaar, PAN, and Incorporation certificates.
+                  Link your DigiLocker to seamlessly pull verified documents
+                  like Aadhaar, PAN, and Incorporation certificates.
                 </p>
               </div>
-              
-              {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-              
-              <Button 
-                onClick={() => void handleConnect()} 
-                disabled={authLoading} 
-                className="w-full max-w-[250px] bg-blue-600 hover:bg-blue-700 text-white"
+
+              {error && (
+                <p className="text-sm text-destructive font-medium">{error}</p>
+              )}
+
+              <Button
+                onClick={() => void handleConnect()}
+                disabled={authLoading}
+                className="w-full max-w-62.5 bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {authLoading ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Connecting...</>
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                    Connecting...
+                  </>
                 ) : (
                   "Connect DigiLocker"
                 )}
@@ -192,23 +244,32 @@ export function DigilockerVaultDrawer({
           ) : (
             <div className="flex flex-col h-full">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-sm font-semibold text-foreground">Available Documents</h4>
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <h4 className="text-sm font-semibold text-foreground">
+                  Available Documents
+                </h4>
+                <Badge
+                  variant="outline"
+                  className="bg-blue-50 text-blue-700 border-blue-200"
+                >
                   {availableDocuments.length} Found
                 </Badge>
               </div>
 
               {availableDocuments.length === 0 ? (
                 <div className="text-center py-10">
-                  <p className="text-sm text-muted-foreground">No documents found in your DigiLocker.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No documents found in your DigiLocker.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {availableDocuments.map((doc) => (
-                    <div 
-                      key={doc.uri} 
+                    <div
+                      key={doc.uri}
                       className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                        selectedDocs.includes(doc.uri) ? "border-blue-500 bg-blue-50/50" : "hover:bg-muted/50"
+                        selectedDocs.includes(doc.uri)
+                          ? "border-blue-500 bg-blue-50/50"
+                          : "hover:bg-muted/50"
                       }`}
                     >
                       <Checkbox
@@ -218,10 +279,18 @@ export function DigilockerVaultDrawer({
                         className="mt-1 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                         aria-label={`Select ${doc.name}`}
                       />
-                      <Label htmlFor={doc.uri} className="flex-1 cursor-pointer space-y-1 font-normal">
+                      <Label
+                        htmlFor={doc.uri}
+                        className="flex-1 cursor-pointer space-y-1 font-normal"
+                      >
                         <div className="flex items-center justify-between">
-                          <p className="font-medium text-foreground">{doc.name}</p>
-                          <Badge variant="secondary" className="text-[10px] uppercase bg-green-100 text-green-800 hover:bg-green-100">
+                          <p className="font-medium text-foreground">
+                            {doc.name}
+                          </p>
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] uppercase bg-green-100 text-green-800 hover:bg-green-100"
+                          >
                             Verified
                           </Badge>
                         </div>
@@ -236,7 +305,9 @@ export function DigilockerVaultDrawer({
                   ))}
                 </div>
               )}
-              {error && <p className="text-sm text-destructive mt-4">{error}</p>}
+              {error && (
+                <p className="text-sm text-destructive mt-4">{error}</p>
+              )}
             </div>
           )}
         </div>
@@ -249,9 +320,15 @@ export function DigilockerVaultDrawer({
               onClick={() => void handleImport()}
             >
               {isSyncing ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...</>
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...
+                </>
               ) : (
-                <><CloudDownload className="mr-2 h-4 w-4" /> Import {selectedDocs.length} Document{selectedDocs.length !== 1 && "s"}</>
+                <>
+                  <CloudDownload className="mr-2 h-4 w-4" /> Import{" "}
+                  {selectedDocs.length} Document
+                  {selectedDocs.length !== 1 && "s"}
+                </>
               )}
             </Button>
           </div>

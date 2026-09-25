@@ -33,6 +33,7 @@ export default defineConfig({
         "socket.io",
         "cloudinary",
         "multer-storage-cloudinary",
+        "jsonwebtoken",
       ],
       output: {
         format: "es",
@@ -40,7 +41,7 @@ export default defineConfig({
       },
     },
     rolldownOptions: {
-      external: ["cloudinary", "multer-storage-cloudinary"],
+      external: ["cloudinary", "multer-storage-cloudinary", "jsonwebtoken"],
     },
     minify: false,
     sourcemap: true,

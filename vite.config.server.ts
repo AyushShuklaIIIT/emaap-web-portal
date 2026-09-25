@@ -32,6 +32,7 @@ export default defineConfig({
         "multer",
         "socket.io",
         "cloudinary",
+        "multer-storage-cloudinary",
       ],
       output: {
         format: "es",
@@ -39,7 +40,7 @@ export default defineConfig({
       },
     },
     rolldownOptions: {
-      external: ["cloudinary"],
+      external: ["cloudinary", "multer-storage-cloudinary"],
     },
     minify: false,
     sourcemap: true,

@@ -34,6 +34,7 @@ export default defineConfig({
         "cloudinary",
         "multer-storage-cloudinary",
         "jsonwebtoken",
+        "pdf-lib"
       ],
       output: {
         format: "es",

@@ -1344,21 +1344,22 @@ export function createServer() {
         color: borderGray,
       });
 
-      const boxY = height - 280;
+      const boxY = height - 330;
 
       page.drawRectangle({
         x: 50,
         y: boxY,
         width: width - 100,
-        height: 110,
+        height: 160,
         color: lightGray,
         borderColor: borderGray,
         borderWidth: 1,
       });
 
+      // Row 1: Instrument Category (Top Left)
       page.drawText("Instrument Category", {
         x: 70,
-        y: boxY + 85,
+        y: boxY + 135,
         size: 9,
         font: font,
         color: gray,
@@ -1366,14 +1367,15 @@ export function createServer() {
 
       page.drawText(cert.instrumentCategory || "N/A", {
         x: 70,
-        y: boxY + 70,
+        y: boxY + 120,
         size: 14,
         font: boldFont,
         color: darkGray,
       });
 
+      // Row 2: Serial Number (Middle Left) & Issue Date (Middle Right)
       page.drawText("Serial Number", {
-        x: 300,
+        x: 70,
         y: boxY + 85,
         size: 9,
         font: font,
@@ -1381,13 +1383,30 @@ export function createServer() {
       });
 
       page.drawText(cert.instrumentSerialNumber, {
-        x: 300,
+        x: 70,
         y: boxY + 70,
         size: 14,
         font: boldFont,
         color: darkGray,
       });
 
+      page.drawText("Issue Date", {
+        x: 300,
+        y: boxY + 85,
+        size: 9,
+        font: font,
+        color: gray,
+      });
+
+      page.drawText(new Date(cert.issueDate).toLocaleString(), {
+        x: 300,
+        y: boxY + 70,
+        size: 13,
+        font: boldFont,
+        color: darkGray,
+      });
+
+      // Row 3: Certificate ID (Bottom Left)
       page.drawText("Certificate ID", {
         x: 70,
         y: boxY + 35,
@@ -1401,22 +1420,6 @@ export function createServer() {
         y: boxY + 20,
         size: 11,
         font: font,
-        color: darkGray,
-      });
-
-      page.drawText("Issue Date", {
-        x: 300,
-        y: boxY + 35,
-        size: 9,
-        font: font,
-        color: gray,
-      });
-
-      page.drawText(new Date(cert.issueDate).toLocaleString(), {
-        x: 300,
-        y: boxY + 20,
-        size: 11,
-        font: boldFont,
         color: darkGray,
       });
 

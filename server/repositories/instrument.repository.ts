@@ -112,22 +112,7 @@ export const getInstrumentHistoryByApplicationId = async (
       },
     },
     select: {
-      applications: {
-        orderBy: {
-          submission_timestamp: "desc",
-        },
-        select: {
-          inspections: {
-            select: {
-              seals: {
-                select: {
-                  s3_photo_url: true,
-                },
-              },
-            },
-          },
-        },
-      },
+      serial_number: true,
     },
   });
 };

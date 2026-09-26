@@ -47,18 +47,32 @@ export const getInstrumentHistoryService = async (
   applicationId: string,
 ) => {
   const { getInstrumentHistoryByApplicationId } = await import("../../repositories/instrument.repository");
-  const history = await getInstrumentHistoryByApplicationId(applicationId);
-  if (!history) throw new AppError(404, "Instrument history not found for the given application");
+  const { prisma } = await import("../../lib/prisma");
+
+  const instrument = await getInstrumentHistoryByApplicationId(applicationId);
+  if (!instrument) throw new AppError(404, "Instrument not found for the given application");
   
+  const pastCertificates = await prisma.generatedCertificate.findMany({
+    where: {
+      instrumentSerialNumber: instrument.serial_number
+    },
+    select: {
+      sealImageUrls: true
+    },
+    orderBy: {
+      issueDate: "desc"
+    }
+  });
+
   const imageUrls: string[] = [];
-  history.applications.forEach((app) => {
-    app.inspections.forEach((inspection) => {
-      inspection.seals.forEach((seal) => {
-        if (seal.s3_photo_url) {
-          imageUrls.push(seal.s3_photo_url);
+  pastCertificates.forEach((cert) => {
+    if (Array.isArray(cert.sealImageUrls)) {
+      cert.sealImageUrls.forEach((url) => {
+        if (url) {
+          imageUrls.push(url);
         }
       });
-    });
+    }
   });
 
   return imageUrls;

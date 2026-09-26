@@ -2,6 +2,14 @@ import { defineConfig } from "vite";
 import path from "node:path";
 
 export default defineConfig({
+  ssr: {
+    external: [
+      "cloudinary", 
+      "multer-storage-cloudinary", 
+      "jsonwebtoken", 
+      "pdf-lib"
+    ],
+  },
   build: {
     lib: {
       entry: path.resolve(import.meta.dirname, "server/server.ts"),
@@ -42,7 +50,12 @@ export default defineConfig({
       },
     },
     rolldownOptions: {
-      external: ["cloudinary", "multer-storage-cloudinary", "jsonwebtoken"],
+      external: [
+        "cloudinary", 
+        "multer-storage-cloudinary", 
+        "jsonwebtoken", 
+        "pdf-lib"
+      ],
     },
     minify: false,
     sourcemap: true,

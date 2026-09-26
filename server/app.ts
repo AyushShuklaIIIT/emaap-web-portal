@@ -1252,6 +1252,7 @@ export function createServer() {
           error: "Cannot download rejected certificate.",
         });
       }
+
       const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
       const pdfDoc = await PDFDocument.create();
       let page = pdfDoc.addPage([595.28, 841.89]);
@@ -1343,13 +1344,13 @@ export function createServer() {
         color: borderGray,
       });
 
-      const boxY = height - 280;
+      const boxY = height - 330;
 
       page.drawRectangle({
         x: 50,
         y: boxY,
         width: width - 100,
-        height: 110,
+        height: 160,
         color: lightGray,
         borderColor: borderGray,
         borderWidth: 1,
@@ -1357,7 +1358,7 @@ export function createServer() {
 
       page.drawText("Instrument Category", {
         x: 70,
-        y: boxY + 85,
+        y: boxY + 135,
         size: 9,
         font: font,
         color: gray,
@@ -1365,14 +1366,14 @@ export function createServer() {
 
       page.drawText(cert.instrumentCategory || "N/A", {
         x: 70,
-        y: boxY + 70,
+        y: boxY + 120,
         size: 14,
         font: boldFont,
         color: darkGray,
       });
 
       page.drawText("Serial Number", {
-        x: 300,
+        x: 70,
         y: boxY + 85,
         size: 9,
         font: font,
@@ -1380,7 +1381,7 @@ export function createServer() {
       });
 
       page.drawText(cert.instrumentSerialNumber, {
-        x: 300,
+        x: 70,
         y: boxY + 70,
         size: 14,
         font: boldFont,
@@ -1404,7 +1405,7 @@ export function createServer() {
       });
 
       page.drawText("Issue Date", {
-        x: 300,
+        x: 350,
         y: boxY + 35,
         size: 9,
         font: font,
@@ -1412,7 +1413,7 @@ export function createServer() {
       });
 
       page.drawText(new Date(cert.issueDate).toLocaleString(), {
-        x: 300,
+        x: 350,
         y: boxY + 20,
         size: 11,
         font: boldFont,

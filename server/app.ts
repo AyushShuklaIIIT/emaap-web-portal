@@ -942,6 +942,8 @@ export function createServer() {
           ? data.sealImageUrls
           : [];
 
+        const riskClass = data?.risk_class ?? data?.riskClass ?? null;
+
         const rawDataToHash =
           `${instrument.serial_number}|` +
           `${lat},${long}|` +
@@ -991,6 +993,7 @@ export function createServer() {
           verificationSignature,
           status,
           inspectorId,
+          risk_class: riskClass,
           token_hash: tokenHash,
         };
 
@@ -1008,6 +1011,8 @@ export function createServer() {
               verificationSignature: finalCertPayload.verificationSignature,
               status: finalCertPayload.status,
               tokenHash: finalCertPayload.token_hash || null,
+
+              riskClass: finalCertPayload.risk_class,
             },
           });
 

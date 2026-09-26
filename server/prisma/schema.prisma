@@ -354,6 +354,7 @@ model DigitalCertificate {
   sha256_hash           String
   dynamic_qr_url        String
   rejection_reason      String?
+  riskClass             String?
   
   inspection_id String @unique
   instrument_id String
@@ -497,6 +498,7 @@ model GeneratedCertificate {
   verificationSignature  String?
   status                 String   @default("APPROVED_CHECKLIST")
   tokenHash              String?
+  riskClass               String?
 
   @@map("generatedCertificates")
 }

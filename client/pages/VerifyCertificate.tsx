@@ -19,6 +19,7 @@ interface Certificate {
   sealImageUrls: string[];
   status: string;
   tokenHash?: string | null;
+  riskClass?: string | null;
 }
 
 export const CertificateContent = ({
@@ -135,6 +136,35 @@ export const CertificateContent = ({
               crossOrigin="anonymous"
               className="w-full max-h-100 object-contain rounded"
             />
+          </div>
+        </div>
+      )}
+
+      {/* Risk Classification — rendered below Live Physical Evidence */}
+      {certificate.riskClass && (
+        <div className="mt-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-3">
+            Risk Classification
+          </h3>
+          <div
+            className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-bold border ${
+              certificate.riskClass.toUpperCase() === "HIGH"
+                ? "bg-red-100 text-red-700 border-red-300"
+                : certificate.riskClass.toUpperCase() === "MEDIUM"
+                  ? "bg-amber-100 text-amber-700 border-amber-300"
+                  : "bg-green-100 text-green-700 border-green-300"
+            }`}
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${
+                certificate.riskClass.toUpperCase() === "HIGH"
+                  ? "bg-red-500"
+                  : certificate.riskClass.toUpperCase() === "MEDIUM"
+                    ? "bg-amber-500"
+                    : "bg-green-500"
+              }`}
+            />
+            {certificate.riskClass}
           </div>
         </div>
       )}

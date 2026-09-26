@@ -43,3 +43,11 @@ export const getInstrumentSearchService = async (
 
   return instruments;
 };
+export const getInstrumentHistoryService = async (
+  applicationId: string,
+) => {
+  const { getInstrumentHistoryByApplicationId } = await import("../../repositories/instrument.repository");
+  const history = await getInstrumentHistoryByApplicationId(applicationId);
+  if (!history) throw new AppError(404, "Instrument history not found for the given application");
+  return history;
+};

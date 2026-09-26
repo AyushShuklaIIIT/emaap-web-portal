@@ -96,3 +96,43 @@ export const findVerifiedInstrumentForBusiness = async (
     },
   });
 };
+
+export const getInstrumentHistoryByApplicationId = async (
+  applicationId: string,
+) => {
+  return prisma.measuringInstrument.findFirst({
+    where: {
+      applications: {
+        some: {
+          OR: [
+            { app_id: applicationId },
+            { application_no: applicationId }
+          ]
+        },
+      },
+    },
+    include: {
+      category: true,
+      applications: {
+        orderBy: {
+          submission_timestamp: "desc",
+        },
+        include: {
+          receipts: true,
+          inspections: {
+            include: {
+              seals: true,
+              certificate: true,
+              inspector: {
+                select: {
+                  name: true,
+                  fullName: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+};

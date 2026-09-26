@@ -379,6 +379,12 @@ export default function NewApplication() {
       return;
     }
 
+    const parsedMetric = Number(metric);
+    if (isNaN(parsedMetric) || parsedMetric <= 0) {
+      alert("Please enter a valid positive number for capacity/flow rate.");
+      return;
+    }
+
     if (
       errorValue !== null &&
       (!Number.isFinite(errorValue) || errorValue < 0)
@@ -398,7 +404,7 @@ export default function NewApplication() {
       return;
     }
 
-    if (pincode === null || !Number.isInteger(pincode)) {
+    if (pincode === null || !Number.isInteger(pincode) || pincode < 100000 || pincode > 999999) {
       alert("Please enter a valid 6-digit pincode.");
       return;
     }
@@ -440,14 +446,14 @@ export default function NewApplication() {
       setFeeQuote(quote);
 
       setCurrentStep(2);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fee quote failed:", error);
 
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Unable to calculate verification fee.",
-      );
+      const errorMessage =
+        error?.response?.data?.message ||
+        (error instanceof Error ? error.message : "Unable to calculate verification fee.");
+
+      alert(errorMessage);
     } finally {
       setIsQuoting(false);
     }
@@ -484,8 +490,8 @@ export default function NewApplication() {
       return;
     }
 
-    if (pincode === null) {
-      alert("Please enter a pincode.");
+    if (pincode === null || !Number.isInteger(pincode) || pincode < 100000 || pincode > 999999) {
+      alert("Please enter a valid 6-digit pincode.");
       return;
     }
 
@@ -573,14 +579,14 @@ export default function NewApplication() {
           totalAmount: feeQuote?.totalAmount ?? result.payment.totalAmount,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Application submission failed:", error);
 
-      alert(
-        error instanceof Error
-          ? error.message
-          : "Failed to submit application.",
-      );
+      const errorMessage =
+        error?.response?.data?.message ||
+        (error instanceof Error ? error.message : "Failed to submit application.");
+
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -828,13 +834,23 @@ export default function NewApplication() {
                 />
               </FormField>
 
-              <FormField label="Maximum Capacity / Flow Rate">
-                <Input
-                  value={metric}
-                  placeholder="e.g. 50 kg/min"
-                  className={fieldClassName}
-                  onChange={(event) => setMetric(event.target.value)}
-                />
+              <FormField label={`Maximum Capacity / Flow Rate ${selectedCategory?.unit ? `(${selectedCategory.unit})` : ""}`}>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={metric}
+                    placeholder={`e.g. 50`}
+                    className={`${fieldClassName} ${selectedCategory?.unit ? 'pr-12' : ''}`}
+                    onChange={(event) => setMetric(event.target.value)}
+                  />
+                  {selectedCategory?.unit && (
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      <span className="text-gray-500 sm:text-sm">{selectedCategory.unit}</span>
+                    </div>
+                  )}
+                </div>
               </FormField>
 
               <FormField label="Measurement Error">

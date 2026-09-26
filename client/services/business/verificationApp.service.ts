@@ -47,6 +47,7 @@ export interface VerificationCategory {
   accuracy_class: "CLASS_I" | "CLASS_II" | "CLASS_III" | "CLASS_IIII";
   oiml_standard_ref: string;
   verification_cycle_months: number;
+  unit?: string;
 }
 
 export interface VerificationState {

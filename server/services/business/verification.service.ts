@@ -354,7 +354,9 @@ const calculateFeeFromRules = (
   });
 
   if (applicableRules.length === 0) {
-    throw new Error("No fee rule matches the supplied metric/capacity");
+    throw new Error(
+      `No fee rule matches the supplied metric/capacity of ${metricValue || "0"} and measurement error of ${error ?? "0"} for this category.`
+    );
   }
 
   const rule = applicableRules[0];

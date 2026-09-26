@@ -204,6 +204,7 @@ export const getVerificationCategoriesByStateCode = async (
     distinct: ["category_id"],
     orderBy: { category: { category_name: "asc" } },
     select: {
+      unit: true,
       category: {
         select: {
           category_id: true,
@@ -217,7 +218,10 @@ export const getVerificationCategoriesByStateCode = async (
     },
   });
 
-  return rules.map((rule) => rule.category);
+  return rules.map((rule) => ({
+    ...rule.category,
+    unit: rule.unit,
+  }));
 };
 
 export const getVerificationDistrictsByStateCode = async (

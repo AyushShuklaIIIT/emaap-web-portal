@@ -38,11 +38,16 @@ export default function QRCodes({ userId }: { userId: string }) {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {certificates.map((certificate) => {
               const verificationUrl = `${window.location.origin}/verify/${certificate.certificate_no}?sig=${encodeURIComponent(certificate.verificationSignature ?? "")}`;
+              
+              const isRejected = Boolean(certificate.rejection_reason);
+              const cardClassName = isRejected
+                ? "rounded-xl border-2 border-red-400 bg-red-50 p-6 shadow-sm"
+                : "rounded-xl border-2 border-green-400 bg-green-50 p-6 shadow-sm";
 
               return (
                 <div
                   key={certificate.cert_id}
-                  className="rounded-xl border border-[#E0E0E0] bg-white p-6 shadow-sm"
+                  className={cardClassName}
                 >
                   <div className="flex justify-center">
                     <QRCodeCanvas

@@ -29,6 +29,7 @@ import { panRouter } from "./routes/pan.routes";
 import { nswsRouter } from "./routes/nsws.routes";
 import { requireAuth } from "./middleware/require-auth";
 import { getGatcRoom, getOfficerRoom } from "./socket/routeEvents";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 import { correlationIdMiddleware } from "./middleware/correlation-id";
 
@@ -1253,7 +1254,6 @@ export function createServer() {
         });
       }
 
-      const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
       const pdfDoc = await PDFDocument.create();
       let page = pdfDoc.addPage([595.28, 841.89]);
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);

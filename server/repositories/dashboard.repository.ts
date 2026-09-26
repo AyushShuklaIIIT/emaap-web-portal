@@ -1,4 +1,9 @@
-import { BusinessUser, GatcUser, User, DashboardApplicationData } from "../types";
+import {
+  BusinessUser,
+  GatcUser,
+  User,
+  DashboardApplicationData,
+} from "../types";
 import { prisma } from "../lib/prisma";
 
 export const findUserByUserId = async (
@@ -133,69 +138,49 @@ export const getDashboardDetails = async (
   };
 };
 
-export const getApplicationsByUserId = async (userId: string): Promise<DashboardApplicationData[]> => {
+export const getApplicationsByUserId = async (
+  userId: string,
+  skip: number,
+  take: number,
+): Promise<{ applications: DashboardApplicationData[]; total: number }> => {
   const business = await findBusinessByUserId(userId);
 
   if (!business) {
-    return [];
+    return { applications: [], total: 0 };
   }
 
-  const applications = await prisma.verificationApp.findMany({
-    where: {
-      business_id: business.business_id,
-    },
-
-    include: {
-      instrument: {
-        include: {
-          category: true,
-          technical_specs: true,
-          business: {
-            include: {
-              state: true,
-              user: true,
-            },
+  const [applications, total] = await Promise.all([
+    prisma.verificationApp.findMany({
+      where: { business_id: business.business_id },
+      include: {
+        instrument: {
+          include: {
+            category: true,
+            technical_specs: true,
+            business: { include: { state: true, user: true } },
+            certificates: true,
           },
-          certificates: true,
         },
-      },
-
-      business: {
-        include: {
-          state: true,
-          user: true,
-        },
-      },
-
-      assigned_officer: true,
-
-      assigned_gatc: {
-        include: {
-          principal_officer: true,
-        },
-      },
-
-      receipts: true,
-
-      inspections: {
-        include: {
-          inspector: true,
-
-          certificate: {
-            include: {
-              instrument: true,
-            },
+        business: { include: { state: true, user: true } },
+        assigned_officer: true,
+        assigned_gatc: { include: { principal_officer: true } },
+        receipts: true,
+        inspections: {
+          include: {
+            inspector: true,
+            certificate: { include: { instrument: true } },
+            seals: true,
           },
-
-          seals: true,
         },
       },
-    },
+      orderBy: { submission_timestamp: "desc" },
+      skip,
+      take,
+    }),
+    prisma.verificationApp.count({
+      where: { business_id: business.business_id },
+    }),
+  ]);
 
-    orderBy: {
-      submission_timestamp: "desc",
-    },
-  });
-
-  return applications;
+  return { applications, total };
 };

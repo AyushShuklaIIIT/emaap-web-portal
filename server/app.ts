@@ -29,7 +29,6 @@ import { panRouter } from "./routes/pan.routes";
 import { nswsRouter } from "./routes/nsws.routes";
 import { requireAuth } from "./middleware/require-auth";
 import { getGatcRoom, getOfficerRoom } from "./socket/routeEvents";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 import { correlationIdMiddleware } from "./middleware/correlation-id";
 
@@ -1253,7 +1252,7 @@ export function createServer() {
           error: "Cannot download rejected certificate.",
         });
       }
-
+      const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
       const pdfDoc = await PDFDocument.create();
       let page = pdfDoc.addPage([595.28, 841.89]);
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -1344,22 +1343,21 @@ export function createServer() {
         color: borderGray,
       });
 
-      const boxY = height - 330;
+      const boxY = height - 280;
 
       page.drawRectangle({
         x: 50,
         y: boxY,
         width: width - 100,
-        height: 160,
+        height: 110,
         color: lightGray,
         borderColor: borderGray,
         borderWidth: 1,
       });
 
-      // Row 1: Instrument Category (Top Left)
       page.drawText("Instrument Category", {
         x: 70,
-        y: boxY + 135,
+        y: boxY + 85,
         size: 9,
         font: font,
         color: gray,
@@ -1367,15 +1365,14 @@ export function createServer() {
 
       page.drawText(cert.instrumentCategory || "N/A", {
         x: 70,
-        y: boxY + 120,
+        y: boxY + 70,
         size: 14,
         font: boldFont,
         color: darkGray,
       });
 
-      // Row 2: Serial Number (Middle Left) & Issue Date (Middle Right)
       page.drawText("Serial Number", {
-        x: 70,
+        x: 300,
         y: boxY + 85,
         size: 9,
         font: font,
@@ -1383,30 +1380,13 @@ export function createServer() {
       });
 
       page.drawText(cert.instrumentSerialNumber, {
-        x: 70,
+        x: 300,
         y: boxY + 70,
         size: 14,
         font: boldFont,
         color: darkGray,
       });
 
-      page.drawText("Issue Date", {
-        x: 300,
-        y: boxY + 85,
-        size: 9,
-        font: font,
-        color: gray,
-      });
-
-      page.drawText(new Date(cert.issueDate).toLocaleString(), {
-        x: 300,
-        y: boxY + 70,
-        size: 13,
-        font: boldFont,
-        color: darkGray,
-      });
-
-      // Row 3: Certificate ID (Bottom Left)
       page.drawText("Certificate ID", {
         x: 70,
         y: boxY + 35,
@@ -1420,6 +1400,22 @@ export function createServer() {
         y: boxY + 20,
         size: 11,
         font: font,
+        color: darkGray,
+      });
+
+      page.drawText("Issue Date", {
+        x: 300,
+        y: boxY + 35,
+        size: 9,
+        font: font,
+        color: gray,
+      });
+
+      page.drawText(new Date(cert.issueDate).toLocaleString(), {
+        x: 300,
+        y: boxY + 20,
+        size: 11,
+        font: boldFont,
         color: darkGray,
       });
 

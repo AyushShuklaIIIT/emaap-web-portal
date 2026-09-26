@@ -20,8 +20,15 @@ import {
 import { useBusinessDashboard } from "@/hooks/useBusinessDashboard";
 
 export default function BusinessDashboard({ userId }: { userId: string }) {
-  const { dashboard, applications, isLoading, isError } =
-    useBusinessDashboard(userId);
+  const {
+    dashboard,
+    applications,
+    isLoading,
+    isError,
+    page,
+    setPage,
+    pagination,
+  } = useBusinessDashboard(userId);
 
   if (isLoading) {
     return (
@@ -149,12 +156,38 @@ export default function BusinessDashboard({ userId }: { userId: string }) {
             </TableBody>
           </Table>
 
-          <div className="flex items-center justify-between border-t border-border p-4 text-sm text-muted-foreground">
-            <span>Showing {applications.length} applications</span>
+          <div className="flex flex-col gap-3 border-t border-border p-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              {pagination
+                ? `Showing ${
+                    pagination.total === 0
+                      ? 0
+                      : (page - 1) * pagination.limit + 1
+                  } to ${Math.min(
+                    page * pagination.limit,
+                    pagination.total,
+                  )} of ${pagination.total} applications`
+                : "Loading..."}
+            </span>
 
-            <Button asChild variant="link" className="text-primary">
-              <Link to="/business/applications">View all applications →</Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!pagination || page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!pagination || page >= pagination.totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         </div>
       </div>

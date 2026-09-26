@@ -22,11 +22,28 @@ export const getBusinessDashboardService = async (
   return details;
 };
 
-export const getApplicationsDashboardService = async (userId: string): Promise<DashboardApplicationData[]> => {
+export const getApplicationsDashboardService = async (
+  userId: string,
+  page: number,
+  limit: number,
+) => {
   const user = await findUserByUserId(userId);
   if (!user) throw new AppError(404, "User Not Found");
 
-  const applications = await getApplicationsByUserId(userId);
+  const skip = (page - 1) * limit;
+  const { applications, total } = await getApplicationsByUserId(
+    userId,
+    skip,
+    limit,
+  );
 
-  return applications;
+  return {
+    applications,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };

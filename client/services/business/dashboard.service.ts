@@ -7,6 +7,16 @@ export interface BusinessDashboard {
   pending: number;
 }
 
+export interface PaginatedApplications {
+  data: DashboardApplicationData[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export const getBusinessDashboard = async (
   userId: string,
 ): Promise<BusinessDashboard> => {
@@ -20,13 +30,22 @@ export const getBusinessDashboard = async (
   return dashboard;
 };
 
-export const getApplicationsDashboard = async (userId: string): Promise<DashboardApplicationData[]> => {
-  const response = await api.get(`/dashboard/${userId}/applications`);
-  const applications = response.data?.data;
+export const getApplicationsDashboard = async (
+  userId: string,
+  page: number,
+  limit: number,
+): Promise<PaginatedApplications> => {
+  const response = await api.get(`/dashboard/${userId}/applications`, {
+    params: { page, limit },
+  });
+  const result = response.data;
 
-  if (!Array.isArray(applications)) {
-    throw new Error("Applications response did not contain a list");
+  if (!result || !Array.isArray(result.data)) {
+    throw new Error("Applications response did not contain a valid list");
   }
 
-  return applications;
+  return {
+    data: result.data,
+    pagination: result.pagination,
+  };
 };

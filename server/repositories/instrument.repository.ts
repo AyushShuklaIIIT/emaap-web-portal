@@ -111,22 +111,17 @@ export const getInstrumentHistoryByApplicationId = async (
         },
       },
     },
-    include: {
-      category: true,
+    select: {
       applications: {
         orderBy: {
           submission_timestamp: "desc",
         },
-        include: {
-          receipts: true,
+        select: {
           inspections: {
-            include: {
-              seals: true,
-              certificate: true,
-              inspector: {
+            select: {
+              seals: {
                 select: {
-                  name: true,
-                  fullName: true,
+                  s3_photo_url: true,
                 },
               },
             },

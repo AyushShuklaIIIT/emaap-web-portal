@@ -49,5 +49,17 @@ export const getInstrumentHistoryService = async (
   const { getInstrumentHistoryByApplicationId } = await import("../../repositories/instrument.repository");
   const history = await getInstrumentHistoryByApplicationId(applicationId);
   if (!history) throw new AppError(404, "Instrument history not found for the given application");
-  return history;
+  
+  const imageUrls: string[] = [];
+  history.applications.forEach((app) => {
+    app.inspections.forEach((inspection) => {
+      inspection.seals.forEach((seal) => {
+        if (seal.s3_photo_url) {
+          imageUrls.push(seal.s3_photo_url);
+        }
+      });
+    });
+  });
+
+  return imageUrls;
 };

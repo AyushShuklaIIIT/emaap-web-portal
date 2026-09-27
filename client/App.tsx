@@ -46,6 +46,11 @@ const queryClient = new QueryClient();
 const App = () => {
   useEffect(() => {
     api.get("/ping").catch(console.error);
+    const hitApi = async () => {
+      await fetch(`${import.meta.env.ML_MODEL_URL}/health`);
+    };
+
+    hitApi();
   }, []);
 
   const currentUser = getCurrentUser();

@@ -33,11 +33,32 @@ const ROLE_PLACEHOLDER: Record<Role, string> = {
   gatc: "e.g. LMO / GATC registered mobile",
 };
 
+const demo = {
+  business: {
+    mobile: "9000000005",
+    password: "2001",
+  },
+  admin: {
+    central: {
+      mobile: "9000000001",
+      password: "admin",
+    },
+    state: {
+      mobile: "9000000002",
+      password: "mhadmin",
+    },
+  },
+  gatc: {
+    mobile: "9000000015",
+    password: "rashomon",
+  },
+};
+
 export default function Index() {
   const navigate = useNavigate();
   const [role, setRole] = useState<Role>("business");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("9000000005");
+  const [password, setPassword] = useState("2001");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -202,7 +223,17 @@ export default function Index() {
 
             <Tabs
               value={role}
-              onValueChange={(v) => setRole(v as Role)}
+              onValueChange={(v) => {
+                const nextRole = v as Role;
+                setRole(nextRole);
+
+                const credentials =
+                  nextRole === "admin" ? demo.admin.central : demo[nextRole];
+
+                setPhone(credentials.mobile);
+                setPassword(credentials.password);
+                setError("");
+              }}
               className="mt-6"
             >
               <TabsList className="grid h-auto w-full grid-cols-3">
@@ -311,6 +342,72 @@ export default function Index() {
               © Government of India · Department of Consumer Affairs · Ministry
               of Consumer Affairs, Food &amp; Public Distribution
             </p>
+          </div>
+          <div className="mt-6 -mx-6 w-[calc(57%)] rounded-lg border border-border bg-muted/40 px-6 py-4">
+            <p className="mb-3 text-sm font-semibold text-foreground">
+              {role === "admin" ? "Admin Demo Credentials" : "Demo Credentials"}
+            </p>
+
+            {role === "admin" ? (
+              <div className="flex flex-col gap-4">
+                {(
+                  [
+                    ["central", "Central Admin"],
+                    ["state", "State Admin"],
+                  ] as const
+                ).map(([type, label]) => {
+                  const credentials = demo.admin[type];
+
+                  return (
+                    <div key={type} className="flex flex-col gap-2">
+                      <p className="text-sm font-medium text-foreground">
+                        {label}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Mobile:{" "}
+                        <span className="font-mono text-foreground">
+                          {credentials.mobile}
+                        </span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Password:{" "}
+                        <span className="font-mono text-foreground">
+                          {credentials.password}
+                        </span>
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => {
+                          setPhone(credentials.mobile);
+                          setPassword(credentials.password);
+                          setError("");
+                        }}
+                      >
+                        Use {label} Credentials
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                <p>
+                  Mobile:{" "}
+                  <span className="font-mono font-semibold text-foreground">
+                    {demo[role].mobile}
+                  </span>
+                </p>
+                <p>
+                  Password:{" "}
+                  <span className="font-mono font-semibold text-foreground">
+                    {demo[role].password}
+                  </span>
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
